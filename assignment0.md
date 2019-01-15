@@ -3,7 +3,7 @@ Answers to questions from Assignment 0
 
 Ans 1 :   
 -------
-The word that occurs most is "love" and "in"(4 times).
+The word that occurs most is "love" and "in"(4 times each).
 
 Ans 2 : 
 -------
