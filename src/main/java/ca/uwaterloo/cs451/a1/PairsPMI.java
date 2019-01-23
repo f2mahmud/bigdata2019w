@@ -1,21 +1,6 @@
-/**
- * Bespin: reference implementations of "big data" algorithms
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ca.uwaterloo.cs451.a1;
 
+import com.google.common.io.Files;
 import io.bespin.java.util.Tokenizer;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,158 +21,187 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
+import tl.lin.data.pair.PairOfInts;
 import tl.lin.data.pair.PairOfStrings;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * <p>
- * Implementation of the "pairs" algorithm for computing co-occurrence matrices from a large text
- * collection. This algorithm is described in Chapter 3 of "Data-Intensive Text Processing with 
- * MapReduce" by Lin &amp; Dyer, as well as the following paper:
- * </p>
- *
- * <blockquote>Jimmy Lin. <b>Scalable Language Processing Algorithms for the Masses: A Case Study in
- * Computing Word Co-occurrence Matrices with MapReduce.</b> <i>Proceedings of the 2008 Conference
- * on Empirical Methods in Natural Language Processing (EMNLP 2008)</i>, pages 419-428.</blockquote>
- *
- * @author Jimmy Lin
- */
 public class PairsPMI extends Configured implements Tool {
-  private static final Logger LOG = Logger.getLogger(PairsPMI.class);
+    private static final Logger LOG = Logger.getLogger(PairsPMI.class);
+    protected int lineCount = 1;
 
-  private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
-    private static final PairOfStrings PAIR = new PairOfStrings();
-    private static final IntWritable ONE = new IntWritable(1);
-    private int window = 2;
-
-    @Override
-    public void setup(Context context) {
-      window = context.getConfiguration().getInt("window", 2);
-    }
-
-    @Override
-    public void map(LongWritable key, Text value, Context context)
-        throws IOException, InterruptedException {
-      List<String> tokens = Tokenizer.tokenize(value.toString());
-
-      for (int i = 0; i < tokens.size(); i++) {
-        for (int j = Math.max(i - window, 0); j < Math.min(i + window + 1, tokens.size()); j++) {
-          if (i == j) continue;
-          PAIR.set(tokens.get(i), tokens.get(j));
-          context.write(PAIR, ONE);
+    protected List<String> readLines(String src) {
+        List<String> lines = Collections.emptyList();
+        try {
+            lines = Files.readLines(new File(src), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            LOG.error("Error finding file", e);
         }
-      }
+        return lines;
     }
-  }
 
-  private static final class MyReducer extends
-      Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
-    private static final IntWritable SUM = new IntWritable();
+    /**
+     * The main job
+     **/
 
+    private static final class PairsPMIMapper extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
+        private static final PairOfStrings PAIR_OF_STRINGS = new PairOfStrings();
+        private static final IntWritable LINE_NUMBER = new IntWritable();
+
+        @Override
+        protected void setup(Context context) throws IOException, InterruptedException {
+            context.getConfiguration().setInt("lineCount", 1);
+        }
+
+        @Override
+        public void map(LongWritable key, Text value, Context context)  //TODO::check if each call of map is a new line
+                throws IOException, InterruptedException {
+            List<String> tokens = Tokenizer.tokenize(value.toString());
+            int lineNumber = context.getConfiguration().getInt("lineCount", 1);
+
+            for (int i = 0; i < 40; i++) {
+
+                PAIR_OF_STRINGS.set(tokens.get(i), "*");
+                LINE_NUMBER.set(lineNumber);
+                context.write(PAIR_OF_STRINGS, LINE_NUMBER);
+
+                for (int j = i + 1; j < 40; j++) {
+                    if (i == j) continue;
+                    PAIR_OF_STRINGS.set(tokens.get(i), tokens.get(j));
+                    LINE_NUMBER.set(lineNumber);
+                    context.write(PAIR_OF_STRINGS, LINE_NUMBER);
+                }
+
+            }
+
+            lineNumber += 1;
+            context.getConfiguration().setInt("lineCount", lineNumber);
+        }
+
+    }
+
+    private static final class PairsPMICombiner extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+        @Override
+        public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            List<IntWritable> addedInts = Collections.emptyList();
+            for (IntWritable value : values) {
+                if (addedInts.contains(value)) continue;
+                addedInts.add(value);
+                context.write(key, value);
+            }
+        }
+    }
+
+//    private static final class PairPmiReducer extends
+//            Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+//
+//        @Override
+//        public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
+//                throws IOException, InterruptedException {
+//            List<IntWritable> addedInts = Collections.emptyList();
+//            for (IntWritable value : values) {
+//                if (addedInts.contains(value)) continue;
+//                addedInts.add(value);
+//                context.write(key, value);
+//            }
+//        }
+//    }
+
+
+    private static final class MyPartitioner extends Partitioner<PairOfStrings, IntWritable> {
+        @Override
+        public int getPartition(PairOfStrings key, IntWritable value, int numReduceTasks) {
+            return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
+        }
+    }
+
+    /**
+     * Creates an instance of this tool.
+     */
+    private PairsPMI() {
+    }
+
+    private static final class Args {
+        @Option(name = "-input", metaVar = "[path]", required = true, usage = "input path")
+        String input;
+
+        @Option(name = "-output", metaVar = "[path]", required = true, usage = "output path")
+        String output;
+
+        @Option(name = "-reducers", metaVar = "[num]", usage = "number of reducers")
+        int numReducers = 1;
+
+        @Option(name = "-window", metaVar = "[num]", usage = "cooccurrence window")
+        int window = 2;
+    }
+
+    /**
+     * Runs this tool.
+     */
     @Override
-    public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
-        throws IOException, InterruptedException {
-      Iterator<IntWritable> iter = values.iterator();
-      int sum = 0;
-      while (iter.hasNext()) {
-        sum += iter.next().get();
-      }
+    public int run(String[] argv) throws Exception {
+        final Args args = new Args();
+        CmdLineParser parser = new CmdLineParser(args, ParserProperties.defaults().withUsageWidth(100));
 
-      SUM.set(sum);
-      context.write(key, SUM);
-    }
-  }
+        try {
+            parser.parseArgument(argv);
+        } catch (CmdLineException e) {
+            System.err.println(e.getMessage());
+            parser.printUsage(System.err);
+            return -1;
+        }
 
-  private static final class MyPartitioner extends Partitioner<PairOfStrings, IntWritable> {
-    @Override
-    public int getPartition(PairOfStrings key, IntWritable value, int numReduceTasks) {
-      return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
-    }
-  }
+        LOG.info("Tool: " + PairsPMI.class.getSimpleName());
+        LOG.info(" - input path: " + args.input);
+        LOG.info(" - output path: " + args.output);
+        LOG.info(" - window: " + args.window);
+        LOG.info(" - number of reducers: " + args.numReducers);
 
-  /**
-   * Creates an instance of this tool.
-   */
-  private PairsPMI() {}
+        Job job = Job.getInstance(getConf());
+        job.setJobName(PairsPMI.class.getSimpleName());
+        job.setJarByClass(PairsPMI.class);
 
-  private static final class Args {
-    @Option(name = "-input", metaVar = "[path]", required = true, usage = "input path")
-    String input;
+        // Delete the output directory if it exists already.
+        Path outputDir = new Path(args.output);
+        FileSystem.get(getConf()).delete(outputDir, true);
 
-    @Option(name = "-output", metaVar = "[path]", required = true, usage = "output path")
-    String output;
+        job.getConfiguration().setInt("window", args.window);
 
-    @Option(name = "-reducers", metaVar = "[num]", usage = "number of reducers")
-    int numReducers = 1;
+        job.setNumReduceTasks(args.numReducers);
 
-    @Option(name = "-window", metaVar = "[num]", usage = "cooccurrence window")
-    int window = 2;
-  }
+        FileInputFormat.setInputPaths(job, new Path(args.input));
+        FileOutputFormat.setOutputPath(job, new Path(args.output));
 
-  /**
-   * Runs this tool.
-   */
-  @Override
-  public int run(String[] argv) throws Exception {
-    final Args args = new Args();
-    CmdLineParser parser = new CmdLineParser(args, ParserProperties.defaults().withUsageWidth(100));
+        job.setMapOutputKeyClass(PairOfStrings.class);
+        job.setMapOutputValueClass(IntWritable.class);
+        job.setOutputKeyClass(PairOfStrings.class);
+        job.setOutputValueClass(IntWritable.class);
 
-    try {
-      parser.parseArgument(argv);
-    } catch (CmdLineException e) {
-      System.err.println(e.getMessage());
-      parser.printUsage(System.err);
-      return -1;
+        job.setMapperClass(PairsPMIMapper.class);
+        //job.setCombinerClass(MyReducer.class);
+        job.setReducerClass(PairsPMICombiner.class);
+        job.setPartitionerClass(MyPartitioner.class);
+
+        long startTime = System.currentTimeMillis();
+        job.waitForCompletion(true);
+        System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+
+        return 0;
     }
 
-    LOG.info("Tool: " + PairsPMI.class.getSimpleName());
-    LOG.info(" - input path: " + args.input);
-    LOG.info(" - output path: " + args.output);
-    LOG.info(" - window: " + args.window);
-    LOG.info(" - number of reducers: " + args.numReducers);
-
-    Job job = Job.getInstance(getConf());
-    job.setJobName(PairsPMI.class.getSimpleName());
-    job.setJarByClass(PairsPMI.class);
-
-    // Delete the output directory if it exists already.
-    Path outputDir = new Path(args.output);
-    FileSystem.get(getConf()).delete(outputDir, true);
-
-    job.getConfiguration().setInt("window", args.window);
-
-    job.setNumReduceTasks(args.numReducers);
-
-    FileInputFormat.setInputPaths(job, new Path(args.input));
-    FileOutputFormat.setOutputPath(job, new Path(args.output));
-
-    job.setMapOutputKeyClass(PairOfStrings.class);
-    job.setMapOutputValueClass(IntWritable.class);
-    job.setOutputKeyClass(PairOfStrings.class);
-    job.setOutputValueClass(IntWritable.class);
-
-    job.setMapperClass(MyMapper.class);
-    job.setCombinerClass(MyReducer.class);
-    job.setReducerClass(MyReducer.class);
-    job.setPartitionerClass(MyPartitioner.class);
-
-    long startTime = System.currentTimeMillis();
-    job.waitForCompletion(true);
-    System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
-
-    return 0;
-  }
-
-  /**
-   * Dispatches command-line arguments to the tool via the {@code ToolRunner}.
-   *
-   * @param args command-line arguments
-   * @throws Exception if tool encounters an exception
-   */
-  public static void main(String[] args) throws Exception {
-    ToolRunner.run(new PairsPMI(), args);
-  }
+    /**
+     * Dispatches command-line arguments to the tool via the {@code ToolRunner}.
+     *
+     * @param args command-line arguments
+     * @throws Exception if tool encounters an exception
+     */
+    public static void main(String[] args) throws Exception {
+        ToolRunner.run(new PairsPMI(), args);
+    }
 }
