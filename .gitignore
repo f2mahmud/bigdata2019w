@@ -1,2 +1,7 @@
 .DS_Store
-
+target
+data
+check_assignment0_public_datasci.py
+check_assignment0_public_linux.py
+cs451-f2mahmud-a0-shakespeare
+runHadoopJob.sh
