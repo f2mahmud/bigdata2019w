@@ -204,7 +204,8 @@ public class PairsPMI extends Configured implements Tool {
         LOG.info(" - threshold: " + args.threshold);
         LOG.info(" - number of reducers: " + args.numReducers);
 
-        Path pathToIntermedieteFiles = new Path("./occurenceJobResults/part-r-00000");
+        Path pathToIntermedieteResults = new Path("./occurenceJobResults/part-r-00000");
+        Path pathToIntermedieteResultDirectory = new Path("./occurenceJobResults");
         Path pathToOutputFiles = new Path(args.output);
         Path pathToInputFiles = new Path(args.input);
 
@@ -215,9 +216,9 @@ public class PairsPMI extends Configured implements Tool {
         occurenceJob.setJobName("OccurenceCount");
         occurenceJob.setJarByClass(PairsPMI.class);
 
-        FileSystem.get(getConf()).delete(pathToIntermedieteFiles, true);
+        FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
         FileInputFormat.setInputPaths(occurenceJob, pathToInputFiles);
-        FileOutputFormat.setOutputPath(occurenceJob, pathToIntermedieteFiles);
+        FileOutputFormat.setOutputPath(occurenceJob, pathToIntermedieteResultDirectory);
 
         occurenceJob.setNumReduceTasks(args.numReducers);
 
@@ -241,7 +242,7 @@ public class PairsPMI extends Configured implements Tool {
         PairsPMIJob.setJobName(PairsPMI.class.getSimpleName());
         PairsPMIJob.setJarByClass(PairsPMI.class);
 
-        PairsPMIJob.addCacheFile(pathToIntermedieteFiles.toUri());
+        PairsPMIJob.addCacheFile(pathToIntermedieteResults.toUri());
         // Delete the output directory if it exists already.
         FileSystem.get(getConf()).delete(pathToOutputFiles, true);
 
