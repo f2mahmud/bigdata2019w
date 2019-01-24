@@ -114,17 +114,18 @@ public class PairsPMI extends Configured implements Tool {
             Reducer<PairOfStrings, IntWritable, PairOfStrings, DoubleWritable> {
 
         private static final Map<String, Double> occurenceCounts = new HashMap<>();
-        private static double numberOfLines;
+        private static int numberOfLines;
         private static final DoubleWritable PMI_WRITABLE = new DoubleWritable();
 
         @Override
         public void setup(Context context) throws IOException {
             List<String> lines;
-            numberOfLines = (double) context.getConfiguration().getInt("lineNumber", -1);
+            numberOfLines = context.getConfiguration().getInt("lineNumber", -1);
             System.out.println("number of lines in file : " + numberOfLines);
             try {
                 lines = Files.readLines(new File(context.getCacheFiles()[0].toString()), StandardCharsets.UTF_8);
                 for (String line : lines) {
+                    System.out.println(line);
                     String[] words = line.split(" ");
                     occurenceCounts.put(words[0], Double.valueOf(words[1]));
                 }
