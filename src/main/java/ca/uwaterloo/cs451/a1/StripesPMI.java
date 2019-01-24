@@ -20,7 +20,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -80,15 +79,19 @@ public class StripesPMI extends Configured implements Tool {
     private static class StripesPMIMapper extends Mapper<LongWritable, Text, Text, HMapStIW> {
 
         // Objects for reuse
-        private final static Text KEY = new Text();
-        private final static HMapStIW MAP = new HMapStIW();
+        private static Text KEY = new Text();
+        private static HMapStIW MAP = new HMapStIW();
 
         @Override
         public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
+            Set<String> uniqueTokens = new HashSet<>();
+            String mainKey;
             for (int i = 0; i < 40 && i < tokens.size(); i++) {
-                KEY.set(tokens.get(i));
+                mainKey = tokens.get(i);
+                if(uniqueTokens.add(tokens.get(i)));
+                KEY.set(mainKey);
                 for (int j = 0; j < 40 && j < tokens.size(); j++) {
                     String valueString = tokens.get(j);
                     if (i == j || MAP.containsKey(valueString)) continue;
@@ -106,9 +109,10 @@ public class StripesPMI extends Configured implements Tool {
         @Override
         public void reduce(Text key, Iterable<HMapStIW> values, Context context)
                 throws IOException, InterruptedException {
+            Set<String> uniqueTokens = new HashSet<>();
             for (HMapStIW valueMap : values) {
                 for (String valueKey : valueMap.keySet()) {
-                    System.out.println("?>>>>>>Combiner::::  " + valueKey );
+                    if(!uniqueTokens.add(valueKey)) continue;
                     if (MAP.containsKey(valueKey)) {
                         MAP.put(valueKey, MAP.get(valueKey) + valueMap.get(valueKey));
                     } else {
@@ -156,7 +160,6 @@ public class StripesPMI extends Configured implements Tool {
                 throws IOException, InterruptedException {
             for (HMapStIW valueMap : values) {
                 for (String valueKey : valueMap.keySet()) {
-                    System.out.println("?>>>>>>Reducer::::  " + valueKey );
                     if (MAP.containsKey(valueKey)) {
                         MAP.put(valueKey, MAP.get(valueKey) + valueMap.get(valueKey));
                     } else {
@@ -164,10 +167,11 @@ public class StripesPMI extends Configured implements Tool {
                     }
                 }
             }
+            Set<String> uniqueTokens = new HashSet<>();
             int threshold = context.getConfiguration().getInt("threshold", 0);
             for (String valueKey : MAP.keySet()) {
-                System.out.println("?>>>>>>Value::::  " + valueKey );
                 TEXT.set(valueKey);
+                if(!uniqueTokens.add(valueKey)) continue;
                 if (MAP.get(valueKey) > threshold && !VALUE.containsKey(TEXT)) {
                     double probabilityOfLeft = occurenceCounts.get(key.toString()) / numberOfLines;
                     double probabilityOfRight = occurenceCounts.get(valueKey) / numberOfLines;
@@ -179,11 +183,9 @@ public class StripesPMI extends Configured implements Tool {
                     VALUE.put(TEXT, PMI_COCCURENCE);
                 }
             }
-            System.out.println(">>>>>>>>size;  " + VALUE.size());
             context.write(key, VALUE);
             VALUE.clear();
             MAP.clear();
-
         }
     }
 
