@@ -119,11 +119,9 @@ public class PairsPMI extends Configured implements Tool {
         public void setup(Context context) throws IOException {
             List<String> lines;
             numberOfLines = context.getConfiguration().getDouble("numberOfLines", -1);
-            System.out.println("number of lines in file : " + numberOfLines);
             try {
                 lines = Files.readLines(new File(context.getCacheFiles()[0].toString()), StandardCharsets.UTF_8);
                 for (String line : lines) {
-                    System.out.println(line);
                     String[] words = line.split("\\s");
                     occurenceCounts.put(words[0], Double.valueOf(words[1]));
                 }
@@ -143,7 +141,7 @@ public class PairsPMI extends Configured implements Tool {
             if (sum > threshold) {
                 double probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) / numberOfLines;
                 double probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
-                double probabilityOfCoccurence = occurenceCounts.get(sum) / numberOfLines;
+                double probabilityOfCoccurence = sum / numberOfLines;
 
                 double PMI = Math.log(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight));
 
