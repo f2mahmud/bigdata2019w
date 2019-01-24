@@ -181,6 +181,9 @@ public class PairsPMI extends Configured implements Tool {
      */
     @Override
     public int run(String[] argv) throws Exception {
+
+        long startTime = System.currentTimeMillis();
+
         final Args args = new Args();
         CmdLineParser parser = new CmdLineParser(args, ParserProperties.defaults().withUsageWidth(100));
 
@@ -225,7 +228,6 @@ public class PairsPMI extends Configured implements Tool {
         occurenceJob.setCombinerClass(OccurenceReducer.class);
         occurenceJob.setReducerClass(OccurenceReducer.class);
 
-        long startTime = System.currentTimeMillis();
         occurenceJob.waitForCompletion(true);
 
         /**
@@ -264,8 +266,8 @@ public class PairsPMI extends Configured implements Tool {
         PairsPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
 
         PairsPMIJob.waitForCompletion(true);
-        System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
         FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
+        System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
         return 0;
     }

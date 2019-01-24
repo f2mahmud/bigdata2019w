@@ -203,6 +203,8 @@ public class StripesPMI extends Configured implements Tool {
 
     public int run(String[] argv) throws Exception {
 
+        long startTime = System.currentTimeMillis();
+
         final Args args = new Args();
         CmdLineParser parser = new CmdLineParser(args, ParserProperties.defaults().withUsageWidth(100));
 
@@ -247,7 +249,6 @@ public class StripesPMI extends Configured implements Tool {
         occurenceJob.setCombinerClass(OccurenceReducer.class);
         occurenceJob.setReducerClass(OccurenceReducer.class);
 
-        long startTime = System.currentTimeMillis();
         occurenceJob.waitForCompletion(true);
 
         /**
@@ -269,10 +270,10 @@ public class StripesPMI extends Configured implements Tool {
         FileInputFormat.setInputPaths(PairsPMIJob, pathToInputFiles);
         TextOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
 
-        PairsPMIJob.setMapOutputKeyClass(PairOfStrings.class);
-        PairsPMIJob.setMapOutputValueClass(IntWritable.class);
-        PairsPMIJob.setOutputKeyClass(PairOfStrings.class);
-        PairsPMIJob.setOutputValueClass(IntWritable.class);
+        PairsPMIJob.setMapOutputKeyClass(Text.class);
+        PairsPMIJob.setMapOutputValueClass(HMapStIW.class);
+        PairsPMIJob.setOutputKeyClass(Text.class);
+        PairsPMIJob.setOutputValueClass(HashMapWritable.class);
 
         PairsPMIJob.setMapperClass(StripesPMIMapper.class);
         PairsPMIJob.setCombinerClass(StripesPMICombiner.class);
@@ -286,8 +287,9 @@ public class StripesPMI extends Configured implements Tool {
         PairsPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
 
         PairsPMIJob.waitForCompletion(true);
-        System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
         FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
+
+        System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
         return 0;
     }
