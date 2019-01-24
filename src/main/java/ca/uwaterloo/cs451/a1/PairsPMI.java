@@ -5,7 +5,6 @@ import io.bespin.java.util.Tokenizer;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -24,7 +23,6 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.pair.PairOfObjectDouble;
-import tl.lin.data.pair.PairOfObjectInt;
 import tl.lin.data.pair.PairOfStrings;
 
 import java.io.File;
@@ -46,7 +44,7 @@ public class PairsPMI extends Configured implements Tool {
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
-            Set<String> uniqueTokens = new HashSet<String>();
+            Set<String> uniqueTokens = new HashSet<>();
             for (int i = 0; i < 40 && i < tokens.size(); i++) {
                 if (uniqueTokens.add(tokens.get(i))) {
                     KEY.set(tokens.get(i));
@@ -111,8 +109,7 @@ public class PairsPMI extends Configured implements Tool {
 
     }
 
-    private static final class PairsPMIReducer extends
-            Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfObjectDouble> {
+    private static final class PairsPMIReducer extends Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfObjectDouble> {
 
         private static final Map<String, Double> occurenceCounts = new HashMap<>();
         private static final PairOfObjectDouble<Double> PMI_COOCCURENCE = new PairOfObjectDouble<>();
@@ -268,7 +265,7 @@ public class PairsPMI extends Configured implements Tool {
 
         PairsPMIJob.waitForCompletion(true);
         System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
-        FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory,true);
+        FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
 
         return 0;
     }

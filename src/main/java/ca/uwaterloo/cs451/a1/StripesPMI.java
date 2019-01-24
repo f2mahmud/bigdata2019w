@@ -33,7 +33,6 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.map.HMapStIW;
 import tl.lin.data.map.HashMapWritable;
-import tl.lin.data.pair.PairOfObjectDouble;
 import tl.lin.data.pair.PairOfStrings;
 import tl.lin.data.pair.PairOfWritables;
 
@@ -51,7 +50,7 @@ public class StripesPMI extends Configured implements Tool {
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
-            Set<String> uniqueTokens = new HashSet<String>();
+            Set<String> uniqueTokens = new HashSet<>();
             for (int i = 0; i < 40 && i < tokens.size(); i++) {
                 if (uniqueTokens.add(tokens.get(i))) {
                     KEY.set(tokens.get(i));
