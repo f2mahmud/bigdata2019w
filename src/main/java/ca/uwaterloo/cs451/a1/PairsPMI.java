@@ -140,6 +140,9 @@ public class PairsPMI extends Configured implements Tool {
                 sum += value.get();
             }
             if (sum > threshold) {
+                System.out.println(">>>.... : number of line " + numberOfLines);
+                System.out.println(">>>.... : line " + key.getLeftElement());
+                System.out.println(">>>.... : sssssline " + occurenceCounts.get(key.getLeftElement()));
                 double probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) / numberOfLines;
                 double probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
                 double probabilityOfCoccurence = sum / numberOfLines;
