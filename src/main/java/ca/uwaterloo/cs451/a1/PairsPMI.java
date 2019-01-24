@@ -100,7 +100,7 @@ public class PairsPMI extends Configured implements Tool {
                 throws IOException, InterruptedException {
             int sum = 0;
             for (IntWritable value : values) {
-                sum += value.get() + 1;
+                sum += value.get();
             }
             SUM.set(sum);
             context.write(key, SUM);
@@ -143,7 +143,6 @@ public class PairsPMI extends Configured implements Tool {
                 double probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) / numberOfLines;
                 double probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
                 double probabilityOfCoccurence = sum / numberOfLines;
-                System.out.println(key.getLeftElement() + ":::" + key.getRightElement() + "=====" + sum);
 
                 double PMI = Math.log10(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight));
 
