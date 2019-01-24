@@ -77,7 +77,7 @@ public class PairsPMI extends Configured implements Tool {
         private static final IntWritable ONE = new IntWritable(1);
 
         @Override
-        public void map(LongWritable key, Text value, Context context)  //TODO::check if each call of map is a new line
+        public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
             Set<PairOfStrings> uniqueWordPairs = new HashSet<>();
@@ -143,7 +143,7 @@ public class PairsPMI extends Configured implements Tool {
                 double probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
                 double probabilityOfCoccurence = sum / numberOfLines;
 
-                double PMI = Math.log(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight));
+                double PMI = Math.log10(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight));
 
                 PMI_WRITABLE.set(PMI);
                 context.write(key, PMI_WRITABLE);
@@ -207,7 +207,7 @@ public class PairsPMI extends Configured implements Tool {
         Path pathToInputFiles = new Path(args.input);
 
         /**
-         * Running occurence job
+         * Running occurence job.
          */
         Job occurenceJob = Job.getInstance(getConf());
         occurenceJob.setJobName("OccurenceCount");
