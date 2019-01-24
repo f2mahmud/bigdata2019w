@@ -86,11 +86,9 @@ public class StripesPMI extends Configured implements Tool {
         public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
-            Set<String> uniqueTokens = new HashSet<>();
             String mainKey;
             for (int i = 0; i < 40 && i < tokens.size(); i++) {
                 mainKey = tokens.get(i);
-                if(uniqueTokens.add(tokens.get(i)));
                 KEY.set(mainKey);
                 for (int j = 0; j < 40 && j < tokens.size(); j++) {
                     String valueString = tokens.get(j);
@@ -109,10 +107,8 @@ public class StripesPMI extends Configured implements Tool {
         @Override
         public void reduce(Text key, Iterable<HMapStIW> values, Context context)
                 throws IOException, InterruptedException {
-            Set<String> uniqueTokens = new HashSet<>();
             for (HMapStIW valueMap : values) {
                 for (String valueKey : valueMap.keySet()) {
-                    if(!uniqueTokens.add(valueKey)) continue;
                     if (MAP.containsKey(valueKey)) {
                         MAP.put(valueKey, MAP.get(valueKey) + valueMap.get(valueKey));
                     } else {
@@ -167,11 +163,9 @@ public class StripesPMI extends Configured implements Tool {
                     }
                 }
             }
-            Set<String> uniqueTokens = new HashSet<>();
             int threshold = context.getConfiguration().getInt("threshold", 0);
             for (String valueKey : MAP.keySet()) {
                 TEXT.set(valueKey);
-                if(!uniqueTokens.add(valueKey)) continue;
                 if (MAP.get(valueKey) > threshold && !VALUE.containsKey(TEXT)) {
                     double probabilityOfLeft = occurenceCounts.get(key.toString()) / numberOfLines;
                     double probabilityOfRight = occurenceCounts.get(valueKey) / numberOfLines;
