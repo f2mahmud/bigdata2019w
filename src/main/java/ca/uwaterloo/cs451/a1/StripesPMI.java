@@ -117,6 +117,7 @@ public class StripesPMI extends Configured implements Tool {
                 }
             }
             context.write(key, MAP);
+            MAP.clear();
         }
     }
 
@@ -177,6 +178,9 @@ public class StripesPMI extends Configured implements Tool {
                 }
             }
             context.write(key, VALUE);
+            VALUE.clear();
+            MAP.clear();
+
         }
     }
 
