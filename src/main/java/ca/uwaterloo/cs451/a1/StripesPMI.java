@@ -174,10 +174,9 @@ public class StripesPMI extends Configured implements Tool {
                     COCCCURENCE.set(MAP.get(valueKey));
                     PMI_COCCURENCE.set(PMI, COCCCURENCE);
                     VALUE.put(TEXT, PMI_COCCURENCE);
-                    context.write(key, VALUE);
                 }
             }
-
+            context.write(key, VALUE);
         }
     }
 
