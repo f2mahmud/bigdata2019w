@@ -204,7 +204,7 @@ public class PairsPMI extends Configured implements Tool {
         LOG.info(" - threshold: " + args.threshold);
         LOG.info(" - number of reducers: " + args.numReducers);
 
-        Path pathToIntermedieteFiles = new Path("./occurenceJobResults");
+        Path pathToIntermedieteFiles = new Path("./occurenceJobResults/part-r-00000");
         Path pathToOutputFiles = new Path(args.output);
         Path pathToInputFiles = new Path(args.input);
 
