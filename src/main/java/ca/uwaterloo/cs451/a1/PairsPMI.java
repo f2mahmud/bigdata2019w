@@ -27,6 +27,7 @@ import tl.lin.data.pair.PairOfStrings;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class PairsPMI extends Configured implements Tool {
@@ -74,7 +75,6 @@ public class PairsPMI extends Configured implements Tool {
     private static final class PairsPMIMapper extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
         private static final PairOfStrings PAIR_OF_STRINGS = new PairOfStrings();
         private static final IntWritable ONE = new IntWritable(1);
-        private static int lineNumber = 0;
 
         @Override
         public void map(LongWritable key, Text value, Context context)  //TODO::check if each call of map is a new line
@@ -88,8 +88,6 @@ public class PairsPMI extends Configured implements Tool {
                     context.write(PAIR_OF_STRINGS, ONE);
                 }
             }
-            lineNumber += 1;
-            context.getConfiguration().setInt("lineNumber", lineNumber);
         }
 
     }
@@ -120,13 +118,13 @@ public class PairsPMI extends Configured implements Tool {
         @Override
         public void setup(Context context) throws IOException {
             List<String> lines;
-            numberOfLines = context.getConfiguration().getInt("lineNumber", -1);
+            numberOfLines = context.getConfiguration().getInt("numberOfLines", -1);
             System.out.println("number of lines in file : " + numberOfLines);
             try {
                 lines = Files.readLines(new File(context.getCacheFiles()[0].toString()), StandardCharsets.UTF_8);
                 for (String line : lines) {
                     System.out.println(line);
-                    String[] words = line.split(" ");
+                    String[] words = line.split("\\s");
                     occurenceCounts.put(words[0], Double.valueOf(words[1]));
                 }
             } catch (IOException e) {
@@ -250,6 +248,8 @@ public class PairsPMI extends Configured implements Tool {
         PairsPMIJob.getConfiguration().setInt("threshold", args.threshold);
 
         PairsPMIJob.setNumReduceTasks(args.numReducers);
+
+        PairsPMIJob.getConfiguration().setDouble("numberOfLines", java.nio.file.Files.lines(Paths.get(args.input)).count());
 
         FileInputFormat.setInputPaths(PairsPMIJob, pathToInputFiles);
         FileOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
