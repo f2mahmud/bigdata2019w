@@ -134,6 +134,9 @@ public class PairsPMI extends Configured implements Tool {
         public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
             double sum = 0;
+            double probabilityOfLeft;
+            double probabilityOfRight;
+            double probabilityOfCoccurence;
 
             int threshold = context.getConfiguration().getInt("threshold", 0);
             for (IntWritable value : values) {
@@ -143,9 +146,9 @@ public class PairsPMI extends Configured implements Tool {
                 System.out.println(">>>.... : number of line " + numberOfLines);
                 System.out.println(">>>.... : line " + key.getLeftElement());
                 System.out.println(">>>.... : sssssline " + occurenceCounts.get(key.getLeftElement()));
-                double probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) / numberOfLines;
-                double probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
-                double probabilityOfCoccurence = sum / numberOfLines;
+                probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) / numberOfLines;
+                probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
+                probabilityOfCoccurence = sum / numberOfLines;
 
                 PMI_COOCCURENCE.set(Math.log10(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight)), sum);
                 context.write(key, PMI_COOCCURENCE);
