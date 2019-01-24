@@ -113,11 +113,12 @@ public class PairsPMI extends Configured implements Tool {
 
         private static final Map<String, Double> occurenceCounts = new HashMap<>();
         private static final DoubleWritable PMI_WRITABLE = new DoubleWritable();
+        private static double numberOfLines;
 
         @Override
         public void setup(Context context) throws IOException {
             List<String> lines;
-
+            numberOfLines = context.getConfiguration().getDouble("numberOfLines", -1);
             try {
                 lines = Files.readLines(new File(context.getCacheFiles()[0].toString()), StandardCharsets.UTF_8);
                 for (String line : lines) {
@@ -133,18 +134,16 @@ public class PairsPMI extends Configured implements Tool {
         public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
             double sum = 0;
-            double numberOfLines = context.getConfiguration().getDouble("numberOfLines", -1);
+
             int threshold = context.getConfiguration().getInt("threshold", 0);
-            System.out.println(">>>>>>>>>Number of lines" + numberOfLines);
             for (IntWritable value : values) {
                 sum += value.get();
             }
             if (sum > threshold) {
                 double probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) / numberOfLines;
-                System.out.println(key.getLeftElement() + "  :::::::::  " + occurenceCounts.get(key.getLeftElement()));
                 double probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
-                System.out.println(key.getRightElement() + "  :::::::::  " + occurenceCounts.get(key.getRightElement()));
                 double probabilityOfCoccurence = sum / numberOfLines;
+                System.out.println(key.getLeftElement() + ":::" + key.getRightElement() + "=====" + sum);
 
                 double PMI = Math.log10(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight));
 
