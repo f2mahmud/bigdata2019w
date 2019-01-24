@@ -89,6 +89,7 @@ public class StripesPMI extends Configured implements Tool {
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
             for (int i = 0; i < 40 && i < tokens.size(); i++) {
+                KEY.set(tokens.get(i));
                 for (int j = 0; j < 40 && j < tokens.size(); j++) {
                     String valueString = tokens.get(j);
                     if (i == j || MAP.containsKey(valueString)) continue;
@@ -161,11 +162,9 @@ public class StripesPMI extends Configured implements Tool {
                     }
                 }
             }
-            System.out.println(">>>>>>>Number of line:  " + numberOfLines);
             int threshold = context.getConfiguration().getInt("threshold", 0);
             for (String valueKey : MAP.keySet()) {
                 if (MAP.get(valueKey) > threshold) {
-                    System.out.println(">>>>>>>left side:  " + occurenceCounts.get(key.toString()));
                     double probabilityOfLeft = occurenceCounts.get(key.toString()) / numberOfLines;
                     double probabilityOfRight = occurenceCounts.get(valueKey) / numberOfLines;
                     double probabilityOfCoccurence = MAP.get(valueKey) / numberOfLines;
