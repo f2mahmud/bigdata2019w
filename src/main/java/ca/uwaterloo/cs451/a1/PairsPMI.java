@@ -112,7 +112,7 @@ public class PairsPMI extends Configured implements Tool {
             Reducer<PairOfStrings, IntWritable, PairOfStrings, DoubleWritable> {
 
         private static final Map<String, Double> occurenceCounts = new HashMap<>();
-        private static int numberOfLines;
+        private static double numberOfLines;
         private static final DoubleWritable PMI_WRITABLE = new DoubleWritable();
 
         @Override
