@@ -15,6 +15,7 @@ import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -22,6 +23,8 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
+import tl.lin.data.pair.PairOfObjectDouble;
+import tl.lin.data.pair.PairOfObjectInt;
 import tl.lin.data.pair.PairOfStrings;
 
 import java.io.File;
@@ -109,10 +112,10 @@ public class PairsPMI extends Configured implements Tool {
     }
 
     private static final class PairsPMIReducer extends
-            Reducer<PairOfStrings, IntWritable, PairOfStrings, DoubleWritable> {
+            Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfObjectDouble> {
 
         private static final Map<String, Double> occurenceCounts = new HashMap<>();
-        private static final DoubleWritable PMI_WRITABLE = new DoubleWritable();
+        private static final PairOfObjectDouble<Double> PMI_COOCCURENCE = new PairOfObjectDouble<>();
         private static double numberOfLines;
 
         @Override
@@ -144,10 +147,8 @@ public class PairsPMI extends Configured implements Tool {
                 double probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
                 double probabilityOfCoccurence = sum / numberOfLines;
 
-                double PMI = Math.log10(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight));
-
-                PMI_WRITABLE.set(PMI);
-                context.write(key, PMI_WRITABLE);
+                PMI_COOCCURENCE.set(Math.log10(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight)), sum);
+                context.write(key, PMI_COOCCURENCE);
             }
         }
     }
@@ -163,8 +164,6 @@ public class PairsPMI extends Configured implements Tool {
     /**
      * Creates an instance of this tool.
      */
-    private PairsPMI() {
-    }
 
     private static final class Args {
         @Option(name = "-input", metaVar = "[path]", required = true, usage = "input path")
@@ -231,7 +230,6 @@ public class PairsPMI extends Configured implements Tool {
 
         long startTime = System.currentTimeMillis();
         occurenceJob.waitForCompletion(true);
-        System.out.println(" Occurence Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
         /**
          * Running main job
@@ -241,7 +239,6 @@ public class PairsPMI extends Configured implements Tool {
         PairsPMIJob.setJarByClass(PairsPMI.class);
 
         PairsPMIJob.addCacheFile(pathToIntermedieteResults.toUri());
-        // Delete the output directory if it exists already.
         FileSystem.get(getConf()).delete(pathToOutputFiles, true);
 
         PairsPMIJob.getConfiguration().setInt("threshold", args.threshold);
@@ -251,7 +248,7 @@ public class PairsPMI extends Configured implements Tool {
         PairsPMIJob.getConfiguration().setDouble("numberOfLines", java.nio.file.Files.lines(Paths.get(args.input)).count());
 
         FileInputFormat.setInputPaths(PairsPMIJob, pathToInputFiles);
-        FileOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
+        TextOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
 
         PairsPMIJob.setMapOutputKeyClass(PairOfStrings.class);
         PairsPMIJob.setMapOutputValueClass(IntWritable.class);
@@ -269,10 +266,9 @@ public class PairsPMI extends Configured implements Tool {
         PairsPMIJob.getConfiguration().set("mapreduce.reduce.memory.mb", "3072");
         PairsPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
 
-        startTime = System.currentTimeMillis();
         PairsPMIJob.waitForCompletion(true);
         System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
-        //FileSystem.get(getConf()).delete(pathToIntermedieteFiles,true);       //TODO::need to uncomment before submission
+        FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory,true);
 
         return 0;
     }
