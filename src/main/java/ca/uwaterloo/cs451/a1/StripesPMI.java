@@ -179,6 +179,7 @@ public class StripesPMI extends Configured implements Tool {
                     VALUE.put(TEXT, PMI_COCCURENCE);
                 }
             }
+            System.out.println(">>>>>>>>size;  " + VALUE.size());
             context.write(key, VALUE);
             VALUE.clear();
             MAP.clear();
