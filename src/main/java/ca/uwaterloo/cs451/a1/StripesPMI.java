@@ -165,7 +165,7 @@ public class StripesPMI extends Configured implements Tool {
             }
             int threshold = context.getConfiguration().getInt("threshold", 0);
             for (String valueKey : MAP.keySet()) {
-                if (MAP.get(valueKey) > threshold) {
+                if (MAP.get(valueKey) > threshold && !VALUE.containsKey(valueKey)) {
                     double probabilityOfLeft = occurenceCounts.get(key.toString()) / numberOfLines;
                     double probabilityOfRight = occurenceCounts.get(valueKey) / numberOfLines;
                     double probabilityOfCoccurence = MAP.get(valueKey) / numberOfLines;
