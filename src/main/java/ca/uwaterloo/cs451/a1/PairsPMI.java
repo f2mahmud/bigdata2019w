@@ -43,7 +43,7 @@ public class PairsPMI extends Configured implements Tool {
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
             Set<String> uniqueTokens = new HashSet<String>();
-            for (int i = 0; i < 40; i++) {
+            for (int i = 0; i < 40 && i < tokens.size(); i++) {
                 if (uniqueTokens.add(tokens.get(i))) {
                     KEY.set(tokens.get(i));
                     context.write(KEY, ONE);
@@ -81,7 +81,7 @@ public class PairsPMI extends Configured implements Tool {
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
             Set<PairOfStrings> uniqueWordPairs = new HashSet<>();
-            for (int i = 0; i < 40; i++) {
+            for (int i = 0; i < 40 && i < tokens.size(); i++) {
                 for (int j = 0; j < 40; j++) {
                     PAIR_OF_STRINGS.set(tokens.get(i), tokens.get(j));
                     if (i == j || !uniqueWordPairs.add(PAIR_OF_STRINGS)) continue;
@@ -221,7 +221,7 @@ public class PairsPMI extends Configured implements Tool {
 
         occurenceJob.setNumReduceTasks(args.numReducers);
 
-        occurenceJob.setMapOutputKeyClass(PairOfStrings.class);
+        occurenceJob.setMapOutputKeyClass(Text.class);
         occurenceJob.setMapOutputValueClass(IntWritable.class);
         occurenceJob.setOutputKeyClass(Text.class);
         occurenceJob.setOutputValueClass(IntWritable.class);
