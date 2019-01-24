@@ -165,12 +165,12 @@ public class StripesPMI extends Configured implements Tool {
             }
             int threshold = context.getConfiguration().getInt("threshold", 0);
             for (String valueKey : MAP.keySet()) {
-                if (MAP.get(valueKey) > threshold && !MAP.containsKey(valueKey)) {
+                TEXT.set(valueKey);
+                if (MAP.get(valueKey) > threshold && !VALUE.containsKey(TEXT)) {
                     double probabilityOfLeft = occurenceCounts.get(key.toString()) / numberOfLines;
                     double probabilityOfRight = occurenceCounts.get(valueKey) / numberOfLines;
                     double probabilityOfCoccurence = MAP.get(valueKey) / numberOfLines;
 
-                    TEXT.set(valueKey);
                     PMI.set(Math.log10(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight)));
                     COCCCURENCE.set(MAP.get(valueKey));
                     PMI_COCCURENCE.set(PMI, COCCCURENCE);
@@ -181,13 +181,6 @@ public class StripesPMI extends Configured implements Tool {
             VALUE.clear();
             MAP.clear();
 
-        }
-    }
-
-    private static final class MyPartitioner extends Partitioner<PairOfStrings, IntWritable> {
-        @Override
-        public int getPartition(PairOfStrings key, IntWritable value, int numReduceTasks) {
-            return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
         }
     }
 
