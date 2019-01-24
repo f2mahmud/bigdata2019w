@@ -206,6 +206,7 @@ public class PairsPMI extends Configured implements Tool {
 
         Path pathToIntermedieteFiles = new Path("./occurenceJobResults");
         Path pathToOutputFiles = new Path(args.output);
+        Path pathToInputFiles = new Path(args.input);
 
         /**
          * Running occurence job
@@ -215,7 +216,8 @@ public class PairsPMI extends Configured implements Tool {
         occurenceJob.setJarByClass(PairsPMI.class);
 
         FileSystem.get(getConf()).delete(pathToIntermedieteFiles, true);
-        FileInputFormat.setInputPaths(occurenceJob, new Path(args.input));
+        FileInputFormat.setInputPaths(occurenceJob, pathToInputFiles);
+        FileOutputFormat.setOutputPath(occurenceJob, pathToIntermedieteFiles);
 
         occurenceJob.setNumReduceTasks(args.numReducers);
 
@@ -247,7 +249,7 @@ public class PairsPMI extends Configured implements Tool {
 
         PairsPMIJob.setNumReduceTasks(args.numReducers);
 
-        FileInputFormat.setInputPaths(PairsPMIJob, new Path(args.input));
+        FileInputFormat.setInputPaths(PairsPMIJob, pathToInputFiles);
         FileOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
 
         PairsPMIJob.setMapOutputKeyClass(PairOfStrings.class);
