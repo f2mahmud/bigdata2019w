@@ -245,7 +245,7 @@ public class StripesPMI extends Configured implements Tool {
         occurenceJob.setOutputValueClass(IntWritable.class);
 
         occurenceJob.setMapperClass(OccurenceMapper.class);
-        occurenceJob.setCombinerClass(OccurenceReducer.class);
+        //occurenceJob.setCombinerClass(OccurenceReducer.class);
         occurenceJob.setReducerClass(OccurenceReducer.class);
 
         occurenceJob.waitForCompletion(true);
@@ -275,7 +275,7 @@ public class StripesPMI extends Configured implements Tool {
         StripesPMIJob.setOutputValueClass(HashMapWritable.class);
 
         StripesPMIJob.setMapperClass(StripesPMIMapper.class);
-        StripesPMIJob.setCombinerClass(StripesPMICombiner.class);
+        //StripesPMIJob.setCombinerClass(StripesPMICombiner.class);
         StripesPMIJob.setReducerClass(StripesPMIReducer.class);
 
         StripesPMIJob.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 32);

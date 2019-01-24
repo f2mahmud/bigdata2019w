@@ -228,7 +228,7 @@ public class PairsPMI extends Configured implements Tool {
         occurenceJob.setOutputValueClass(IntWritable.class);
 
         occurenceJob.setMapperClass(OccurenceMapper.class);
-        occurenceJob.setCombinerClass(OccurenceReducer.class);
+        //occurenceJob.setCombinerClass(OccurenceReducer.class);
         occurenceJob.setReducerClass(OccurenceReducer.class);
 
         occurenceJob.waitForCompletion(true);
@@ -259,7 +259,7 @@ public class PairsPMI extends Configured implements Tool {
         PairsPMIJob.setOutputValueClass(IntWritable.class);
 
         PairsPMIJob.setMapperClass(PairsPMIMapper.class);
-        PairsPMIJob.setCombinerClass(PairsPMICombiner.class);
+        //PairsPMIJob.setCombinerClass(PairsPMICombiner.class);
         PairsPMIJob.setReducerClass(PairsPMIReducer.class);
         PairsPMIJob.setPartitionerClass(MyPartitioner.class);
 
