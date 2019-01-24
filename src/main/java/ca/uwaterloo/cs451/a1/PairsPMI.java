@@ -32,7 +32,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class PairsPMI extends Configured implements Tool {
-    private static final Logger LOG = Logger.getLogger(PairsPMI.class);
+//    private static final Logger LOG = Logger.getConftLogger(PairsPMI.class);
 
     /**
      * For the Occurence Counter Job
@@ -126,7 +126,7 @@ public class PairsPMI extends Configured implements Tool {
                     occurenceCounts.put(words[0], Double.valueOf(words[1]));
                 }
             } catch (IOException e) {
-                LOG.error("Error finding file", e);
+//                LOG.error("Error finding file", e);
             }
         }
 
@@ -143,12 +143,7 @@ public class PairsPMI extends Configured implements Tool {
                 sum += value.get();
             }
             if (sum > threshold) {
-                System.out.println(">>>.... : number of line " + numberOfLines);
-                System.out.println(">>>.... : line " + key.getLeftElement());
-                System.out.println(">>>.... : sssssline " + occurenceCounts.get(key.getLeftElement()));
-                probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) ;
-                System.out.println("sdasdasdasd" + occurenceCounts.get(key.getLeftElement()));
-                double number  = numberOfLines;
+                probabilityOfLeft = occurenceCounts.get(key.getLeftElement())/numberOfLines;
                 probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
                 probabilityOfCoccurence = sum / numberOfLines;
 
@@ -203,11 +198,11 @@ public class PairsPMI extends Configured implements Tool {
             return -1;
         }
 
-        LOG.info("Tool: " + PairsPMI.class.getSimpleName());
-        LOG.info(" - input path: " + args.input);
-        LOG.info(" - output path: " + args.output);
-        LOG.info(" - threshold: " + args.threshold);
-        LOG.info(" - number of reducers: " + args.numReducers);
+//        LOG.info("Tool: " + PairsPMI.class.getSimpleName());
+//        LOG.info(" - input path: " + args.input);
+//        LOG.info(" - output path: " + args.output);
+//        LOG.info(" - threshold: " + args.threshold);
+//        LOG.info(" - number of reducers: " + args.numReducers);
 
         Path pathToIntermedieteResults = new Path("./occurenceJobResults/part-r-00000");
         Path pathToIntermedieteResultDirectory = new Path("./occurenceJobResults");
