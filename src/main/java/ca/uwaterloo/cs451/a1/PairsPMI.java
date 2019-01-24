@@ -245,12 +245,13 @@ public class PairsPMI extends Configured implements Tool {
 
         PairsPMIJob.getConfiguration().setInt("threshold", args.threshold);
 
-        PairsPMIJob.setNumReduceTasks(args.numReducers);
-
         PairsPMIJob.getConfiguration().setDouble("numberOfLines", java.nio.file.Files.lines(Paths.get(args.input)).count());
 
         FileInputFormat.setInputPaths(PairsPMIJob, pathToInputFiles);
         TextOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
+
+        PairsPMIJob.setNumReduceTasks(args.numReducers);
+
 
         PairsPMIJob.setMapOutputKeyClass(PairOfStrings.class);
         PairsPMIJob.setMapOutputValueClass(IntWritable.class);
