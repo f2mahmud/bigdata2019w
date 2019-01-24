@@ -33,7 +33,6 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.map.HMapStIW;
 import tl.lin.data.map.HashMapWritable;
-import tl.lin.data.pair.PairOfStrings;
 import tl.lin.data.pair.PairOfWritables;
 
 public class StripesPMI extends Configured implements Tool {
