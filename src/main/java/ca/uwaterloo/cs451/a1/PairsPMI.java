@@ -82,7 +82,7 @@ public class PairsPMI extends Configured implements Tool {
             List<String> tokens = Tokenizer.tokenize(value.toString());
             Set<PairOfStrings> uniqueWordPairs = new HashSet<>();
             for (int i = 0; i < 40 && i < tokens.size(); i++) {
-                for (int j = 0; j < 40; j++) {
+                for (int j = 0; j < 40 && j < tokens.size(); j++) {
                     PAIR_OF_STRINGS.set(tokens.get(i), tokens.get(j));
                     if (i == j || !uniqueWordPairs.add(PAIR_OF_STRINGS)) continue;
                     context.write(PAIR_OF_STRINGS, ONE);
