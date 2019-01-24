@@ -258,39 +258,38 @@ public class StripesPMI extends Configured implements Tool {
         /**
          * Running main job
          */
-        Job PairsPMIJob = Job.getInstance(getConf());
-        PairsPMIJob.setJobName(PairsPMI.class.getSimpleName());
-        PairsPMIJob.setJarByClass(PairsPMI.class);
+        Job StripesPMIJob = Job.getInstance(getConf());
+        StripesPMIJob.setJobName(StripesPMI.class.getSimpleName());
+        StripesPMIJob.setJarByClass(StripesPMI.class);
 
-        PairsPMIJob.addCacheFile(pathToIntermedieteResults.toUri());
+        StripesPMIJob.addCacheFile(pathToIntermedieteResults.toUri());
         FileSystem.get(getConf()).delete(pathToOutputFiles, true);
 
-        PairsPMIJob.getConfiguration().setInt("threshold", args.threshold);
+        StripesPMIJob.getConfiguration().setInt("threshold", args.threshold);
 
-        PairsPMIJob.setNumReduceTasks(args.numReducers);
+        StripesPMIJob.setNumReduceTasks(args.numReducers);
 
-        PairsPMIJob.getConfiguration().setDouble("numberOfLines", java.nio.file.Files.lines(Paths.get(args.input)).count());
+        StripesPMIJob.getConfiguration().setDouble("numberOfLines", java.nio.file.Files.lines(Paths.get(args.input)).count());
 
-        FileInputFormat.setInputPaths(PairsPMIJob, pathToInputFiles);
-        TextOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
+        FileInputFormat.setInputPaths(StripesPMIJob, pathToInputFiles);
+        TextOutputFormat.setOutputPath(StripesPMIJob, pathToOutputFiles);
 
-        PairsPMIJob.setMapOutputKeyClass(Text.class);
-        PairsPMIJob.setMapOutputValueClass(HMapStIW.class);
-        PairsPMIJob.setOutputKeyClass(Text.class);
-        PairsPMIJob.setOutputValueClass(HashMapWritable.class);
+        StripesPMIJob.setMapOutputKeyClass(Text.class);
+        StripesPMIJob.setMapOutputValueClass(HMapStIW.class);
+        StripesPMIJob.setOutputKeyClass(Text.class);
+        StripesPMIJob.setOutputValueClass(HashMapWritable.class);
 
-        PairsPMIJob.setMapperClass(StripesPMIMapper.class);
-        PairsPMIJob.setCombinerClass(StripesPMICombiner.class);
-        PairsPMIJob.setReducerClass(StripesPMIReducer.class);
-        PairsPMIJob.setPartitionerClass(MyPartitioner.class);
+        StripesPMIJob.setMapperClass(StripesPMIMapper.class);
+        StripesPMIJob.setCombinerClass(StripesPMICombiner.class);
+        StripesPMIJob.setReducerClass(StripesPMIReducer.class);
 
-        PairsPMIJob.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 32);
-        PairsPMIJob.getConfiguration().set("mapreduce.map.memory.mb", "3072");
-        PairsPMIJob.getConfiguration().set("mapreduce.map.java.opts", "-Xmx3072m");
-        PairsPMIJob.getConfiguration().set("mapreduce.reduce.memory.mb", "3072");
-        PairsPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
+        StripesPMIJob.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 32);
+        StripesPMIJob.getConfiguration().set("mapreduce.map.memory.mb", "3072");
+        StripesPMIJob.getConfiguration().set("mapreduce.map.java.opts", "-Xmx3072m");
+        StripesPMIJob.getConfiguration().set("mapreduce.reduce.memory.mb", "3072");
+        StripesPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
 
-        PairsPMIJob.waitForCompletion(true);
+        StripesPMIJob.waitForCompletion(true);
         FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
 
         System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
