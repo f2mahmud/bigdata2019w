@@ -108,6 +108,7 @@ public class StripesPMI extends Configured implements Tool {
                 throws IOException, InterruptedException {
             for (HMapStIW valueMap : values) {
                 for (String valueKey : valueMap.keySet()) {
+                    System.out.println("?>>>>>>Combiner::::  " + valueKey );
                     if (MAP.containsKey(valueKey)) {
                         MAP.put(valueKey, MAP.get(valueKey) + valueMap.get(valueKey));
                     } else {
@@ -155,6 +156,7 @@ public class StripesPMI extends Configured implements Tool {
                 throws IOException, InterruptedException {
             for (HMapStIW valueMap : values) {
                 for (String valueKey : valueMap.keySet()) {
+                    System.out.println("?>>>>>>Reducer::::  " + valueKey );
                     if (MAP.containsKey(valueKey)) {
                         MAP.put(valueKey, MAP.get(valueKey) + valueMap.get(valueKey));
                     } else {
@@ -164,6 +166,7 @@ public class StripesPMI extends Configured implements Tool {
             }
             int threshold = context.getConfiguration().getInt("threshold", 0);
             for (String valueKey : MAP.keySet()) {
+                System.out.println("?>>>>>>Value::::  " + valueKey );
                 TEXT.set(valueKey);
                 if (MAP.get(valueKey) > threshold && !VALUE.containsKey(TEXT)) {
                     double probabilityOfLeft = occurenceCounts.get(key.toString()) / numberOfLines;
@@ -228,7 +231,7 @@ public class StripesPMI extends Configured implements Tool {
          */
         Job occurenceJob = Job.getInstance(getConf());
         occurenceJob.setJobName("OccurenceCount");
-        occurenceJob.setJarByClass(PairsPMI.class);
+        occurenceJob.setJarByClass(StripesPMI.class);
 
         FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
         FileInputFormat.setInputPaths(occurenceJob, pathToInputFiles);
@@ -284,7 +287,7 @@ public class StripesPMI extends Configured implements Tool {
         StripesPMIJob.waitForCompletion(true);
         FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
 
-        System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        System.out.println("PMIstripes Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
         return 0;
     }
