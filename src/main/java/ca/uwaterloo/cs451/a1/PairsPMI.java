@@ -113,7 +113,7 @@ public class PairsPMI extends Configured implements Tool {
 
         private static final Map<String, Double> occurenceCounts = new HashMap<>();
         private static final PairOfObjectDouble<Double> PMI_COOCCURENCE = new PairOfObjectDouble<>();
-        private static double numberOfLines;
+        private double numberOfLines;
 
         @Override
         public void setup(Context context) throws IOException {
@@ -146,7 +146,9 @@ public class PairsPMI extends Configured implements Tool {
                 System.out.println(">>>.... : number of line " + numberOfLines);
                 System.out.println(">>>.... : line " + key.getLeftElement());
                 System.out.println(">>>.... : sssssline " + occurenceCounts.get(key.getLeftElement()));
-                probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) / numberOfLines;
+                probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) ;
+                System.out.println("sdasdasdasd" + occurenceCounts.get(key.getLeftElement()));
+                double number  = numberOfLines;
                 probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
                 probabilityOfCoccurence = sum / numberOfLines;
 
@@ -272,7 +274,7 @@ public class PairsPMI extends Configured implements Tool {
         PairsPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
 
         PairsPMIJob.waitForCompletion(true);
-        FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
+        //FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
         System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
         return 0;
