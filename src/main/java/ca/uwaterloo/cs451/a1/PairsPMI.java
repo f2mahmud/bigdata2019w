@@ -5,6 +5,7 @@ import io.bespin.java.util.Tokenizer;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -21,29 +22,51 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
-import tl.lin.data.pair.PairOfInts;
 import tl.lin.data.pair.PairOfStrings;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class PairsPMI extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(PairsPMI.class);
-    protected int lineCount = 1;
 
-    protected List<String> readLines(String src) {
-        List<String> lines = Collections.emptyList();
-        try {
-            lines = Files.readLines(new File(src), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            LOG.error("Error finding file", e);
+    /**
+     * For the Occurence Counter Job
+     */
+    private static class OccurenceMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+        private final static Text KEY = new Text();
+        private final static IntWritable ONE = new IntWritable(1);
+
+        @Override
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            List<String> tokens = Tokenizer.tokenize(value.toString());
+            Set<String> uniqueTokens = new HashSet<String>();
+            for (int i = 0; i < 40 && i < tokens.size(); i++) {
+                if (uniqueTokens.add(tokens.get(i))) {
+                    KEY.set(tokens.get(i));
+                    context.write(KEY, ONE);
+                }
+            }
         }
-        return lines;
     }
+
+    private static class OccurenceReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+        private final static IntWritable SUM = new IntWritable();
+
+        @Override
+        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+            int sum = 0;
+            for (IntWritable value : values) {
+                sum += value.get();
+            }
+            SUM.set(sum);
+            context.write(key, SUM);
+        }
+    }
+
 
     /**
      * The main job
@@ -51,67 +74,83 @@ public class PairsPMI extends Configured implements Tool {
 
     private static final class PairsPMIMapper extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
         private static final PairOfStrings PAIR_OF_STRINGS = new PairOfStrings();
-        private static final IntWritable LINE_NUMBER = new IntWritable();
+        private static final IntWritable ONE = new IntWritable(1);
 
         @Override
-        protected void setup(Context context) throws IOException, InterruptedException {
-            context.getConfiguration().setInt("lineCount", 1);
-        }
-
-        @Override
-        public void map(LongWritable key, Text value, Context context)  //TODO::check if each call of map is a new line
+        public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
-            int lineNumber = context.getConfiguration().getInt("lineCount", 1);
-
-            for (int i = 0; i < 40; i++) {
-
-                PAIR_OF_STRINGS.set(tokens.get(i), "*");
-                LINE_NUMBER.set(lineNumber);
-                context.write(PAIR_OF_STRINGS, LINE_NUMBER);
-
-                for (int j = i + 1; j < 40; j++) {
-                    if (i == j) continue;
+            Set<PairOfStrings> uniqueWordPairs = new HashSet<>();
+            for (int i = 0; i < 40 && i < tokens.size(); i++) {
+                for (int j = 0; j < 40 && j < tokens.size(); j++) {
                     PAIR_OF_STRINGS.set(tokens.get(i), tokens.get(j));
-                    LINE_NUMBER.set(lineNumber);
-                    context.write(PAIR_OF_STRINGS, LINE_NUMBER);
+                    if (i == j || !uniqueWordPairs.add(PAIR_OF_STRINGS)) continue;
+                    context.write(PAIR_OF_STRINGS, ONE);
                 }
-
             }
-
-            lineNumber += 1;
-            context.getConfiguration().setInt("lineCount", lineNumber);
         }
 
     }
 
     private static final class PairsPMICombiner extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+        private static final IntWritable SUM = new IntWritable();
+
         @Override
         public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
-            List<IntWritable> addedInts = Collections.emptyList();
+            int sum = 0;
             for (IntWritable value : values) {
-                if (addedInts.contains(value)) continue;
-                addedInts.add(value);
-                context.write(key, value);
+                sum += value.get();
+            }
+            SUM.set(sum);
+            context.write(key, SUM);
+        }
+
+    }
+
+    private static final class PairsPMIReducer extends
+            Reducer<PairOfStrings, IntWritable, PairOfStrings, DoubleWritable> {
+
+        private static final Map<String, Double> occurenceCounts = new HashMap<>();
+        private static final DoubleWritable PMI_WRITABLE = new DoubleWritable();
+        private static double numberOfLines;
+
+        @Override
+        public void setup(Context context) throws IOException {
+            List<String> lines;
+            numberOfLines = context.getConfiguration().getDouble("numberOfLines", -1);
+            try {
+                lines = Files.readLines(new File(context.getCacheFiles()[0].toString()), StandardCharsets.UTF_8);
+                for (String line : lines) {
+                    String[] words = line.split("\\s");
+                    occurenceCounts.put(words[0], Double.valueOf(words[1]));
+                }
+            } catch (IOException e) {
+                LOG.error("Error finding file", e);
+            }
+        }
+
+        @Override
+        public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            double sum = 0;
+
+            int threshold = context.getConfiguration().getInt("threshold", 0);
+            for (IntWritable value : values) {
+                sum += value.get();
+            }
+            if (sum > threshold) {
+                double probabilityOfLeft = occurenceCounts.get(key.getLeftElement()) / numberOfLines;
+                double probabilityOfRight = occurenceCounts.get(key.getRightElement()) / numberOfLines;
+                double probabilityOfCoccurence = sum / numberOfLines;
+
+                double PMI = Math.log10(probabilityOfCoccurence / (probabilityOfLeft * probabilityOfRight));
+
+                PMI_WRITABLE.set(PMI);
+                context.write(key, PMI_WRITABLE);
             }
         }
     }
-
-//    private static final class PairPmiReducer extends
-//            Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
-//
-//        @Override
-//        public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
-//                throws IOException, InterruptedException {
-//            List<IntWritable> addedInts = Collections.emptyList();
-//            for (IntWritable value : values) {
-//                if (addedInts.contains(value)) continue;
-//                addedInts.add(value);
-//                context.write(key, value);
-//            }
-//        }
-//    }
 
 
     private static final class MyPartitioner extends Partitioner<PairOfStrings, IntWritable> {
@@ -137,8 +176,8 @@ public class PairsPMI extends Configured implements Tool {
         @Option(name = "-reducers", metaVar = "[num]", usage = "number of reducers")
         int numReducers = 1;
 
-        @Option(name = "-window", metaVar = "[num]", usage = "cooccurrence window")
-        int window = 2;
+        @Option(name = "-threshold", metaVar = "[num]", usage = "PMI threshold")
+        int threshold = 0;
     }
 
     /**
@@ -160,37 +199,80 @@ public class PairsPMI extends Configured implements Tool {
         LOG.info("Tool: " + PairsPMI.class.getSimpleName());
         LOG.info(" - input path: " + args.input);
         LOG.info(" - output path: " + args.output);
-        LOG.info(" - window: " + args.window);
+        LOG.info(" - threshold: " + args.threshold);
         LOG.info(" - number of reducers: " + args.numReducers);
 
-        Job job = Job.getInstance(getConf());
-        job.setJobName(PairsPMI.class.getSimpleName());
-        job.setJarByClass(PairsPMI.class);
+        Path pathToIntermedieteResults = new Path("./occurenceJobResults/part-r-00000");
+        Path pathToIntermedieteResultDirectory = new Path("./occurenceJobResults");
+        Path pathToOutputFiles = new Path(args.output);
+        Path pathToInputFiles = new Path(args.input);
 
-        // Delete the output directory if it exists already.
-        Path outputDir = new Path(args.output);
-        FileSystem.get(getConf()).delete(outputDir, true);
+        /**
+         * Running occurence job.
+         */
+        Job occurenceJob = Job.getInstance(getConf());
+        occurenceJob.setJobName("OccurenceCount");
+        occurenceJob.setJarByClass(PairsPMI.class);
 
-        job.getConfiguration().setInt("window", args.window);
+        FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
+        FileInputFormat.setInputPaths(occurenceJob, pathToInputFiles);
+        FileOutputFormat.setOutputPath(occurenceJob, pathToIntermedieteResultDirectory);
 
-        job.setNumReduceTasks(args.numReducers);
+        occurenceJob.setNumReduceTasks(args.numReducers);
 
-        FileInputFormat.setInputPaths(job, new Path(args.input));
-        FileOutputFormat.setOutputPath(job, new Path(args.output));
+        occurenceJob.setMapOutputKeyClass(Text.class);
+        occurenceJob.setMapOutputValueClass(IntWritable.class);
+        occurenceJob.setOutputKeyClass(Text.class);
+        occurenceJob.setOutputValueClass(IntWritable.class);
 
-        job.setMapOutputKeyClass(PairOfStrings.class);
-        job.setMapOutputValueClass(IntWritable.class);
-        job.setOutputKeyClass(PairOfStrings.class);
-        job.setOutputValueClass(IntWritable.class);
-
-        job.setMapperClass(PairsPMIMapper.class);
-        //job.setCombinerClass(MyReducer.class);
-        job.setReducerClass(PairsPMICombiner.class);
-        job.setPartitionerClass(MyPartitioner.class);
+        occurenceJob.setMapperClass(OccurenceMapper.class);
+        occurenceJob.setCombinerClass(OccurenceReducer.class);
+        occurenceJob.setReducerClass(OccurenceReducer.class);
 
         long startTime = System.currentTimeMillis();
-        job.waitForCompletion(true);
-        System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        occurenceJob.waitForCompletion(true);
+        System.out.println(" Occurence Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+
+        /**
+         * Running main job
+         */
+        Job PairsPMIJob = Job.getInstance(getConf());
+        PairsPMIJob.setJobName(PairsPMI.class.getSimpleName());
+        PairsPMIJob.setJarByClass(PairsPMI.class);
+
+        PairsPMIJob.addCacheFile(pathToIntermedieteResults.toUri());
+        // Delete the output directory if it exists already.
+        FileSystem.get(getConf()).delete(pathToOutputFiles, true);
+
+        PairsPMIJob.getConfiguration().setInt("threshold", args.threshold);
+
+        PairsPMIJob.setNumReduceTasks(args.numReducers);
+
+        PairsPMIJob.getConfiguration().setDouble("numberOfLines", java.nio.file.Files.lines(Paths.get(args.input)).count());
+
+        FileInputFormat.setInputPaths(PairsPMIJob, pathToInputFiles);
+        FileOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
+
+        PairsPMIJob.setMapOutputKeyClass(PairOfStrings.class);
+        PairsPMIJob.setMapOutputValueClass(IntWritable.class);
+        PairsPMIJob.setOutputKeyClass(PairOfStrings.class);
+        PairsPMIJob.setOutputValueClass(IntWritable.class);
+
+        PairsPMIJob.setMapperClass(PairsPMIMapper.class);
+        PairsPMIJob.setCombinerClass(PairsPMICombiner.class);
+        PairsPMIJob.setReducerClass(PairsPMIReducer.class);
+        PairsPMIJob.setPartitionerClass(MyPartitioner.class);
+
+        PairsPMIJob.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 32);
+        PairsPMIJob.getConfiguration().set("mapreduce.map.memory.mb", "3072");
+        PairsPMIJob.getConfiguration().set("mapreduce.map.java.opts", "-Xmx3072m");
+        PairsPMIJob.getConfiguration().set("mapreduce.reduce.memory.mb", "3072");
+        PairsPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
+
+        startTime = System.currentTimeMillis();
+        PairsPMIJob.waitForCompletion(true);
+        System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        //FileSystem.get(getConf()).delete(pathToIntermedieteFiles,true);       //TODO::need to uncomment before submission
 
         return 0;
     }
