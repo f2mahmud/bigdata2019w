@@ -17,7 +17,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object BigramRelativeFrequencyStripes extends Tokenizer {
+object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]) {
