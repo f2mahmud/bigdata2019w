@@ -33,7 +33,6 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.map.HMapStIW;
 import tl.lin.data.map.HashMapWritable;
-import tl.lin.data.pair.PairOfObjectDouble;
 import tl.lin.data.pair.PairOfStrings;
 import tl.lin.data.pair.PairOfWritables;
 
@@ -51,7 +50,7 @@ public class StripesPMI extends Configured implements Tool {
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
-            Set<String> uniqueTokens = new HashSet<String>();
+            Set<String> uniqueTokens = new HashSet<>();
             for (int i = 0; i < 40 && i < tokens.size(); i++) {
                 if (uniqueTokens.add(tokens.get(i))) {
                     KEY.set(tokens.get(i));
@@ -82,15 +81,17 @@ public class StripesPMI extends Configured implements Tool {
     private static class StripesPMIMapper extends Mapper<LongWritable, Text, Text, HMapStIW> {
 
         // Objects for reuse
-        private final static Text KEY = new Text();
-        private final static HMapStIW MAP = new HMapStIW();
+        private static Text KEY = new Text();
+        private static HMapStIW MAP = new HMapStIW();
 
         @Override
         public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
+            String mainKey;
             for (int i = 0; i < 40 && i < tokens.size(); i++) {
-                KEY.set(tokens.get(i));
+                mainKey = tokens.get(i);
+                KEY.set(mainKey);
                 for (int j = 0; j < 40 && j < tokens.size(); j++) {
                     String valueString = tokens.get(j);
                     if (i == j || MAP.containsKey(valueString)) continue;
@@ -237,7 +238,7 @@ public class StripesPMI extends Configured implements Tool {
          */
         Job occurenceJob = Job.getInstance(getConf());
         occurenceJob.setJobName("OccurenceCount");
-        occurenceJob.setJarByClass(PairsPMI.class);
+        occurenceJob.setJarByClass(StripesPMI.class);
 
         FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
         FileInputFormat.setInputPaths(occurenceJob, pathToInputFiles);
@@ -251,7 +252,7 @@ public class StripesPMI extends Configured implements Tool {
         occurenceJob.setOutputValueClass(IntWritable.class);
 
         occurenceJob.setMapperClass(OccurenceMapper.class);
-        occurenceJob.setCombinerClass(OccurenceReducer.class);
+        //occurenceJob.setCombinerClass(OccurenceReducer.class);
         occurenceJob.setReducerClass(OccurenceReducer.class);
 
         occurenceJob.waitForCompletion(true);
@@ -259,42 +260,41 @@ public class StripesPMI extends Configured implements Tool {
         /**
          * Running main job
          */
-        Job PairsPMIJob = Job.getInstance(getConf());
-        PairsPMIJob.setJobName(PairsPMI.class.getSimpleName());
-        PairsPMIJob.setJarByClass(PairsPMI.class);
+        Job StripesPMIJob = Job.getInstance(getConf());
+        StripesPMIJob.setJobName(StripesPMI.class.getSimpleName());
+        StripesPMIJob.setJarByClass(StripesPMI.class);
 
-        PairsPMIJob.addCacheFile(pathToIntermedieteResults.toUri());
+        StripesPMIJob.addCacheFile(pathToIntermedieteResults.toUri());
         FileSystem.get(getConf()).delete(pathToOutputFiles, true);
 
-        PairsPMIJob.getConfiguration().setInt("threshold", args.threshold);
+        StripesPMIJob.getConfiguration().setInt("threshold", args.threshold);
 
-        PairsPMIJob.setNumReduceTasks(args.numReducers);
+        StripesPMIJob.setNumReduceTasks(args.numReducers);
 
-        PairsPMIJob.getConfiguration().setDouble("numberOfLines", java.nio.file.Files.lines(Paths.get(args.input)).count());
+        StripesPMIJob.getConfiguration().setDouble("numberOfLines", java.nio.file.Files.lines(Paths.get(args.input)).count());
 
-        FileInputFormat.setInputPaths(PairsPMIJob, pathToInputFiles);
-        TextOutputFormat.setOutputPath(PairsPMIJob, pathToOutputFiles);
+        FileInputFormat.setInputPaths(StripesPMIJob, pathToInputFiles);
+        TextOutputFormat.setOutputPath(StripesPMIJob, pathToOutputFiles);
 
-        PairsPMIJob.setMapOutputKeyClass(Text.class);
-        PairsPMIJob.setMapOutputValueClass(HMapStIW.class);
-        PairsPMIJob.setOutputKeyClass(Text.class);
-        PairsPMIJob.setOutputValueClass(HashMapWritable.class);
+        StripesPMIJob.setMapOutputKeyClass(Text.class);
+        StripesPMIJob.setMapOutputValueClass(HMapStIW.class);
+        StripesPMIJob.setOutputKeyClass(Text.class);
+        StripesPMIJob.setOutputValueClass(HashMapWritable.class);
 
-        PairsPMIJob.setMapperClass(StripesPMIMapper.class);
-        PairsPMIJob.setCombinerClass(StripesPMICombiner.class);
-        PairsPMIJob.setReducerClass(StripesPMIReducer.class);
-        PairsPMIJob.setPartitionerClass(MyPartitioner.class);
+        StripesPMIJob.setMapperClass(StripesPMIMapper.class);
+        //StripesPMIJob.setCombinerClass(StripesPMICombiner.class);
+        StripesPMIJob.setReducerClass(StripesPMIReducer.class);
 
-        PairsPMIJob.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 32);
-        PairsPMIJob.getConfiguration().set("mapreduce.map.memory.mb", "3072");
-        PairsPMIJob.getConfiguration().set("mapreduce.map.java.opts", "-Xmx3072m");
-        PairsPMIJob.getConfiguration().set("mapreduce.reduce.memory.mb", "3072");
-        PairsPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
+        StripesPMIJob.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 32);
+        StripesPMIJob.getConfiguration().set("mapreduce.map.memory.mb", "3072");
+        StripesPMIJob.getConfiguration().set("mapreduce.map.java.opts", "-Xmx3072m");
+        StripesPMIJob.getConfiguration().set("mapreduce.reduce.memory.mb", "3072");
+        StripesPMIJob.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
 
-        PairsPMIJob.waitForCompletion(true);
+        StripesPMIJob.waitForCompletion(true);
         FileSystem.get(getConf()).delete(pathToIntermedieteResultDirectory, true);
 
-        System.out.println("PMIPairs Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        System.out.println("PMIstripes Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
         return 0;
     }
