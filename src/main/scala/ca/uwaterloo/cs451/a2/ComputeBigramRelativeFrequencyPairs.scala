@@ -46,7 +46,8 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
       .map(bigram => (bigram, 1f))
       .partitionBy(new HashPartitioner(args.reducers()))
       .reduceByKey(_ + _)
-      .partitionBy(new HashPartitioner(args.reducers()))
+      //.partitionBy(new HashPartitioner(args.reducers()))
+      .sortByKey()
 
     val result = bigramCounts
       .map({
