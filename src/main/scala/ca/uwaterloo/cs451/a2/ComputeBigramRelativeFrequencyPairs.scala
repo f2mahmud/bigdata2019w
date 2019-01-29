@@ -6,6 +6,8 @@ import org.apache.hadoop.fs._
 import org.apache.spark.{HashPartitioner, SparkConf, SparkContext}
 import org.rogach.scallop._
 
+import scala.collection.mutable
+
 class ConfPairsBRF(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, output, reducers)
   val input: ScallopOption[String] = opt[String](descr = "input path", required = true)
@@ -41,7 +43,8 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
       .flatMap(
         line => {
           val tokens = tokenize(line)
-          tokens.sliding(2).toList ::: tokens.map(token => List(token, "*"))
+          if (tokens.length > 1) tokens.sliding(2).toList ::: tokens.map(token => List(token, "*"))
+          else tokens.map(token => List(token, "*"))
         }
       )
       .map{case(List(x,y)) => (x,y)}
