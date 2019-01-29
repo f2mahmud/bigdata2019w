@@ -15,7 +15,7 @@ class ConfPairsPMI(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
+object PairsPMI extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]) {
@@ -54,5 +54,7 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
 
     OccurenceCounts.saveAsTextFile(args.output())
   }
+
+  //TODO: does CountBigrams = CountWord-1
 
 }
