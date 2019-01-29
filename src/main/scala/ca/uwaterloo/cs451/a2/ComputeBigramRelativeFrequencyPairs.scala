@@ -38,33 +38,27 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
     var marginal: Float = 0
 
     val bigramCounts = textFile
-      .flatMap(line => {
-        val tokens = tokenize(line)
-        if (tokens.length > 1)
-          tokens.map(token => token.mkString(", *")) ::: tokens.sliding(2).map(p => p.mkString(", ")).toList
-        else List()
-      })
-      .map(bigram => (bigram, 1f))
-      .reduceByKey(_ + _)
+      .flatMap(
+        line => {
+          val tokens = tokenize(line)
+          tokens.sliding(2).toList ::: tokens.map(token => List(token, "*"))
+        }
+      )
+      .map{case(List(x,y)) => (x,y)}
+      .map(bigram => (bigram,1f))
       .sortByKey()
-
-    val result = bigramCounts
+      .reduceByKey(_ + _)
       .map({
         case (key, value) => {
-          if (tokenize(key).length == 1)
+          if (key._2 == "*")
             marginal = value
           else {
-            key -> (value / marginal)
+            (key, (value / marginal))
           }
         }
-      })
-      .filter({ case (key: String) => {
-        tokenize(key).length > 1
-      }
       })
 
     bigramCounts.saveAsTextFile(args.output())
   }
 
 }
-Map(token, (token1, (token2, 1), (token3,1))0
