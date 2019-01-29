@@ -44,7 +44,7 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
         else List()
       })
       .map(bigram => (bigram, 1f))
-      .partitionBy(new HashPartitioner(args.reducers()))
+      //.partitionBy(new HashPartitioner(args.reducers())) // get rid of this
       .reduceByKey(_ + _)
       //.partitionBy(new HashPartitioner(args.reducers()))
       .sortByKey()
