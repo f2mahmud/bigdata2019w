@@ -28,6 +28,7 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
 
     val conf = new SparkConf().setAppName("Bigram Count")
     val sc = new SparkContext(conf)
+    sc.getConf.set("spark.default.parallelism",args.reducers().toString)
 
     val outputDir = new Path(args.output())
     FileSystem.get(sc.hadoopConfiguration).delete(outputDir, true)
@@ -40,13 +41,11 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
       .flatMap(line => {
         val tokens = tokenize(line)
         if (tokens.length > 1)
-          tokens.map(token => token.mkString("")) ::: tokens.sliding(2).map(p => p.mkString(" ")).toList
+          tokens.map(token => token.mkString(", *")) ::: tokens.sliding(2).map(p => p.mkString(", ")).toList
         else List()
       })
       .map(bigram => (bigram, 1f))
-      //.partitionBy(new HashPartitioner(args.reducers())) // get rid of this
       .reduceByKey(_ + _)
-      //.partitionBy(new HashPartitioner(args.reducers()))
       .sortByKey()
 
     val result = bigramCounts
@@ -68,3 +67,4 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
   }
 
 }
+Map(token, (token1, (token2, 1), (token3,1))0
