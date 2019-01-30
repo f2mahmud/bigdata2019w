@@ -73,7 +73,7 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
       .flatMap(insideMap => insideMap)
       .reduceByKey((annum, n) => reduceMaps(annum, n), args.reducers())
       .map((items: (String, Map[String, Float])) => {
-        var totalOccurences = 0
+        var totalOccurences = 0f
         items._2.foreach((item: (String, Float)) => totalOccurences += item._2)
         items._2.foreach((item: (String, Float)) => items._2 += item._1 -> (item._2/totalOccurences))
       })
