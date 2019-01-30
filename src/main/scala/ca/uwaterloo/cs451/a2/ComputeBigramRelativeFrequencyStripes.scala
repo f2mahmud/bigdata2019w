@@ -37,7 +37,6 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
     log.info("Input: " + args.input())
     log.info("Output: " + args.output())
     log.info("Number of reducers: " + args.reducers())
-    log.info("Number of reducers: " + args.threshold())
 
     val conf = new SparkConf().setAppName("Bigram Count")
     val sc = new SparkContext(conf)

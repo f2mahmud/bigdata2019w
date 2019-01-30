@@ -27,9 +27,9 @@ object StripesPMI extends Tokenizer {
     log.info("Input: " + args.input())
     log.info("Output: " + args.output())
     log.info("Number of reducers: " + args.reducers())
-    log.info("Number of reducers: " + args.threshold())
+    log.info("Number of threshold: " + args.threshold())
 
-    val conf = new SparkConf().setAppName("Bigram Count")
+    val conf = new SparkConf().setAppName("Stripes PMI")
     val sc = new SparkContext(conf)
 
     val outputDir = new Path(args.output())
