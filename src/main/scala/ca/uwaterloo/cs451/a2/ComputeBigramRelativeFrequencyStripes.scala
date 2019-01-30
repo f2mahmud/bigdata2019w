@@ -7,6 +7,7 @@ import org.apache.hadoop.fs._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.rogach.scallop._
+import scala.collection.mutable.Map
 
 class ConfStripesBRF(args: Seq[String]) extends ScallopConf(args) {
 
@@ -20,6 +21,15 @@ class ConfStripesBRF(args: Seq[String]) extends ScallopConf(args) {
 
 object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
+
+  def reduceMaps(accum: Map[String, Float], n: Map[String, Float]): Map[String, Float] = {
+    for ((key, value) <- n) {
+      if (accum.contains(key)) {
+        accum += key -> (accum(key) + value)
+      } else accum += key -> value
+    }
+    accum
+  }
 
   def main(argv: Array[String]) {
     val args = new ConfStripesBRF(argv)
@@ -40,9 +50,33 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
     val counts = textFile
       .flatMap(line => {
         val tokens = tokenize(line)
-        if (tokens.length > 1)
-          tokens.map(token => token -> tokens.map(innerToken => if (innerToken != token) innerToken -> 1f))
+        var stripes: Map[String, Map[String, Float]] = Map()
+        if (tokens.length > 1) {
+          for (i <- 1 to tokens.length) {
+            val previous = tokens(i - 1)
+            val current = tokens(i)
+            if (stripes.contains(previous)) {
+              var stripe: Map[String, Float] = stripes.get(previous).get
+              if (stripe.contains(current)) {
+                stripe += current -> (stripe.get(current).get + 1f)
+              } else stripe += current -> 1f
+              stripes += previous -> stripe
+            } else {
+              var stripe: Map[String, Float] = Map()
+              stripe += current -> 1f
+              stripes += previous -> stripe
+            }
+          }
+          List(stripes)
+        }
         else List()
+      })
+      .flatMap(insideMap => insideMap)
+      .reduceByKey((annum, n) => reduceMaps(annum, n), args.reducers())
+      .map((items: (String, Map[String, Float])) => {
+        var totalOccurences = 0
+        items._2.foreach((item: (String, Float)) => totalOccurences += item._2)
+        items._2.foreach((item: (String, Float)) => items._2 += item._1 -> (item._2/totalOccurences))
       })
 
     counts.saveAsTextFile(args.output())

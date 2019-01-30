@@ -48,7 +48,7 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
         line => {
           val tokens = tokenize(line)
           if (tokens.length > 1) tokens.sliding(2).toList ::: tokens.map(token => List(token, "*"))
-          else tokens.map(token => List(token, "*"))
+          else List()
         }
       )
       .map { case (List(x, y)) => (x, y) }
