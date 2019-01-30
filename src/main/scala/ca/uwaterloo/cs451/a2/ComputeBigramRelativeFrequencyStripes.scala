@@ -51,13 +51,13 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
         val tokens = tokenize(line)
         var stripes: Map[String, Map[String, Float]] = Map()
         if (tokens.length > 1) {
-          for (i <- 1 to tokens.length) {
+          for (i <- 1 until tokens.length) {
             val previous = tokens(i - 1)
             val current = tokens(i)
             if (stripes.contains(previous)) {
-              var stripe: Map[String, Float] = stripes.get(previous).get
+              var stripe: Map[String, Float] = stripes(previous)
               if (stripe.contains(current)) {
-                stripe += current -> (stripe.get(current).get + 1f)
+                stripe += current -> (stripe(current) + 1f)
               } else stripe += current -> 1f
               stripes += previous -> stripe
             } else {

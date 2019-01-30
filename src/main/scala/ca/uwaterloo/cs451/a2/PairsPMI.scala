@@ -35,33 +35,34 @@ object PairsPMI extends Tokenizer {
 
     val textFile = sc.textFile(args.input())
 
-    val numberOfLines = textFile.count()
-    sc.broadcast(numberOfLines)
+    val numberOfLines = textFile.count().toFloat
+    val broadcastLineCount = sc.broadcast(numberOfLines)
 
     val wordOccurences = textFile
       .flatMap(line => {
         val tokens = tokenize(line)
-        val occurenceMap: Map[(String, String), Float] = Map()
+        val occurenceMap: Map[String, Float] = Map()
         if (tokens.length > 1) {
-          for (index <- 0 to Math.min(40, tokens.length - 1)) {
-            occurenceMap += (tokens(index), "*") -> 1f
+          for (index <- 0 until Math.min(40, tokens.length)) {
+            occurenceMap += tokens(index) -> 1f
           }
           List(occurenceMap)
         } else List()
       })
       .flatMap((map) => map)
       .reduceByKey(_ + _, args.reducers())
+      .map(item => (item._1, item._2/broadcastLineCount.value))
 
-    val wordCount = sc.broadcast(wordOccurences.collectAsMap())
+    val broadCastedwordCount = sc.broadcast(wordOccurences.collectAsMap())
 
-    val OccurenceCounts = textFile
+    val occurenceCounts = textFile
       .flatMap(line => {
         val tokens = tokenize(line)
         val occurenceMap: Map[(String, String), Float] = Map()
         if (tokens.length > 1) {
-          for (index <- 0 to Math.min(40, tokens.length - 1)) {
-            occurenceMap += (tokens(index), "*") -> 1f
-            for (jindex <- 0 to Math.min(40, tokens.length - 1)) {
+          for (index <- 0 until Math.min(40, tokens.length)) {
+            //occurenceMap += (tokens(index), "*") -> 1f
+            for (jindex <- 0 until Math.min(40, tokens.length)) {
               if (tokens(index) != tokens(jindex)) {
                 occurenceMap += (tokens(index), tokens(jindex)) -> 1f
               }
@@ -72,11 +73,14 @@ object PairsPMI extends Tokenizer {
       })
       .flatMap((map) => map)
       .reduceByKey(_ + _, args.reducers())
+      .map((item) => {
+        Math.log10(
+          (item._2/broadcastLineCount.value)/(broadCastedwordCount.value(item._1._1)
+            * broadCastedwordCount.value(item._1._2))
+        )
+      })
 
-
-    wordOccurences.saveAsTextFile(args.output())
+    occurenceCounts.saveAsTextFile(args.output())
   }
-
-  //TODO: does CountBigrams = CountWord-1
 
 }
