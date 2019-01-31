@@ -72,7 +72,7 @@ object PairsPMI extends Tokenizer {
       })
       .flatMap((map) => map)
       .reduceByKey(_ + _, args.reducers())
-      .filter((item) => item._2 > args.threshold().toFloat)
+      .filter( item => item._2 > args.threshold().toFloat)
       .map((item) => {
         (item._1, Math.log10(
           (item._2 / broadcastLineCount.value) /
