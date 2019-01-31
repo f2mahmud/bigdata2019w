@@ -25,7 +25,7 @@ object PairsPMI extends Tokenizer {
     log.info("Input: " + args.input())
     log.info("Output: " + args.output())
     log.info("Number of reducers: " + args.reducers())
-    log.info("Number of threshold: " + args.threshold())
+    log.info("Threshold: " + args.threshold())
 
     val conf = new SparkConf().setAppName("Pairs PMI")
     val sc = new SparkContext(conf)
@@ -51,7 +51,7 @@ object PairsPMI extends Tokenizer {
       })
       .flatMap((map) => map)
       .reduceByKey(_ + _, args.reducers())
-      .map(item => (item._1, item._2/broadcastLineCount.value))
+      .map(item => (item._1, item._2 / broadcastLineCount.value))
 
     val broadCastedWordCount = sc.broadcast(wordOccurences.collectAsMap())
 
@@ -72,9 +72,10 @@ object PairsPMI extends Tokenizer {
       })
       .flatMap((map) => map)
       .reduceByKey(_ + _, args.reducers())
+      .filter((item) => item._2.>(args.threshold()))
       .map((item) => {
-        (item._1,Math.log10(
-          (item._2/broadcastLineCount.value)/
+        (item._1, Math.log10(
+          (item._2 / broadcastLineCount.value) /
             (broadCastedWordCount.value(item._1._1) * broadCastedWordCount.value(item._1._2))
         ))
       })
