@@ -85,7 +85,7 @@ object StripesPMI extends Tokenizer {
       .flatMap(insideMap => insideMap)
       .reduceByKey((accum, n) => reduceMaps(accum, n), args.reducers())
       .map((item) => {
-        item._2.foreach((subItem) => subItem._2 > args.threshold())
+        item._2.foreach((subItem) => subItem._2 > args.threshold().toFloat)
         item._2.foreach((subItem) => {
           item._2 += subItem._1 -> Math.log10(
             (subItem._2 / broadcastLineCount.value)
