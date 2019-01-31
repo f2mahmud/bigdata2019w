@@ -12,7 +12,7 @@ class ConfPairsPMI(args: Seq[String]) extends ScallopConf(args) {
   val input: ScallopOption[String] = opt[String](descr = "input path", required = true)
   val output: ScallopOption[String] = opt[String](descr = "output path", required = true)
   val reducers: ScallopOption[Int] = opt[Int](descr = "number of reducers", required = false, default = Some(1))
-  var threshold: ScallopOption[Int] = opt[Int](descr = "threshold for total count", required = false, default = Some(0))
+  var threshold: ScallopOption[Float] = opt[Float](descr = "threshold for total count", required = false, default = Some(0f))
   verify()
 }
 
@@ -54,6 +54,7 @@ object PairsPMI extends Tokenizer {
       .map(item => (item._1, item._2 / broadcastLineCount.value))
 
     val broadCastedWordCount = sc.broadcast(wordOccurences.collectAsMap())
+    val broadcastedThreshold = sc.broadcast(args.threshold())
 
     val occurenceCounts = textFile
       .flatMap(line => {
@@ -72,7 +73,7 @@ object PairsPMI extends Tokenizer {
       })
       .flatMap((map) => map)
       .reduceByKey(_ + _, args.reducers())
-      .filter( item => item._2 > args.threshold().toFloat)
+      .filter( item => item._2 > broadcastedThreshold.value)
       .map((item) => {
         (item._1, Math.log10(
           (item._2 / broadcastLineCount.value) /

@@ -13,7 +13,7 @@ class ConfPMIStripes(args: Seq[String]) extends ScallopConf(args) {
   val input: ScallopOption[String] = opt[String](descr = "input path", required = true)
   val output: ScallopOption[String] = opt[String](descr = "output path", required = true)
   val reducers: ScallopOption[Int] = opt[Int](descr = "number of reducers", required = false, default = Some(1))
-  var threshold: ScallopOption[Int] = opt[Int](descr = "threshold for total count", required = false, default = Some(0))
+  var threshold: ScallopOption[Float] = opt[Float](descr = "threshold for total count", required = false, default = Some(0f))
   verify()
 }
 
@@ -64,6 +64,7 @@ object StripesPMI extends Tokenizer {
       .map(item => (item._1, item._2 / broadcastLineCount.value))
 
     val broadCastedwordCount = sc.broadcast(wordOccurences.collectAsMap())
+    val broadcastedThreshold = sc.broadcast(args.threshold())
 
     val occurenceCounts = textFile
       .flatMap(line => {
@@ -85,7 +86,7 @@ object StripesPMI extends Tokenizer {
       .flatMap(insideMap => insideMap)
       .reduceByKey((accum, n) => reduceMaps(accum, n), args.reducers())
       .map((item) => {
-        item._2.filter(subItem => subItem._2 > args.threshold().toFloat)
+        item._2.filter(subItem => subItem._2 > broadcastedThreshold.value)
         item._2.foreach((subItem) => {
           item._2 += subItem._1 -> Math.log10(
             (subItem._2 / broadcastLineCount.value)
