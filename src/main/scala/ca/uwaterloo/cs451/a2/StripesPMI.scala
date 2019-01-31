@@ -86,11 +86,11 @@ object StripesPMI extends Tokenizer {
       .reduceByKey((accum, n) => reduceMaps(accum, n), args.reducers())
       .map((item) => {
         item._2.foreach((subItem) => {
-          (subItem._1, Math.log10(
+          item._2 += subItem._1 -> Math.log10(
             (subItem._2 / broadcastLineCount.value)
-              / (broadCastedwordCount.value(item._1) * broadCastedwordCount.value(subItem._1))
-          ).toFloat)
+              / (broadCastedwordCount.value(item._1) * broadCastedwordCount.value(subItem._1))).toFloat
         })
+        item
       })
 
 
@@ -100,4 +100,4 @@ object StripesPMI extends Tokenizer {
 }
 
 
-//TODO:: Things to clear up on : Using partitions and reducers, reduceByKey
+//TODO:: Things to clear up on : Use thresholds

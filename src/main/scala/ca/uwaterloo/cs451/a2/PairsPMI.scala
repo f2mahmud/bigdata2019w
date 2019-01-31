@@ -53,7 +53,7 @@ object PairsPMI extends Tokenizer {
       .reduceByKey(_ + _, args.reducers())
       .map(item => (item._1, item._2/broadcastLineCount.value))
 
-    val broadCastedwordCount = sc.broadcast(wordOccurences.collectAsMap())
+    val broadCastedWordCount = sc.broadcast(wordOccurences.collectAsMap())
 
     val occurenceCounts = textFile
       .flatMap(line => {
@@ -61,7 +61,6 @@ object PairsPMI extends Tokenizer {
         val occurenceMap: Map[(String, String), Float] = Map()
         if (tokens.length > 1) {
           for (index <- 0 until Math.min(40, tokens.length)) {
-            //occurenceMap += (tokens(index), "*") -> 1f
             for (jindex <- 0 until Math.min(40, tokens.length)) {
               if (tokens(index) != tokens(jindex)) {
                 occurenceMap += (tokens(index), tokens(jindex)) -> 1f
@@ -74,10 +73,10 @@ object PairsPMI extends Tokenizer {
       .flatMap((map) => map)
       .reduceByKey(_ + _, args.reducers())
       .map((item) => {
-        Math.log10(
-          (item._2/broadcastLineCount.value)/(broadCastedwordCount.value(item._1._1)
-            * broadCastedwordCount.value(item._1._2))
-        )
+        (item._1,Math.log10(
+          (item._2/broadcastLineCount.value)/
+            (broadCastedWordCount.value(item._1._1) * broadCastedWordCount.value(item._1._2))
+        ))
       })
 
     occurenceCounts.saveAsTextFile(args.output())
