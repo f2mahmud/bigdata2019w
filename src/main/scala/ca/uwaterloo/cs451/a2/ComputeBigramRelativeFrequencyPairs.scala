@@ -5,6 +5,7 @@ import org.apache.log4j._
 import org.apache.hadoop.fs._
 import org.apache.spark.{HashPartitioner, SparkConf, SparkContext}
 import org.rogach.scallop._
+import scala.collection.mutable.MutableList
 
 
 class ConfPairsBRF(args: Seq[String]) extends ScallopConf(args) {
@@ -47,13 +48,17 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
       .flatMap(
         line => {
           val tokens = tokenize(line)
-          if (tokens.length > 1) tokens.sliding(2).toList ::: tokens.map(token => List(token, "*"))
+          if (tokens.length > 1) {
+            var pairs: MutableList[((String, String), Float)] = MutableList()
+            for (i <- 1 until tokens.length) {
+              pairs += (((tokens(i - 1), tokens(i)), 1f))
+              pairs += (((tokens(i - 1), "*"), 1f))
+            }
+            pairs
+          }
           else List()
         }
       )
-      .map { case (List(x, y)) => (x, y) }
-      .map(bigram => (bigram, 1f))
-      .sortByKey()
       .reduceByKey(_ + _, args.reducers())
       .sortByKey()
       .map({
