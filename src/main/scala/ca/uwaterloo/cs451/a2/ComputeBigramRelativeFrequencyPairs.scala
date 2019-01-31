@@ -16,10 +16,6 @@ class ConfPairsBRF(args: Seq[String]) extends ScallopConf(args) {
     opt[String](descr = "output path", required = true)
   val reducers: ScallopOption[Int] =
     opt[Int](descr = "number of reducers", required = false, default = Some(1))
-  var threshold: ScallopOption[Int] = opt[Int](descr =
-    "threshold for total count",
-    required = false,
-    default = Some(0))
   verify()
 }
 
@@ -34,7 +30,6 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
     log.info("Number of reducers: " + args.reducers())
 
     val conf = new SparkConf().setAppName("Bigram Relative Frequency Pairs")
-    //conf.set("spark.default.parallelism", args.reducers().toString)
     val sc = new SparkContext(conf)
 
     val outputDir = new Path(args.output())
@@ -60,7 +55,6 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
         }
       )
       .reduceByKey(_ + _, args.reducers())
-      .sortByKey()
       .map({
         case (key, value) => {
           if (key._2 == "*") {

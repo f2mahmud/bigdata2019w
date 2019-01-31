@@ -3,7 +3,7 @@ package ca.uwaterloo.cs451.a2
 import io.bespin.scala.util.Tokenizer
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.log4j.Logger
-import org.apache.spark.{HashPartitioner, SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
 import scala.collection.mutable.Map
 
