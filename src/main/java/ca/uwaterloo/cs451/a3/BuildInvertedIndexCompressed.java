@@ -94,53 +94,38 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     }
 
     private static final class MyReducer extends
-            Reducer<PairOfStringInt, PairOfInts, Text, ArrayListWritable<PairOfInts>> {
+            Reducer<PairOfStringInt, PairOfInts, Text, BytesWritable> {
 
-        //private static final BytesWritable KEY = new BytesWritable();       //Get the term value
-        //private static final BytesWritable VALUE = new BytesWritable();     //Stores(doc, null, count)
-
-        //private static final ByteArrayOutputStream BSTREAM = new ByteArrayOutputStream();
-        //private static final DataOutputStream DATA_OUTPUT_STREAM = new DataOutputStream(BSTREAM);
-        private static PairOfInts VALUE =  new PairOfInts();
-        private static final ArrayListWritable<PairOfInts> VALUES = new ArrayListWritable<>();
         private static final Text KEY = new Text();
+        private static final BytesWritable VALUE = new BytesWritable();     //Stores(doc, null, count)
+
+        private static PairOfInts PAIR_OF_INTS = new PairOfInts();  //docno, count
+
+        private static final ByteArrayOutputStream BSTREAM = new ByteArrayOutputStream();
+        private static final DataOutputStream DATA_OUTPUT_STREAM = new DataOutputStream(BSTREAM);
 
         @Override
         public void reduce(PairOfStringInt key, Iterable<PairOfInts> values, Context context)
                 throws IOException, InterruptedException {
 
-            VALUES.clear();
+            BSTREAM.reset();
 
             KEY.set(key.getLeftElement());
 
             Iterator<PairOfInts> iter = values.iterator();
-            int docCount = 0 ;
-
-//            BSTREAM.reset();
-//
-//            Iterator<IntWritable> iter = values.iterator();
-//
-//            WritableUtils.writeVInt(DATA_OUTPUT_STREAM,key.getRightElement());
-//            int df = 0;
-//            while (iter.hasNext()) {
-//                postings.add(iter.next().clone());
-//                df++;
-//            }
-//
-//            // Sort the postings by docno ascending.
-//            Collections.sort(postings);
-//
-//            DF.set(df);
-//            context.write(key, new PairOfWritables<>(DF, postings));
+            int previousDocCount = 0 ;
+            int currentDocCount;
 
             while (iter.hasNext()) {
-                VALUE = iter.next();
-                docCount = VALUE.getLeftElement() - docCount;
-                VALUE.set(docCount,VALUE.getRightElement());
-                System.out.println(">>>>>>>>>>>>>>>>>>Reducer::: " + key + " : " + VALUE.getLeftElement());
-                VALUES.add(VALUE);
+                PAIR_OF_INTS = iter.next();
+                currentDocCount = PAIR_OF_INTS.getLeftElement();
+                WritableUtils.writeVInt(DATA_OUTPUT_STREAM,currentDocCount - previousDocCount);
+                WritableUtils.writeVInt(DATA_OUTPUT_STREAM, PAIR_OF_INTS.getRightElement());
+                previousDocCount = currentDocCount;
             }
-            context.write(KEY, VALUES);
+
+            VALUE.set(BSTREAM.toByteArray(),0,BSTREAM.size());
+            context.write(KEY, VALUE);
 
         }
 
