@@ -14,6 +14,7 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -22,7 +23,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
 //    private int numberOfPartitions;
 
-    SequenceFile.Reader index;
+    private SequenceFile.Reader[] index;
 //    private MapFile.Reader[] indexes;
     private FSDataInputStream collection;
     private Stack<Set<Integer>> stack;
@@ -31,8 +32,18 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     }
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
-        File[] folders = new File(indexPath).listFiles();
-        index = new SequenceFile.Reader(new Configuration(),SequenceFile.Reader.file(new Path(indexPath)));
+        File[] folders = new File(indexPath).listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("part-r");
+            }
+        });
+        Configuration conf = new Configuration();
+        index = new SequenceFile.Reader[folders.length];
+        for (int i = 0; i < folders.length ; i++){
+            index[i] = new SequenceFile.Reader(conf,SequenceFile.Reader.file(new Path(folders[i].toString())));
+        }
+        //index = new SequenceFile.Reader(conf,SequenceFile.Reader.file(new Path(folders[i].toString())));
 //        indexes = new MapFile.Reader[folders.length];
 //        numberOfPartitions = folders.length;
 //        for (int i = 0; i < numberOfPartitions; i++) {
@@ -136,11 +147,11 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         //key.set(key,value);
 //        inde.
-//        for (int i = 0 ; i < numberOfPartitions; i++){
-//            indexes[i].get(key,value);
-//            if (value.getBytes().length > 0) break;
-//        }
-        index.next(key,value);
+        for (int i = 0 ; i < index.length; i++){
+            index[i].next(key,value);
+            if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
+        }
+        //index.next(key,value);
 
         System.out.println(key.toString() + ">>>>>>>>>>>");
 
