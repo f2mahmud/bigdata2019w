@@ -36,8 +36,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
             }
         });
         indexes = new MapFile.Reader[folders.length];
-        int numberOfPartitions = folders.length;
-        for (int i = 0; i < numberOfPartitions; i++) {
+        for (int i = 0; i < folders.length; i++) {
             if (folders[i].isDirectory()) {
                 indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
             }
@@ -110,9 +109,11 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         DataInputStream INPUT_STREAM = new DataInputStream(ISTREAM);
 
+        int docCount = WritableUtils.readVInt(INPUT_STREAM);
+
         int docId = 0;
 
-        for (int i = 0; i < indexes.length; i++) {
+        for (int i = 0; i < docCount; i++) {
             int difference = WritableUtils.readVInt(INPUT_STREAM);
             docId += difference;
             set.add(docId);
@@ -124,20 +125,19 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         return set;
     }
 
+    //Need to update
+
     private BytesWritable fetchPostings(String term) throws IOException {
+
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
-
+        //value.setCapacity(Integer.MAX_VALUE - 20000);
         key.set(term.getBytes(),0,term.getBytes().length);
 
-        int partitionNeeded = Math.abs(term.hashCode() % indexes.length);
-
-        indexes[partitionNeeded].get(key,value);
-
-//        for (int i = 0 ; i < indexes.length; i++){
-//            indexes[i].get(key,value);
-//            if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
-//        }
+        for (int i = 0 ; i < indexes.length; i++){
+            indexes[i].get(key,value);
+            if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
+        }
 
         return value;
     }
