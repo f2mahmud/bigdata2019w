@@ -12,9 +12,6 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
-import tl.lin.data.array.ArrayListWritable;
-import tl.lin.data.pair.PairOfInts;
-import tl.lin.data.pair.PairOfWritables;
 
 import java.io.*;
 import java.util.Set;
@@ -23,14 +20,25 @@ import java.util.TreeSet;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
 
-    private MapFile.Reader index;
+    private int numberOfPartitions;
+
+    private MapFile.Reader[] indexes;
     private FSDataInputStream collection;
     private Stack<Set<Integer>> stack;
 
-    private BooleanRetrievalCompressed() {}
+    private BooleanRetrievalCompressed() {
+    }
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
-        index = new MapFile.Reader(new Path(indexPath + "/part-r-00000"), fs.getConf());
+        File[] folders = new File(indexPath).listFiles();
+        indexes = new MapFile.Reader[folders.length - 2];
+        numberOfPartitions = folders.length;
+        for (int i = 0; i < numberOfPartitions; i++) {
+            if (folders[i].isDirectory()) {
+                indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
+            }
+        }
+        //index = new MapFile.Reader(new Path(indexPath + "/part-r-00000"), fs.getConf());
         collection = fs.open(new Path(collectionPath));
         stack = new Stack<>();
     }
@@ -104,7 +112,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         int docId = 0;
         System.out.println("Doc Count : " + docCount);
 
-        for(int i = 0; i < docCount ; i++){
+        for (int i = 0; i < docCount; i++) {
             int difference = WritableUtils.readVInt(INPUT_STREAM);
             docId += difference;
             set.add(docId);
@@ -123,7 +131,10 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         BytesWritable value = new BytesWritable();
 
         key.set(term);
-        index.get(key, value);
+        int requiredIndex = term.hashCode() % numberOfPartitions;
+        indexes[requiredIndex].get(key, value);
+
+        System.out.println(value);
 
         return value;
     }
