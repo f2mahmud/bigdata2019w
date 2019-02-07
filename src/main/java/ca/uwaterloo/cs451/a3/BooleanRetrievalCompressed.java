@@ -131,8 +131,10 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         BytesWritable value = new BytesWritable();
 
         key.set(term);
-        int requiredIndex = Math.abs(term.hashCode() % numberOfPartitions);
-        indexes[requiredIndex].get(key, value);
+        for (int i = 0 ; i < numberOfPartitions; i++){
+            indexes[i].get(key,value);
+            if (value.getBytes().length > 0) break;
+        }
 
         System.out.println(value);
 
