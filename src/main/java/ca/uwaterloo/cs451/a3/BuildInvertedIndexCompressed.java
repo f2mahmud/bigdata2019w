@@ -12,8 +12,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -21,18 +19,15 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
-import tl.lin.data.array.ArrayListWritable;
 import tl.lin.data.fd.Object2IntFrequencyDistribution;
 import tl.lin.data.fd.Object2IntFrequencyDistributionEntry;
 import tl.lin.data.pair.PairOfInts;
 import tl.lin.data.pair.PairOfObjectInt;
 import tl.lin.data.pair.PairOfStringInt;
-import tl.lin.data.pair.PairOfWritables;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -175,13 +170,13 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         job.setNumReduceTasks(args.reducers);
 
         FileInputFormat.setInputPaths(job, new Path(args.input));
-        TextOutputFormat.setOutputPath(job, new Path(args.output));
+        FileOutputFormat.setOutputPath(job, new Path(args.output));
 
         job.setMapOutputKeyClass(PairOfStringInt.class);
         job.setMapOutputValueClass(PairOfInts.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(BytesWritable.class);
-        //job.setOutputFormatClass(MapFileOutputFormat.class);
+        job.setOutputFormatClass(MapFileOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
         job.setPartitionerClass(MyPartitioner.class);

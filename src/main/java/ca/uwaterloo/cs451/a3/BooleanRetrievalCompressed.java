@@ -123,7 +123,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         BytesWritable value = new BytesWritable();
 
         key.set(term);
-        index.get(key, value);     
+        index.get(key, value);
 
         return value;
     }
