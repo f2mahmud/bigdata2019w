@@ -35,7 +35,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         for (int i = 0; i < folders.length; i++) {
             if (folders[i].isDirectory()) {
                 indexes[j] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
-                j+=1;
+                j += 1;
             }
         }
         collection = fs.open(new Path(collectionPath));
@@ -126,10 +126,11 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
         key.set(term.getBytes(), 0, term.getBytes().length);
-
         for (int i = 0; i < indexes.length; i++) {
-            indexes[i].get(key, value);
-            if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(), term.getBytes())) break;
+            if (indexes[i] != null) {
+                indexes[i].get(key, value);
+                if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(), term.getBytes())) break;
+            }
         }
 
         return value;
