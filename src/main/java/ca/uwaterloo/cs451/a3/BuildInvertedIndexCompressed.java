@@ -39,9 +39,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
     private static final Logger LOG = Logger.getLogger(BuildInvertedIndexCompressed.class);
 
-    private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, PairOfInts> {
+    private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, IntWritable> {
 
-        private static final PairOfInts COUNT = new PairOfInts();
+        private static final IntWritable COUNT = new IntWritable();
         private static final Object2IntFrequencyDistribution<String> COUNTS =
                 new Object2IntFrequencyDistributionEntry<>();
 
@@ -61,7 +61,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
             // Emit postings.
             for (PairOfObjectInt<String> e : COUNTS) {
                 KEY.set(e.getLeftElement(), (int) docno.get());
-                COUNT.set((int) docno.get(), e.getRightElement());
+                COUNT.set( e.getRightElement());
                 context.write(KEY, COUNT);
             }
 
