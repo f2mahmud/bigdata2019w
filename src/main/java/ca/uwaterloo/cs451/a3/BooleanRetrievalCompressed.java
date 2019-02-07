@@ -125,8 +125,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         return set;
     }
 
-    //Need to update
-
     private BytesWritable fetchPostings(String term) throws IOException {
 
         BytesWritable key = new BytesWritable();
