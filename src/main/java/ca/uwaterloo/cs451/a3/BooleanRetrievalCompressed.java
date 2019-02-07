@@ -109,15 +109,16 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         DataInputStream INPUT_STREAM = new DataInputStream(ISTREAM);
 
-        int docCount = WritableUtils.readVInt(INPUT_STREAM);
+        //int docCount = WritableUtils.readVInt(INPUT_STREAM);
 
         int docId = 0;
 
-        for (int i = 0; i < docCount; i++) {
+        while (true) {
             int difference = WritableUtils.readVInt(INPUT_STREAM);
             docId += difference;
             set.add(docId);
-            WritableUtils.readVInt(INPUT_STREAM);   //Getting rid of the count thing
+            int x = WritableUtils.readVInt(INPUT_STREAM);   //Getting rid of the count thing
+            if (x == -1) break;
         }
 
         INPUT_STREAM.close();
@@ -129,12 +130,12 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
-        value.setCapacity(Integer.MAX_VALUE - 20000);
-        key.set(term.getBytes(),0,term.getBytes().length);
+        //value.setCapacity(Integer.MAX_VALUE - 20000);
+        key.set(term.getBytes(), 0, term.getBytes().length);
 
-        for (int i = 0 ; i < indexes.length; i++){
-            indexes[i].get(key,value);
-            if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
+        for (int i = 0; i < indexes.length; i++) {
+            indexes[i].get(key, value);
+            if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(), term.getBytes())) break;
         }
 
         return value;
