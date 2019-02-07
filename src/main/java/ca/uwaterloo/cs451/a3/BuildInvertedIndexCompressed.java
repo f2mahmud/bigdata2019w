@@ -172,7 +172,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         job.setJobName(BuildInvertedIndexCompressed.class.getSimpleName());
         job.setJarByClass(BuildInvertedIndexCompressed.class);
 
-        job.setNumReduceTasks(1);
+        job.setNumReduceTasks(args.reducers);
 
         FileInputFormat.setInputPaths(job, new Path(args.input));
         TextOutputFormat.setOutputPath(job, new Path(args.output));
@@ -180,7 +180,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         job.setMapOutputKeyClass(PairOfStringInt.class);
         job.setMapOutputValueClass(PairOfInts.class);
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Writable.class);
+        job.setOutputValueClass(BytesWritable.class);
         //job.setOutputFormatClass(MapFileOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
