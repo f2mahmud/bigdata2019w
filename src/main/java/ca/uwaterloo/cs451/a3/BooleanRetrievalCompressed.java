@@ -142,7 +142,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     private BytesWritable fetchPostings(String term) throws IOException {
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
-        value.setCapacity(Integer.MAX_VALUE);
+        value.setCapacity(Integer.MAX_VALUE - 30);
         key.set(term.getBytes(),0,term.getBytes().length);
 
         //key.set(key,value);
