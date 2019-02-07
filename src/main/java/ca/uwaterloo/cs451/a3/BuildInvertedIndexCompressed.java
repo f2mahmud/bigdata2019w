@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class BuildInvertedIndexCompressed extends Configured implements Tool{
+public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
     private static final Logger LOG = Logger.getLogger(BuildInvertedIndexCompressed.class);
 
@@ -51,24 +51,26 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool{
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(doc.toString());
 
-            // Build a histogram of the terms.
-            COUNTS.clear();
-            for (String token : tokens) {
-                COUNTS.increment(token);
-            }
+            if (tokens.size() > 0) {
+                // Build a histogram of the terms.
+                COUNTS.clear();
+                for (String token : tokens) {
+                    COUNTS.increment(token);
+                }
 
-            // Emit postings.
-            for (PairOfObjectInt<String> e : COUNTS) {
-                KEY.set(e.getLeftElement(), (int)docno.get());
-                COUNT.set(e.getRightElement());
-                context.write(KEY, COUNT);
+                // Emit postings.
+                for (PairOfObjectInt<String> e : COUNTS) {
+                    KEY.set(e.getLeftElement(), (int) docno.get());
+                    COUNT.set(e.getRightElement());
+                    context.write(KEY, COUNT);
+                }
             }
 
         }
 
     }
 
-    public class MyPartitioner extends Partitioner<PairOfStringInt,IntWritable>{
+    public class MyPartitioner extends Partitioner<PairOfStringInt, IntWritable> {
 
         @Override
         public int getPartition(PairOfStringInt pairOfStringInt, IntWritable intWritable, int i) {
@@ -77,14 +79,15 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool{
 
     }
 
-    public class MyGroupingComparator extends WritableComparator{
+    public class MyGroupingComparator extends WritableComparator {
 
-        public MyGroupingComparator(){
-            super(PairOfStringInt.class,true);
+
+        public MyGroupingComparator() {
+            super(PairOfStringInt.class, true);
         }
 
         @Override
-        public int compare(WritableComparable a, WritableComparable b){
+        public int compare(WritableComparable a, WritableComparable b) {
             PairOfStringInt p1 = (PairOfStringInt) a;
             PairOfStringInt p2 = (PairOfStringInt) b;
             return p1.getLeftElement().compareTo(p2.getLeftElement());
@@ -120,17 +123,17 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool{
 //
 //            DF.set(df);
 //            context.write(key, new PairOfWritables<>(DF, postings));
-            while(values.iterator().hasNext()){
-                context.write(key,values.iterator().next());
+            while (values.iterator().hasNext()) {
+                context.write(key, values.iterator().next());
             }
 
         }
 
 
-
     }
 
-    private BuildInvertedIndexCompressed() {}
+    private BuildInvertedIndexCompressed() {
+    }
 
     private static final class Args {
         @Option(name = "-input", metaVar = "[path]", required = true, usage = "input path")
@@ -139,7 +142,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool{
         @Option(name = "-output", metaVar = "[path]", required = true, usage = "output path")
         String output;
 
-        @Option(name ="-reducers", required = false)
+        @Option(name = "-reducers", required = false)
         int reducers = 1;
     }
 
