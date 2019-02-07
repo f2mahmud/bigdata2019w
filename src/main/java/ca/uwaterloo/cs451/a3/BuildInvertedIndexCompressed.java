@@ -93,18 +93,20 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     }
 
     private static final class MyReducer extends
-            Reducer<PairOfStringInt, IntWritable, PairOfStringInt, IntWritable> {
+            Reducer<PairOfStringInt, IntWritable, PairOfStringInt, ArrayListWritable<IntWritable>> {
 
         //private static final BytesWritable KEY = new BytesWritable();       //Get the term value
         //private static final BytesWritable VALUE = new BytesWritable();     //Stores(doc, null, count)
 
         //private static final ByteArrayOutputStream BSTREAM = new ByteArrayOutputStream();
         //private static final DataOutputStream DATA_OUTPUT_STREAM = new DataOutputStream(BSTREAM);
+        private static final ArrayListWritable<IntWritable> VALUE = new ArrayListWritable<>();
 
         @Override
         public void reduce(PairOfStringInt key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
 
+            VALUE.clear();
 //            BSTREAM.reset();
 //
 //            Iterator<IntWritable> iter = values.iterator();
@@ -122,7 +124,8 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 //            DF.set(df);
 //            context.write(key, new PairOfWritables<>(DF, postings));
             while (values.iterator().hasNext()) {
-                context.write(key, values.iterator().next());
+                VALUE.add(values.iterator().next());
+                context.write(key, VALUE);
             }
 
         }
@@ -178,7 +181,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         job.setMapOutputKeyClass(PairOfStringInt.class);
         job.setMapOutputValueClass(IntWritable.class);
         job.setOutputKeyClass(PairOfStringInt.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputValueClass(ArrayListWritable.class);
         //job.setOutputFormatClass(MapFileOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
