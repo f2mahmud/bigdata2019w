@@ -31,7 +31,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
         File[] folders = new File(indexPath).listFiles();
-        indexes = new MapFile.Reader[folders.length - 2];
+        indexes = new MapFile.Reader[folders.length];
         numberOfPartitions = folders.length;
         for (int i = 0; i < numberOfPartitions; i++) {
             if (folders[i].isDirectory()) {
