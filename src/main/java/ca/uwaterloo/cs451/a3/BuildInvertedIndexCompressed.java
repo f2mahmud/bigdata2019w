@@ -124,8 +124,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 //
 //            DF.set(df);
 //            context.write(key, new PairOfWritables<>(DF, postings));
-            while (values.iterator().hasNext()) {
-                VALUE.add(values.iterator().next());
+            Iterator<PairOfInts> iter = values.iterator();
+            while (iter.hasNext()) {
+                VALUE.add(iter.next());
             }
             context.write(key, VALUE);
 
