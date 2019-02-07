@@ -101,14 +101,21 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
         //private static final ByteArrayOutputStream BSTREAM = new ByteArrayOutputStream();
         //private static final DataOutputStream DATA_OUTPUT_STREAM = new DataOutputStream(BSTREAM);
-        private static final ArrayListWritable<PairOfInts> VALUE = new ArrayListWritable<>();
+        private static PairOfInts VALUE =  new PairOfInts();
+        private static final ArrayListWritable<PairOfInts> VALUES = new ArrayListWritable<>();
         private static final Text KEY = new Text();
 
         @Override
         public void reduce(PairOfStringInt key, Iterable<PairOfInts> values, Context context)
                 throws IOException, InterruptedException {
 
-            VALUE.clear();
+            VALUES.clear();
+
+            KEY.set(key.getLeftElement());
+
+            Iterator<PairOfInts> iter = values.iterator();
+            int docCount = 0 ;
+
 //            BSTREAM.reset();
 //
 //            Iterator<IntWritable> iter = values.iterator();
@@ -125,14 +132,15 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 //
 //            DF.set(df);
 //            context.write(key, new PairOfWritables<>(DF, postings));
-            Iterator<PairOfInts> iter = values.iterator();
-            KEY.set(key.getKey());
+
             while (iter.hasNext()) {
-                PairOfInts docNo = iter.next();
-                System.out.println(">>>>>>>>>>>>>>>>>>Reducer::: " + key + " : " + docNo.getLeftElement());
-                VALUE.add(docNo);
+                VALUE = iter.next();
+                docCount = VALUE.getLeftElement() - docCount;
+                VALUE.set(docCount,VALUE.getRightElement());
+                System.out.println(">>>>>>>>>>>>>>>>>>Reducer::: " + key + " : " + VALUE.getLeftElement());
+                VALUES.add(VALUE);
             }
-            context.write(KEY, VALUE);
+            context.write(KEY, VALUES);
 
         }
 
