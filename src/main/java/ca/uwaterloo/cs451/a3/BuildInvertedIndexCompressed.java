@@ -13,6 +13,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -40,7 +41,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(BuildInvertedIndexCompressed.class);
 
     private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, PairOfInts> {
-
+Text
         private static final PairOfInts COUNT = new PairOfInts();
         private static final Object2IntFrequencyDistribution<String> COUNTS =
                 new Object2IntFrequencyDistributionEntry<>();
@@ -88,6 +89,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         public int compare(WritableComparable a, WritableComparable b) {
             PairOfStringInt p1 = (PairOfStringInt) a;
             PairOfStringInt p2 = (PairOfStringInt) b;
+            if(StringUtils.equalsIgnoreCase(p1.getLeftElement(),p2.getLeftElement())) return 0;
             return p1.getLeftElement().compareTo(p2.getLeftElement());
         }
     }
