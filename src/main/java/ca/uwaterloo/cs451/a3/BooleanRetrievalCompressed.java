@@ -38,12 +38,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
                 return name.startsWith("part-r");
             }
         });
-//        Configuration conf = new Configuration();
-//        index = new SequenceFile.Reader[folders.length];
-//        for (int i = 0; i < folders.length ; i++){
-//            index[i] = new SequenceFile.Reader(conf,SequenceFile.Reader.file(new Path(folders[i].toString())));
-//        }
-        //index = new SequenceFile.Reader(conf,SequenceFile.Reader.file(new Path(folders[i].toString())));
         indexes = new MapFile.Reader[folders.length];
         numberOfPartitions = folders.length;
         for (int i = 0; i < numberOfPartitions; i++) {
@@ -51,7 +45,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
                 indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
             }
         }
-        //index = new MapFile.Reader(new Path(indexPath + "/part-r-00000"), fs.getConf());
         collection = fs.open(new Path(collectionPath));
         stack = new Stack<>();
     }
@@ -145,13 +138,10 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         value.setCapacity(Integer.MAX_VALUE - 20000);
         key.set(term.getBytes(),0,term.getBytes().length);
 
-        //key.set(key,value);
-//        inde.
         for (int i = 0 ; i < indexes.length; i++){
             indexes[i].get(key,value);
             if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
         }
-        //index.next(key,value);
 
         System.out.println(key.toString() + ">>>>>>>>>>>");
 

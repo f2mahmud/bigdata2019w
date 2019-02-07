@@ -108,19 +108,22 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
             KEY.set(key.getLeftElement().getBytes(),0,key.getLeftElement().getBytes().length);
 
-            WritableUtils.writeVInt(DATA_OUTPUT_STREAM,key.getRightElement());
+            int numberOfDocs = 0;
 
             Iterator<PairOfInts> iter = values.iterator();
             int previousDocCount = 0 ;
             int currentDocCount;
 
             while (iter.hasNext()) {
+                numberOfDocs += 1;
                 PAIR_OF_INTS = iter.next();
                 currentDocCount = PAIR_OF_INTS.getLeftElement();
                 WritableUtils.writeVInt(DATA_OUTPUT_STREAM,currentDocCount - previousDocCount);
                 WritableUtils.writeVInt(DATA_OUTPUT_STREAM, PAIR_OF_INTS.getRightElement());
                 previousDocCount = currentDocCount;
             }
+
+            WritableUtils.writeVInt(DATA_OUTPUT_STREAM,numberOfDocs);
 
             VALUE.set(BSTREAM.toByteArray(),0,BSTREAM.size());
             context.write(KEY, VALUE);
