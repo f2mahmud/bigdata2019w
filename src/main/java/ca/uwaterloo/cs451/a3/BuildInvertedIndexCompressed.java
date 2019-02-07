@@ -79,9 +79,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
     }
 
-    public class MyGroupingComparator extends WritableComparator {
+    public static class MyGroupingComparator extends WritableComparator {
 
-        MyGroupingComparator() {
+        public MyGroupingComparator() {
             super(PairOfStringInt.class, true);
         }
 
