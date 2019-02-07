@@ -41,7 +41,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(BuildInvertedIndexCompressed.class);
 
     private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, PairOfInts> {
-Text
+
         private static final PairOfInts COUNT = new PairOfInts();
         private static final Object2IntFrequencyDistribution<String> COUNTS =
                 new Object2IntFrequencyDistributionEntry<>();
@@ -89,7 +89,6 @@ Text
         public int compare(WritableComparable a, WritableComparable b) {
             PairOfStringInt p1 = (PairOfStringInt) a;
             PairOfStringInt p2 = (PairOfStringInt) b;
-            if(StringUtils.equalsIgnoreCase(p1.getLeftElement(),p2.getLeftElement())) return 0;
             return p1.getLeftElement().compareTo(p2.getLeftElement());
         }
     }
@@ -127,8 +126,8 @@ Text
 //            context.write(key, new PairOfWritables<>(DF, postings));
             while (values.iterator().hasNext()) {
                 VALUE.add(values.iterator().next());
-                context.write(key, VALUE);
             }
+            context.write(key, VALUE);
 
         }
 
