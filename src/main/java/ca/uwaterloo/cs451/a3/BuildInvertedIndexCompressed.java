@@ -175,9 +175,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool{
         FileOutputFormat.setOutputPath(job, new Path(args.output));
 
         job.setMapOutputKeyClass(PairOfStringInt.class);
-        job.setMapOutputValueClass(Text.class);
+        job.setMapOutputValueClass(IntWritable.class);
         job.setOutputKeyClass(PairOfStringInt.class);
-        job.setOutputValueClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
         job.setOutputFormatClass(MapFileOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
