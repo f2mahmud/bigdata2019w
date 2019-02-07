@@ -70,10 +70,10 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
     }
 
-    public static class MyPartitioner extends Partitioner<PairOfStringInt, IntWritable> {
+    public static class MyPartitioner extends Partitioner<PairOfStringInt, PairOfInts> {
 
         @Override
-        public int getPartition(PairOfStringInt pairOfStringInt, IntWritable intWritable, int i) {
+        public int getPartition(PairOfStringInt pairOfStringInt, PairOfInts pairOfInts, int i) {
             return pairOfStringInt.getLeftElement().hashCode() % i;
         }
 
