@@ -89,7 +89,6 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         public int compare(WritableComparable a, WritableComparable b) {
             PairOfStringInt p1 = (PairOfStringInt) a;
             PairOfStringInt p2 = (PairOfStringInt) b;
-            System.out.println("<<<<<<<<<<<Comparator:  " + p1.getRightElement() + " : " + p2.getRightElement());
             return p1.getLeftElement().compareTo(p2.getLeftElement());
         }
     }
@@ -127,9 +126,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 //            context.write(key, new PairOfWritables<>(DF, postings));
             Iterator<PairOfInts> iter = values.iterator();
             while (iter.hasNext()) {
-                int docNo = iter.next().getLeftElement();
-                System.out.println(">>>>>>>>>>>>>>>>>>Reducer::: " + docNo);
-                VALUE.add(iter.next());
+                PairOfInts docNo = iter.next();
+                System.out.println(">>>>>>>>>>>>>>>>>>Reducer::: " + key + " : " + docNo.getLeftElement());
+                VALUE.add(docNo);
             }
             context.write(key, VALUE);
 
