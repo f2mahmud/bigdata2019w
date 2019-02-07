@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileAsBinaryOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -89,9 +90,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     }
 
     private static final class MyReducer extends
-            Reducer<PairOfStringInt, PairOfInts, Text, BytesWritable> {
+            Reducer<PairOfStringInt, PairOfInts, BytesWritable, BytesWritable> {
 
-        private static final Text KEY = new Text();
+        private static final BytesWritable KEY = new BytesWritable();
         private static final BytesWritable VALUE = new BytesWritable();     //Stores(doc, null, count)
 
         private static PairOfInts PAIR_OF_INTS = new PairOfInts();  //docno, count
@@ -105,7 +106,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
             BSTREAM.reset();
 
-            KEY.set(key.getLeftElement());
+            KEY.set(key.getLeftElement().getBytes(),0,key.getLeftElement().getBytes().length);
 
             WritableUtils.writeVInt(DATA_OUTPUT_STREAM,key.getRightElement());
 
@@ -176,9 +177,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
         job.setMapOutputKeyClass(PairOfStringInt.class);
         job.setMapOutputValueClass(PairOfInts.class);
-        job.setOutputKeyClass(Text.class);
+        job.setOutputKeyClass(BytesWritable.class);
         job.setOutputValueClass(BytesWritable.class);
-        job.setOutputFormatClass(MapFileOutputFormat.class);
+        job.setOutputFormatClass(SequenceFileAsBinaryOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
         job.setPartitionerClass(MyPartitioner.class);
