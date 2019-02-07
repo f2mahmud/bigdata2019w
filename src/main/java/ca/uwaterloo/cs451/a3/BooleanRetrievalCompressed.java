@@ -21,9 +21,6 @@ import java.util.TreeSet;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
 
-    private int numberOfPartitions;
-
-    //private SequenceFile.Reader[] index;
     private MapFile.Reader[] indexes;
     private FSDataInputStream collection;
     private Stack<Set<Integer>> stack;
@@ -39,7 +36,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
             }
         });
         indexes = new MapFile.Reader[folders.length];
-        numberOfPartitions = folders.length;
+        int numberOfPartitions = folders.length;
         for (int i = 0; i < numberOfPartitions; i++) {
             if (folders[i].isDirectory()) {
                 indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
@@ -113,12 +110,9 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         DataInputStream INPUT_STREAM = new DataInputStream(ISTREAM);
 
-        int docCount = WritableUtils.readVInt(INPUT_STREAM);
-
         int docId = 0;
-        System.out.println("Doc Count : " + docCount);
 
-        for (int i = 0; i < docCount; i++) {
+        for (int i = 0; i < indexes.length; i++) {
             int difference = WritableUtils.readVInt(INPUT_STREAM);
             docId += difference;
             set.add(docId);
@@ -130,8 +124,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         return set;
     }
 
-    //Need to update
-
     private BytesWritable fetchPostings(String term) throws IOException {
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
@@ -142,8 +134,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
             indexes[i].get(key,value);
             if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
         }
-
-        System.out.println(key.toString() + ">>>>>>>>>>>");
 
         return value;
     }
