@@ -74,7 +74,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
         @Override
         public int getPartition(PairOfStringInt pairOfStringInt, PairOfInts pairOfInts, int i) {
-            return pairOfStringInt.getLeftElement().hashCode() % i;
+            return Math.abs(pairOfStringInt.getLeftElement().hashCode() % i);
         }
 
     }
