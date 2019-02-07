@@ -94,7 +94,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     }
 
     private static final class MyReducer extends
-            Reducer<PairOfStringInt, PairOfInts, PairOfStringInt, ArrayListWritable<PairOfInts>> {
+            Reducer<PairOfStringInt, PairOfInts, Text, ArrayListWritable<PairOfInts>> {
 
         //private static final BytesWritable KEY = new BytesWritable();       //Get the term value
         //private static final BytesWritable VALUE = new BytesWritable();     //Stores(doc, null, count)
@@ -102,6 +102,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         //private static final ByteArrayOutputStream BSTREAM = new ByteArrayOutputStream();
         //private static final DataOutputStream DATA_OUTPUT_STREAM = new DataOutputStream(BSTREAM);
         private static final ArrayListWritable<PairOfInts> VALUE = new ArrayListWritable<>();
+        private static final Text KEY = new Text();
 
         @Override
         public void reduce(PairOfStringInt key, Iterable<PairOfInts> values, Context context)
@@ -125,12 +126,13 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 //            DF.set(df);
 //            context.write(key, new PairOfWritables<>(DF, postings));
             Iterator<PairOfInts> iter = values.iterator();
+            KEY.set(key.getKey());
             while (iter.hasNext()) {
                 PairOfInts docNo = iter.next();
                 System.out.println(">>>>>>>>>>>>>>>>>>Reducer::: " + key + " : " + docNo.getLeftElement());
                 VALUE.add(docNo);
             }
-            context.write(key, VALUE);
+            context.write(KEY, VALUE);
 
         }
 
@@ -184,8 +186,8 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
         job.setMapOutputKeyClass(PairOfStringInt.class);
         job.setMapOutputValueClass(PairOfInts.class);
-        job.setOutputKeyClass(PairOfStringInt.class);
-        job.setOutputValueClass(ArrayListWritable.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Writable.class);
         //job.setOutputFormatClass(MapFileOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
