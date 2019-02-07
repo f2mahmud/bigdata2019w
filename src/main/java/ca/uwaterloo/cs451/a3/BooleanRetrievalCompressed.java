@@ -20,9 +20,10 @@ import java.util.TreeSet;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
 
-    private int numberOfPartitions;
+//    private int numberOfPartitions;
 
-    private MapFile.Reader[] indexes;
+    SequenceFile.Reader index;
+//    private MapFile.Reader[] indexes;
     private FSDataInputStream collection;
     private Stack<Set<Integer>> stack;
 
@@ -31,13 +32,14 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
         File[] folders = new File(indexPath).listFiles();
-        indexes = new MapFile.Reader[folders.length];
-        numberOfPartitions = folders.length;
-        for (int i = 0; i < numberOfPartitions; i++) {
-            if (folders[i].isDirectory()) {
-                indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
-            }
-        }
+        index = new SequenceFile.Reader(new Configuration(),SequenceFile.Reader.file(new Path(indexPath)));
+//        indexes = new MapFile.Reader[folders.length];
+//        numberOfPartitions = folders.length;
+//        for (int i = 0; i < numberOfPartitions; i++) {
+//            if (folders[i].isDirectory()) {
+//                indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
+//            }
+//        }
         //index = new MapFile.Reader(new Path(indexPath + "/part-r-00000"), fs.getConf());
         collection = fs.open(new Path(collectionPath));
         stack = new Stack<>();
@@ -127,16 +129,20 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     //Need to update
 
     private BytesWritable fetchPostings(String term) throws IOException {
-        Text key = new Text();
+        BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
 
-        key.set(term);
-        for (int i = 0 ; i < numberOfPartitions; i++){
-            indexes[i].get(key,value);
-            if (value.getBytes().length > 0) break;
-        }
+        key.set(term.getBytes(),0,term.getBytes().length);
 
-        System.out.println(value);
+        //key.set(key,value);
+//        inde.
+//        for (int i = 0 ; i < numberOfPartitions; i++){
+//            indexes[i].get(key,value);
+//            if (value.getBytes().length > 0) break;
+//        }
+        index.next(key,value);
+
+        System.out.println(key.toString() + ">>>>>>>>>>>");
 
         return value;
     }
