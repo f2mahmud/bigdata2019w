@@ -39,9 +39,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
     private static final Logger LOG = Logger.getLogger(BuildInvertedIndexCompressed.class);
 
-    private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, IntWritable> {
+    private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, PairOfInts> {
 
-        private static final IntWritable COUNT = new IntWritable();
+        private static final PairOfInts COUNT = new PairOfInts();
         private static final Object2IntFrequencyDistribution<String> COUNTS =
                 new Object2IntFrequencyDistributionEntry<>();
 
@@ -61,7 +61,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
             // Emit postings.
             for (PairOfObjectInt<String> e : COUNTS) {
                 KEY.set(e.getLeftElement(), (int) docno.get());
-                COUNT.set( e.getRightElement());
+                COUNT.set((int)docno.get(), e.getRightElement());
                 context.write(KEY, COUNT);
             }
 
@@ -93,17 +93,17 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     }
 
     private static final class MyReducer extends
-            Reducer<PairOfStringInt, IntWritable, PairOfStringInt, ArrayListWritable<IntWritable>> {
+            Reducer<PairOfStringInt, PairOfInts, PairOfStringInt, ArrayListWritable<PairOfInts>> {
 
         //private static final BytesWritable KEY = new BytesWritable();       //Get the term value
         //private static final BytesWritable VALUE = new BytesWritable();     //Stores(doc, null, count)
 
         //private static final ByteArrayOutputStream BSTREAM = new ByteArrayOutputStream();
         //private static final DataOutputStream DATA_OUTPUT_STREAM = new DataOutputStream(BSTREAM);
-        private static final ArrayListWritable<IntWritable> VALUE = new ArrayListWritable<>();
+        private static final ArrayListWritable<PairOfInts> VALUE = new ArrayListWritable<>();
 
         @Override
-        public void reduce(PairOfStringInt key, Iterable<IntWritable> values, Context context)
+        public void reduce(PairOfStringInt key, Iterable<PairOfInts> values, Context context)
                 throws IOException, InterruptedException {
 
             VALUE.clear();
@@ -179,7 +179,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         TextOutputFormat.setOutputPath(job, new Path(args.output));
 
         job.setMapOutputKeyClass(PairOfStringInt.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        job.setMapOutputValueClass(PairOfInts.class);
         job.setOutputKeyClass(PairOfStringInt.class);
         job.setOutputValueClass(ArrayListWritable.class);
         //job.setOutputFormatClass(MapFileOutputFormat.class);
