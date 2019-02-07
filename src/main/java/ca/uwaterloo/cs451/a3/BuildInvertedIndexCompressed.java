@@ -139,8 +139,8 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool{
         @Option(name = "-output", metaVar = "[path]", required = true, usage = "output path")
         String output;
 
-        @Option(name ="-reducer", required = false)
-        int reducer = 1;
+        @Option(name ="-reducers", required = false)
+        int reducers = 1;
     }
 
     /**
@@ -163,7 +163,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool{
         LOG.info("Tool: " + BuildInvertedIndexCompressed.class.getSimpleName());
         LOG.info(" - input path: " + args.input);
         LOG.info(" - output path: " + args.output);
-        LOG.info("- number of reducers: " + args.reducer);
+        LOG.info("- number of reducers: " + args.reducers);
 
         Job job = Job.getInstance(getConf());
         job.setJobName(BuildInvertedIndexCompressed.class.getSimpleName());
@@ -174,10 +174,10 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool{
         FileInputFormat.setInputPaths(job, new Path(args.input));
         FileOutputFormat.setOutputPath(job, new Path(args.output));
 
-        job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(PairOfInts.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(PairOfWritables.class);
+        job.setMapOutputKeyClass(PairOfStringInt.class);
+        job.setMapOutputValueClass(Text.class);
+        job.setOutputKeyClass(PairOfStringInt.class);
+        job.setOutputValueClass(Text.class);
         job.setOutputFormatClass(MapFileOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
