@@ -106,13 +106,15 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         return set;
     }
 
+    //Need to update
+
     private ArrayListWritable<PairOfInts> fetchPostings(String term) throws IOException {
         Text key = new Text();
         PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>> value =
                 new PairOfWritables<>();
 
         key.set(term);
-        index.get(key, value);      //TODO:: What is the value here
+        index.get(key, value);      //TODO:: returns (df, Arraylist(docid, line?)
 
         return value.getRightElement();
     }
