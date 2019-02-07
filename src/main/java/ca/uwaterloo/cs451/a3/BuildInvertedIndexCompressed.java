@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -38,9 +39,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
     private static final Logger LOG = Logger.getLogger(BuildInvertedIndexCompressed.class);
 
-    private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, IntWritable> {
+    private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, PairOfInts> {
 
-        private static final IntWritable COUNT = new IntWritable();
+        private static final PairOfInts COUNT = new PairOfInts();
         private static final Object2IntFrequencyDistribution<String> COUNTS =
                 new Object2IntFrequencyDistributionEntry<>();
 
@@ -51,26 +52,24 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
                 throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(doc.toString());
 
-            if (tokens.size() > 0) {
-                // Build a histogram of the terms.
-                COUNTS.clear();
-                for (String token : tokens) {
-                    COUNTS.increment(token);
-                }
+            // Build a histogram of the terms.
+            COUNTS.clear();
+            for (String token : tokens) {
+                COUNTS.increment(token);
+            }
 
-                // Emit postings.
-                for (PairOfObjectInt<String> e : COUNTS) {
-                    KEY.set(e.getLeftElement(), (int) docno.get());
-                    COUNT.set(e.getRightElement());
-                    context.write(KEY, COUNT);
-                }
+            // Emit postings.
+            for (PairOfObjectInt<String> e : COUNTS) {
+                KEY.set(e.getLeftElement(), (int) docno.get());
+                COUNT.set((int) docno.get(), e.getRightElement());
+                context.write(KEY, COUNT);
             }
 
         }
 
     }
 
-    public class MyPartitioner extends Partitioner<PairOfStringInt, IntWritable> {
+    public static class MyPartitioner extends Partitioner<PairOfStringInt, IntWritable> {
 
         @Override
         public int getPartition(PairOfStringInt pairOfStringInt, IntWritable intWritable, int i) {
@@ -174,13 +173,13 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         job.setNumReduceTasks(1);
 
         FileInputFormat.setInputPaths(job, new Path(args.input));
-        FileOutputFormat.setOutputPath(job, new Path(args.output));
+        TextOutputFormat.setOutputPath(job, new Path(args.output));
 
         job.setMapOutputKeyClass(PairOfStringInt.class);
         job.setMapOutputValueClass(IntWritable.class);
         job.setOutputKeyClass(PairOfStringInt.class);
         job.setOutputValueClass(IntWritable.class);
-        job.setOutputFormatClass(MapFileOutputFormat.class);
+        //job.setOutputFormatClass(MapFileOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
         job.setPartitionerClass(MyPartitioner.class);
