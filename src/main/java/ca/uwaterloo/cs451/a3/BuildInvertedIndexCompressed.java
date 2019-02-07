@@ -179,7 +179,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         job.setMapOutputValueClass(PairOfInts.class);
         job.setOutputKeyClass(BytesWritable.class);
         job.setOutputValueClass(BytesWritable.class);
-        job.setOutputFormatClass(SequenceFileAsBinaryOutputFormat.class);
+        job.setOutputFormatClass(MapFileOutputFormat.class);
 
         job.setMapperClass(MyMapper.class);
         job.setPartitionerClass(MyPartitioner.class);

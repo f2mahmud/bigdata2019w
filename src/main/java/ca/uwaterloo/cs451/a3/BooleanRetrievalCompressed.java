@@ -21,10 +21,10 @@ import java.util.TreeSet;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
 
-//    private int numberOfPartitions;
+    private int numberOfPartitions;
 
-    private SequenceFile.Reader[] index;
-//    private MapFile.Reader[] indexes;
+    //private SequenceFile.Reader[] index;
+    private MapFile.Reader[] indexes;
     private FSDataInputStream collection;
     private Stack<Set<Integer>> stack;
 
@@ -38,19 +38,19 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
                 return name.startsWith("part-r");
             }
         });
-        Configuration conf = new Configuration();
-        index = new SequenceFile.Reader[folders.length];
-        for (int i = 0; i < folders.length ; i++){
-            index[i] = new SequenceFile.Reader(conf,SequenceFile.Reader.file(new Path(folders[i].toString())));
-        }
-        //index = new SequenceFile.Reader(conf,SequenceFile.Reader.file(new Path(folders[i].toString())));
-//        indexes = new MapFile.Reader[folders.length];
-//        numberOfPartitions = folders.length;
-//        for (int i = 0; i < numberOfPartitions; i++) {
-//            if (folders[i].isDirectory()) {
-//                indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
-//            }
+//        Configuration conf = new Configuration();
+//        index = new SequenceFile.Reader[folders.length];
+//        for (int i = 0; i < folders.length ; i++){
+//            index[i] = new SequenceFile.Reader(conf,SequenceFile.Reader.file(new Path(folders[i].toString())));
 //        }
+        //index = new SequenceFile.Reader(conf,SequenceFile.Reader.file(new Path(folders[i].toString())));
+        indexes = new MapFile.Reader[folders.length];
+        numberOfPartitions = folders.length;
+        for (int i = 0; i < numberOfPartitions; i++) {
+            if (folders[i].isDirectory()) {
+                indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
+            }
+        }
         //index = new MapFile.Reader(new Path(indexPath + "/part-r-00000"), fs.getConf());
         collection = fs.open(new Path(collectionPath));
         stack = new Stack<>();
@@ -147,8 +147,8 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         //key.set(key,value);
 //        inde.
-        for (int i = 0 ; i < index.length; i++){
-            index[i].next(key,value);
+        for (int i = 0 ; i < indexes.length; i++){
+            indexes[i].get(key,value);
             if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
         }
         //index.next(key,value);
