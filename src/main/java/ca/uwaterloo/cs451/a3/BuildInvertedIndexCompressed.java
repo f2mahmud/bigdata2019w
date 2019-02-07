@@ -109,6 +109,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
             int numberOfDocs = 0;
 
+            //values.
             Iterator<PairOfInts> iter = values.iterator();
             int previousDocCount = 0 ;
             int currentDocCount;
@@ -122,7 +123,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
                 previousDocCount = currentDocCount;
             }
 
-            WritableUtils.writeVInt(DATA_OUTPUT_STREAM,numberOfDocs);
+            //WritableUtils.writeVInt(DATA_OUTPUT_STREAM,numberOfDocs);
 
             VALUE.set(BSTREAM.toByteArray(),0,BSTREAM.size());
             context.write(KEY, VALUE);
