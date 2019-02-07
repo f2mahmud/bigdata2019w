@@ -127,13 +127,17 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     private BytesWritable fetchPostings(String term) throws IOException {
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
-        value.setCapacity(Integer.MAX_VALUE - 20000);
+
         key.set(term.getBytes(),0,term.getBytes().length);
 
-        for (int i = 0 ; i < indexes.length; i++){
-            indexes[i].get(key,value);
-            if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
-        }
+        int partitionNeeded = Math.abs(term.hashCode() % indexes.length);
+
+        indexes[partitionNeeded].get(key,value);
+
+//        for (int i = 0 ; i < indexes.length; i++){
+//            indexes[i].get(key,value);
+//            if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(),term.getBytes())) break;
+//        }
 
         return value;
     }
