@@ -8,7 +8,7 @@ By running du -h in the cs451-bigdatateach-a3-index-shakespeare folder, the size
 Ans 2 : 
 -------
 By running du -h in the cs451-bigdatateach-a3-index-wiki folder, the result is
-951.5 M  2.8 G    c
+"951.5 M  2.8 G".
 
 Ans 3 :
 -------
