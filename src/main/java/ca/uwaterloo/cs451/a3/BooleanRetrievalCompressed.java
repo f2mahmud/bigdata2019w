@@ -131,7 +131,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
-        //value.setCapacity(Integer.MAX_VALUE - 20000);
+        value.setCapacity(Integer.MAX_VALUE - 20000);
         key.set(term.getBytes(),0,term.getBytes().length);
 
         for (int i = 0 ; i < indexes.length; i++){
