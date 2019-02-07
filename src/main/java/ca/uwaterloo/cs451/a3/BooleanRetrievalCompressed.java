@@ -5,9 +5,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.MapFile;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.*;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.kohsuke.args4j.CmdLineException;
@@ -18,9 +16,7 @@ import tl.lin.data.array.ArrayListWritable;
 import tl.lin.data.pair.PairOfInts;
 import tl.lin.data.pair.PairOfWritables;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -99,24 +95,37 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     private Set<Integer> fetchDocumentSet(String term) throws IOException {
         Set<Integer> set = new TreeSet<>();
 
-        for (PairOfInts pair : fetchPostings(term)) {
-            set.add(pair.getLeftElement());
+        ByteArrayInputStream ISTREAM = new ByteArrayInputStream(fetchPostings(term).getBytes());
+
+        DataInputStream INPUT_STREAM = new DataInputStream(ISTREAM);
+
+        int docCount = WritableUtils.readVInt(INPUT_STREAM);
+
+        int docId = 0;
+        System.out.println("Doc Count : " + docCount);
+
+        for(int i = 0; i < docCount ; i++){
+            int difference = WritableUtils.readVInt(INPUT_STREAM);
+            docId += difference;
+            set.add(docId);
+            WritableUtils.readVInt(INPUT_STREAM);   //Getting rid of the count thing
         }
+
+        INPUT_STREAM.close();
 
         return set;
     }
 
     //Need to update
 
-    private ArrayListWritable<PairOfInts> fetchPostings(String term) throws IOException {
+    private BytesWritable fetchPostings(String term) throws IOException {
         Text key = new Text();
-        PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>> value =
-                new PairOfWritables<>();
+        BytesWritable value = new BytesWritable();
 
         key.set(term);
-        index.get(key, value);      //TODO:: returns (df, Arraylist(docid, line?)
+        index.get(key, value);     
 
-        return value.getRightElement();
+        return value;
     }
 
     public String fetchLine(long offset) throws IOException {
