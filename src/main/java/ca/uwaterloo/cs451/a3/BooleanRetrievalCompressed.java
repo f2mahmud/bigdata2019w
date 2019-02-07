@@ -29,16 +29,13 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     }
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
-        File[] folders = new File(indexPath).listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith("part-r");
-            }
-        });
+        File[] folders = new File(indexPath).listFiles();
         indexes = new MapFile.Reader[folders.length];
+        int j = 0;
         for (int i = 0; i < folders.length; i++) {
             if (folders[i].isDirectory()) {
-                indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
+                indexes[j] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
+                j+=1;
             }
         }
         collection = fs.open(new Path(collectionPath));
@@ -109,8 +106,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         DataInputStream INPUT_STREAM = new DataInputStream(ISTREAM);
 
-        //int docCount = WritableUtils.readVInt(INPUT_STREAM);
-
         int docId = 0;
 
         while (true) {
@@ -130,7 +125,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
-        //value.setCapacity(Integer.MAX_VALUE - 20000);
         key.set(term.getBytes(), 0, term.getBytes().length);
 
         for (int i = 0; i < indexes.length; i++) {
