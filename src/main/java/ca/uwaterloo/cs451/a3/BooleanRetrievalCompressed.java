@@ -26,7 +26,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     }
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
-        RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(indexPath), false);
+        RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(indexPath), true);
         indexes = new ArrayList<>();
         while (files.hasNext()) {
             LocatedFileStatus file = files.next();
