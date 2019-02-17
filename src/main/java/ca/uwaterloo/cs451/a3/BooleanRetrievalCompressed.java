@@ -107,6 +107,8 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
             while (true) {
                 int difference = WritableUtils.readVInt(INPUT_STREAM);
                 docId += difference;
+
+                System.out.println( term + " >>>>>>docid:  " + docId + "<<<<<<<<<<<<<<<");
                 set.add(docId);
                 WritableUtils.readVInt(INPUT_STREAM);   //Getting rid of the count value
             }
