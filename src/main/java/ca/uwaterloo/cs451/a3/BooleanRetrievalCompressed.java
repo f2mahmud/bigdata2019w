@@ -30,8 +30,9 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         indexes = new ArrayList<>();
         while (files.hasNext()) {
             LocatedFileStatus file = files.next();
-            if (file.isDirectory()) {
+            if (file.isFile()) {
                 indexes.add(new MapFile.Reader(file.getPath(), fs.getConf()));
+                System.out.println("Index size: ??>>>>>   " + indexes.size() );
             }
         }
         collection = fs.open(new Path(collectionPath));
