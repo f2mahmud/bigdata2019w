@@ -102,8 +102,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         DataInputStream INPUT_STREAM = new DataInputStream(ISTREAM);
 
-        //int docCount = WritableUtils.readVInt(INPUT_STREAM);
-
         int docId = 0;
         try {
             while (true) {
@@ -115,6 +113,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         } catch (EOFException e) {
         }finally {
             INPUT_STREAM.close();
+            System.out.println(term + ":  " + set.size() + "<<<<<<<<<<<<<<<");
             return set;
         }
 
