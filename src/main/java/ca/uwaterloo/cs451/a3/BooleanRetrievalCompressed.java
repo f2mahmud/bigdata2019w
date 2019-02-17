@@ -31,8 +31,8 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         while (files.hasNext()) {
             LocatedFileStatus file = files.next();
             System.out.println("Index size: ??>>>>>   " + indexes.size() + "  File name ==  " + file.getPath().getName() );
-            if (file.isDirectory()) {
-                indexes.add(new MapFile.Reader(file.getPath(), fs.getConf()));
+            if (file.getPath().getParent().getName().startsWith("part")) {
+                indexes.add(new MapFile.Reader(file.getPath().getParent(), fs.getConf()));
             }
         }
         collection = fs.open(new Path(collectionPath));
