@@ -30,7 +30,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         indexes = new ArrayList<>();
         while (files.hasNext()) {
             LocatedFileStatus file = files.next();
-            System.out.println("Index size: ??>>>>>   " + indexes.size() + "  File name ==  " + file.getPath().getName() );
             if (file.getPath().getParent().getName().startsWith("part")) {
                 indexes.add(new MapFile.Reader(file.getPath().getParent(), fs.getConf()));
             }
@@ -56,7 +55,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         for (Integer i : set) {
             String line = fetchLine(i);
-            System.out.println(i + "\t" + line);
         }
     }
 
@@ -108,15 +106,12 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
             while (true) {
                 int difference = WritableUtils.readVInt(INPUT_STREAM);
                 docId += difference;
-
-                System.out.println( term + " >>>>>>docid:  " + docId + "<<<<<<<<<<<<<<<");
                 set.add(docId);
                 WritableUtils.readVInt(INPUT_STREAM);   //Getting rid of the count value
             }
         } catch (EOFException e) {
         }finally {
             INPUT_STREAM.close();
-            System.out.println(term + ":  " + set.size() + "<<<<<<<<<<<<<<<");
             return set;
         }
 
@@ -126,7 +121,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         BytesWritable key = new BytesWritable();
         BytesWritable value = new BytesWritable();
-        //value.setCapacity(Integer.MAX_VALUE - 20000);
         key.set(term.getBytes(), 0, term.getBytes().length);
 
         for (MapFile.Reader index : indexes) {
