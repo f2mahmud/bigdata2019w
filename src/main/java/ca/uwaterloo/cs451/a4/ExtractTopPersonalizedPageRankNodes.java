@@ -36,7 +36,7 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
     private static final Logger LOG = Logger.getLogger(ExtractTopPersonalizedPageRankNodes.class);
 
     private static class MyMapper extends
-            Mapper<IntWritable, PageRankNode, IntWritable, FloatWritable> {
+            Mapper<IntWritable, PersonalizedPageRankNode, IntWritable, FloatWritable> {
         private TopScoredObjects<Integer> queue;
 
         @Override
@@ -46,9 +46,9 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         }
 
         @Override
-        public void map(IntWritable nid, PageRankNode node, Context context) throws IOException,
+        public void map(IntWritable nid, PersonalizedPageRankNode node, Context context) throws IOException,
                 InterruptedException {
-            queue.add(node.getNodeId(), node.getPageRank());
+            //TODO::FIX::queue.add(node.getNodeId(), node.getPageRank());
         }
 
         @Override

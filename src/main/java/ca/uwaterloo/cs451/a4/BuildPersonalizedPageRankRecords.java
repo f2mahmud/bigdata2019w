@@ -1,6 +1,5 @@
 package ca.uwaterloo.cs451.a4;
 
-import io.bespin.java.mapreduce.pagerank.PageRankNode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -27,26 +26,33 @@ import org.apache.log4j.Logger;
 import tl.lin.data.array.ArrayListOfIntsWritable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class BuildPersonalizedPageRankRecords extends Configured implements Tool {
 
     private static final Logger LOG = Logger.getLogger(BuildPersonalizedPageRankRecords.class);
 
-    private static final String NODE_CNT_FIELD = "node.cnt";
+    private static final String NODE_COUNT = "node.cnt";
 
-    private static class MyMapper extends Mapper<LongWritable, Text, IntWritable, PageRankNode> {
+    private static class MyMapper extends Mapper<LongWritable, Text, IntWritable, PersonalizedPageRankNode> {
         private static final IntWritable nid = new IntWritable();
-        private static final PageRankNode node = new PageRankNode();
+        private static final PersonalizedPageRankNode node = new PersonalizedPageRankNode();
 
         @Override
-        public void setup(Mapper<LongWritable, Text, IntWritable, PageRankNode>.Context context) {
-            int n = context.getConfiguration().getInt(NODE_CNT_FIELD, 0);
+        public void setup(Mapper<LongWritable, Text, IntWritable, PersonalizedPageRankNode>.Context context) {
+            int n = context.getConfiguration().getInt(NODE_COUNT, 0);
             if (n == 0) {
-                throw new RuntimeException(NODE_CNT_FIELD + " cannot be 0!");
+                throw new RuntimeException(NODE_COUNT + " cannot be 0!");
             }
-            node.setType(PageRankNode.Type.Complete);
-            node.setPageRank((float) -StrictMath.log(n));
+            node.setType(PersonalizedPageRankNode.Type.Complete);
+
+            List<Float> pageRanks = new ArrayList<>();
+            float defaultValue = (float) -StrictMath.log(n);
+            for(int i = 0; i < context.getConfiguration().get(SOURCES_STRING).split(",").length; i++){
+                pageRanks.add(defaultValue);
+            }
         }
 
         @Override
@@ -86,7 +92,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
     private static final String NUM_NODES = "numNodes";
-    private static final String SOURCES = "sources";
+    private static final String SOURCES_STRING = "sources";
 
     /**
      * Runs this tool.
@@ -102,7 +108,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
         options.addOption(OptionBuilder.withArgName("num").hasArg()
                 .withDescription("number of nodes").create(NUM_NODES));
         options.addOption(OptionBuilder.withArgName("nums").hasArg()
-                .withDescription("source nodes").create(SOURCES));
+                .withDescription("source nodes").create(SOURCES_STRING));
 
         CommandLine cmdline;
         CommandLineParser parser = new GnuParser();
@@ -133,7 +139,8 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
         LOG.info(" - numNodes: " + n);
 
         Configuration conf = getConf();
-        conf.setInt(NODE_CNT_FIELD, n);
+        conf.setInt(NODE_COUNT, n);
+        conf.set(SOURCES_STRING, cmdline.getOptionValue(SOURCES_STRING));
         conf.setInt("mapred.min.split.size", 1024 * 1024 * 1024);
 
         Job job = Job.getInstance(conf);
@@ -149,10 +156,10 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(PageRankNode.class);
+        job.setMapOutputValueClass(PersonalizedPageRankNode.class);
 
         job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(PageRankNode.class);
+        job.setOutputValueClass(PersonalizedPageRankNode.class);
 
         job.setMapperClass(MyMapper.class);
 
