@@ -105,12 +105,12 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
         int docId = 0;
 
+
         while (true) {
             int difference = WritableUtils.readVInt(INPUT_STREAM);
+            if (difference == -1) break;
             docId += difference;
             set.add(docId);
-            int x = WritableUtils.readVInt(INPUT_STREAM);   //Getting rid of the count thing
-            if (x == -1) break;
         }
 
         INPUT_STREAM.close();
