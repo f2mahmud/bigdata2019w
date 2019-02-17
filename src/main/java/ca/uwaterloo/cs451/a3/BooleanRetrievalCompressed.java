@@ -10,6 +10,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
+import scala.util.parsing.combinator.token.Tokens;
 
 import java.io.*;
 import java.util.*;
@@ -25,12 +26,12 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     }
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
-        RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(indexPath),true);
+        RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(indexPath), true);
         indexes = new ArrayList<>();
         while (files.hasNext()) {
             LocatedFileStatus file = files.next();
             if (file.isDirectory()) {
-                indexes.add(new MapFile.Reader(file.getPath(),fs.getConf()));
+                indexes.add(new MapFile.Reader(file.getPath(), fs.getConf()));
             }
         }
         collection = fs.open(new Path(collectionPath));
@@ -104,13 +105,14 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         //int docCount = WritableUtils.readVInt(INPUT_STREAM);
 
         int docId = 0;
-
-
-        while (true) {
-            int difference = WritableUtils.readVInt(INPUT_STREAM);
-            if (difference == -1) break;
-            docId += difference;
-            set.add(docId);
+        try {
+            while (true) {
+                int difference = WritableUtils.readVInt(INPUT_STREAM);
+                docId += difference;
+                set.add(docId);
+                WritableUtils.readVInt(INPUT_STREAM);   //Getting rid of the count value
+            }
+        } catch (EOFException e) {
         }
 
         INPUT_STREAM.close();
@@ -125,8 +127,8 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         //value.setCapacity(Integer.MAX_VALUE - 20000);
         key.set(term.getBytes(), 0, term.getBytes().length);
 
-        for(MapFile.Reader index : indexes){
-            index.get(key,value);
+        for (MapFile.Reader index : indexes) {
+            index.get(key, value);
             if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(), term.getBytes())) break;
         }
 

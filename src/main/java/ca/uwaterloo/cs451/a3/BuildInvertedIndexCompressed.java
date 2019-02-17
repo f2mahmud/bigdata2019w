@@ -56,8 +56,8 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
             // Emit postings.
             for (PairOfObjectInt<String> e : COUNTS) {
-                KEY.set(e.getLeftElement(), (int) docno.get());
-                COUNT.set((int)docno.get(), e.getRightElement());
+                KEY.set(e.getLeftElement(), (int) docno.get());         //name, docid
+                COUNT.set((int)docno.get(), e.getRightElement());       //docid, countOfWord in doc
                 context.write(KEY, COUNT);
             }
 
@@ -98,7 +98,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
         private static final ByteArrayOutputStream BSTREAM = new ByteArrayOutputStream();
         private static final DataOutputStream DATA_OUTPUT_STREAM = new DataOutputStream(BSTREAM);
-
+        //key = term, docid, values = docid, count doc
         @Override
         public void reduce(PairOfStringInt key, Iterable<PairOfInts> values, Context context)
                 throws IOException, InterruptedException {
@@ -123,7 +123,6 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
             }
 
             WritableUtils.writeVInt(DATA_OUTPUT_STREAM,numberOfDocs);
-            WritableUtils.writeVInt(DATA_OUTPUT_STREAM, -1);
 
             VALUE.set(BSTREAM.toByteArray(),0,BSTREAM.size());
             context.write(KEY, VALUE);
