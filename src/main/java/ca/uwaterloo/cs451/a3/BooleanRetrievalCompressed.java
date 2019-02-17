@@ -113,11 +113,11 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
                 WritableUtils.readVInt(INPUT_STREAM);   //Getting rid of the count value
             }
         } catch (EOFException e) {
+        }finally {
+            INPUT_STREAM.close();
+            return set;
         }
 
-        INPUT_STREAM.close();
-
-        return set;
     }
 
     private BytesWritable fetchPostings(String term) throws IOException {
