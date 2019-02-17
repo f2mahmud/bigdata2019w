@@ -2,9 +2,7 @@ package ca.uwaterloo.cs451.a3;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -14,31 +12,25 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
+import java.util.*;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
 
-    private MapFile.Reader[] indexes;
+    private List<MapFile.Reader> indexes;
     private FSDataInputStream collection;
     private Stack<Set<Integer>> stack;
 
+    //Try using the Path files
     private BooleanRetrievalCompressed() {
     }
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
-        File[] folders = new File(indexPath).listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith("part-r");
-            }
-        });
-        indexes = new MapFile.Reader[folders.length];
-        for (int i = 0; i < folders.length; i++) {
-            if (folders[i].isDirectory()) {
-                indexes[i] = new MapFile.Reader(new Path(folders[i].toString()), fs.getConf());
+        RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(indexPath),true);
+        indexes = new ArrayList<>();
+        while (files.hasNext()) {
+            LocatedFileStatus file = files.next();
+            if (file.isDirectory()) {
+                indexes.add(new MapFile.Reader(file.getPath(),fs.getConf()));
             }
         }
         collection = fs.open(new Path(collectionPath));
@@ -133,8 +125,8 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         //value.setCapacity(Integer.MAX_VALUE - 20000);
         key.set(term.getBytes(), 0, term.getBytes().length);
 
-        for (int i = 0; i < indexes.length; i++) {
-            indexes[i].get(key, value);
+        for(MapFile.Reader index : indexes){
+            index.get(key,value);
             if (value.getBytes().length > 0 && Arrays.equals(key.getBytes(), term.getBytes())) break;
         }
 
