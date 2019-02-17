@@ -26,13 +26,13 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     }
 
     private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
-        RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(indexPath), true);
+        RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(indexPath), false);
         indexes = new ArrayList<>();
         while (files.hasNext()) {
             LocatedFileStatus file = files.next();
+            System.out.println("Index size: ??>>>>>   " + indexes.size() + "  File name ==  " + file.getPath().getName() );
             if (file.isDirectory()) {
                 indexes.add(new MapFile.Reader(file.getPath(), fs.getConf()));
-                System.out.println("Index size: ??>>>>>   " + indexes.size() );
             }
         }
         collection = fs.open(new Path(collectionPath));
