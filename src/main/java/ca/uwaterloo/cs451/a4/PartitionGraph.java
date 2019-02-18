@@ -1,13 +1,10 @@
 package ca.uwaterloo.cs451.a4;
 
 import io.bespin.java.mapreduce.pagerank.NonSplitableSequenceFileInputFormat;
-import io.bespin.java.mapreduce.pagerank.PageRankNode;
-import io.bespin.java.mapreduce.pagerank.RangePartitioner;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -110,10 +107,10 @@ public class PartitionGraph extends Configured implements Tool {
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(PageRankNode.class);
+        job.setMapOutputValueClass(PersonalizedPageRankNode.class);
 
         job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(PageRankNode.class);
+        job.setOutputValueClass(PersonalizedPageRankNode.class);
 
         //if (useRange) {
             job.setPartitionerClass(HashPartitioner.class);

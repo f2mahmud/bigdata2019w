@@ -26,9 +26,7 @@ import org.apache.log4j.Logger;
 import tl.lin.data.array.ArrayListOfIntsWritable;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class BuildPersonalizedPageRankRecords extends Configured implements Tool {
 
