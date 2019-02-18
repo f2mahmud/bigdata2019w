@@ -42,17 +42,18 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
 
         @Override
         public void setup(Mapper<LongWritable, Text, IntWritable, PersonalizedPageRankNode>.Context context) {
+
             int n = context.getConfiguration().getInt(NODE_COUNT, 0);
             if (n == 0) {
                 throw new RuntimeException(NODE_COUNT + " cannot be 0!");
             }
             node.setType(PersonalizedPageRankNode.Type.Complete);
 
-            List<Float> pageRanks = new ArrayList<>();
             float defaultValue = (float) -StrictMath.log(n);
             for(int i = 0; i < context.getConfiguration().get(SOURCES_STRING).split(",").length; i++){
-                pageRanks.add(defaultValue);
+                node.setPageRank(i,defaultValue);
             }
+
         }
 
         @Override

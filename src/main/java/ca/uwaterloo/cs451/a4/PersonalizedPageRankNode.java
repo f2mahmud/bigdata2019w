@@ -37,6 +37,7 @@ public class PersonalizedPageRankNode implements Writable {
     private ArrayListOfIntsWritable adjacencyList;
 
     public PersonalizedPageRankNode() {
+        pageranks = new ArrayListOfFloatsWritable();
     }
 
     public float getPageRank(int sourceIndex) {
