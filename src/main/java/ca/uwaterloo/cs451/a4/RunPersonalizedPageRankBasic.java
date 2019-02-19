@@ -418,7 +418,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         job.setOutputKeyClass(IntWritable.class);
         job.setOutputValueClass(PersonalizedPageRankNode.class);
 
-//        job.setMapperClass(useInMapperCombiner ? MapWithInMapperCombiningClass.class : MapClass.class);
+        job.setMapperClass(MapClass.class);
 //
 //        if (useCombiner) {
 //            job.setCombinerClass(CombineClass.class);
