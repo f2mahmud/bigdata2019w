@@ -44,6 +44,10 @@ public class PersonalizedPageRankNode implements Writable {
         return pageranks.get(sourceIndex);
     }
 
+    public ArrayListOfFloatsWritable getPageRanks(){
+        return pageranks;
+    }
+
     public void setPageRank(int index, float rank) {
         pageranks.add(index,rank);
     }

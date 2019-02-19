@@ -26,7 +26,9 @@ import org.apache.log4j.Logger;
 import tl.lin.data.array.ArrayListOfIntsWritable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class BuildPersonalizedPageRankRecords extends Configured implements Tool {
 
@@ -37,6 +39,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
     private static class MyMapper extends Mapper<LongWritable, Text, IntWritable, PersonalizedPageRankNode> {
         private static final IntWritable nid = new IntWritable();
         private static final PersonalizedPageRankNode node = new PersonalizedPageRankNode();
+        private static List<Integer> SOURCES = new ArrayList<>();
 
         @Override
         public void setup(Mapper<LongWritable, Text, IntWritable, PersonalizedPageRankNode>.Context context) {
@@ -47,9 +50,11 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
             }
             node.setType(PersonalizedPageRankNode.Type.Complete);
 
-            float defaultValue = (float) -StrictMath.log(n);
-            for(int i = 0; i < context.getConfiguration().get(SOURCES_STRING).split(",").length; i++){
-                node.setPageRank(i,defaultValue);
+            String[] sources = context.getConfiguration().get(SOURCES_STRING).split(",");
+
+            for(int i = 0; i < sources.length; i++){
+                SOURCES.add(0,Integer.parseInt(sources[i]));
+                node.setPageRank(i, Float.NEGATIVE_INFINITY);       //TODO::Might need to go over this
             }
 
         }
@@ -57,13 +62,14 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
         @Override
         public void map(LongWritable key, Text t, Context context) throws IOException,
                 InterruptedException {
+
             String[] arr = t.toString().trim().split("\\s+");
 
             nid.set(Integer.parseInt(arr[0]));
+
             if (arr.length == 1) {  //If it doesnt have any neighbours
                 node.setNodeId(Integer.parseInt(arr[0]));
                 node.setAdjacencyList(new ArrayListOfIntsWritable());
-
             } else {
                 node.setNodeId(Integer.parseInt(arr[0]));
                 //set up the adjacency list
@@ -71,7 +77,6 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
                 for (int i = 1; i < arr.length; i++) {
                     neighbors[i - 1] = Integer.parseInt(arr[i]);
                 }
-
                 node.setAdjacencyList(new ArrayListOfIntsWritable(neighbors));
             }
 
@@ -82,7 +87,16 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
                 context.getCounter("graph", "numActiveNodes").increment(1);
             }
 
-            context.write(nid, node);
+            //TODO::Does not work where duplicate sources are present
+            for(int i = 0; i < SOURCES.size(); i++){
+                if(nid.get() == SOURCES.get(i)){
+                    node.setPageRank(i,0);
+                    context.write(nid, node);
+                    node.setPageRank(i, Float.NEGATIVE_INFINITY);
+                    break;
+                }
+            }
+
         }
     }
 
