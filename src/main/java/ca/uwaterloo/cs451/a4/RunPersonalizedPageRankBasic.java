@@ -199,6 +199,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 context.write(nid, node);
 
                 // Keep track of total PageRank mass.
+                System.out.println("node PAge ransk >>>>>>>>>>>>>>>" + node.getPageRanks().size());
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
                     totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
                 }
