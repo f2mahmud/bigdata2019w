@@ -168,6 +168,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                     node.setAdjacencyList(list);
                 } else {
                     // This is a message that contains PageRank mass; accumulate.
+                    System.out.println("node pageranks::::: " + node.getPageRanks().size());
+                    System.out.println("n pageranks::::: " + n.getPageRanks().size());
                     for (int i = 0; i < n.getPageRanks().size(); i++) {
                         node.setPageRank(i, sumLogProbs(node.getPageRank(i), n.getPageRank(i)));
                     }
