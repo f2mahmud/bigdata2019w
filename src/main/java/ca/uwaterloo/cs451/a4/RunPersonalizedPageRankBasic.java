@@ -102,7 +102,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
         @Override
         public void cleanup(Context context) throws IOException {
-            System.out.println("Number of nodes >>>>>>>>>>>>>>>>  " + context.getCounter(PageRank.nodes));
+            System.out.println("Number of nodes >>>>>>>>>>>>>>>>  " + context.getCounter(PageRank.nodes).getValue());
         }
 
     }
@@ -153,7 +153,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         public void setup(Context context) throws IOException {
             Configuration conf = context.getConfiguration();
             for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
-                totalMasses.set(i, Float.NEGATIVE_INFINITY);
+                totalMasses.add(i, Float.NEGATIVE_INFINITY);
             }
         }
 
