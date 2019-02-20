@@ -41,7 +41,7 @@ public class PersonalizedPageRankNode implements Writable {
     }
 
     public float getPageRank(int sourceIndex) {
-        return pageranks.get(sourceIndex);
+        return pageranks.size() < sourceIndex + 1 ? 0 : pageranks.get(sourceIndex) ;
     }
 
     public ArrayListOfFloatsWritable getPageRanks(){
