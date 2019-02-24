@@ -122,7 +122,7 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
                 value.set(sources.get(i));
                 context.write(key, value);
                 for (PairOfObjectFloat<Integer> pair : queues.get(i).extractAll()) {
-                    key.set(String.format("%.5f %d", pair.getRightElement()));
+                    key.set(String.format("%.5f %d", pair.getRightElement(), pair.getLeftElement()));
                     // We're outputting a string so we can control the formatting.
                     value.set(pair.getLeftElement());
                     context.write(key, value);
