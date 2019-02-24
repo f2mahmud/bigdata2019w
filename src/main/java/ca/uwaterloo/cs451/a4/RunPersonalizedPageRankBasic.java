@@ -124,12 +124,15 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
                 totalMasses.add(i, Float.NEGATIVE_INFINITY);
             }
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<Reduce Phase 1");
         }
 
         @Override
         public void reduce(IntWritable nid, Iterable<PersonalizedPageRankNode> iterable, Context context)
                 throws IOException, InterruptedException {
             Iterator<PersonalizedPageRankNode> values = iterable.iterator();
+            System.out.println("Nid : " + nid.get());
+
 
             // Create the node structure that we're going to assemble back together from shuffled pieces.
             PersonalizedPageRankNode node = new PersonalizedPageRankNode();
