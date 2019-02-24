@@ -70,6 +70,10 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
             int massMessages = 0;
 
+            System.out.println("Nid : " + nid.get());
+            System.out.println("pageranks : " + node.getPageRanks().size());
+            System.out.println("adjacency size : " + node.getAdjacencyList().size());
+
             // Distribute PageRank mass to neighbors (along outgoing edges).
             if (node.getAdjacencyList().size() > 0) {
                 // Each neighbor gets an equal share of PageRank mass.
@@ -96,7 +100,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             // Bookkeeping.
             context.getCounter(PageRank.nodes).increment(1);
             context.getCounter(PageRank.massMessages).increment(massMessages);
-            System.out.println(nid.get() + " ::::::::::::::: " + massMessages);
 
         }
 
@@ -107,40 +110,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
     }
 
-
-//    // Combiner: sums partial PageRank contributions and passes node structure along.
-//    private static class CombineClass extends
-//            Reducer<IntWritable, PersonalizedPageRankNode, IntWritable, PersonalizedPageRankNode> {
-//        private static final PersonalizedPageRankNode intermediateMass = new PersonalizedPageRankNode();
-//
-//        @Override
-//        public void reduce(IntWritable nid, Iterable<PersonalizedPageRankNode> values, Context context)
-//                throws IOException, InterruptedException {
-//            int massMessages = 0;
-//
-//            // Remember, PageRank mass is stored as a log prob.
-//            float mass = Float.NEGATIVE_INFINITY;
-//            for (PersonalizedPageRankNode n : values) {
-//                if (n.getType() == PersonalizedPageRankNode.Type.Structure) {
-//                    // Simply pass along node structure.
-//                    context.write(nid, n);
-//                } else {
-//                    // Accumulate PageRank mass contributions.
-//                    mass = sumLogProbs(mass, n.getPageRank());
-//                    massMessages++;
-//                }
-//            }
-//
-//            // Emit aggregated results.
-//            if (massMessages > 0) {
-//                intermediateMass.setNodeId(nid.get());
-//                intermediateMass.setType(PersonalizedPageRankNode.Type.Mass);
-//                intermediateMass.setPageRank(mass);
-//
-//                context.write(nid, intermediateMass);
-//            }
-//        }
-//    }
 
     // Reduce: sums incoming PageRank contributions, rewrite graph structure.
     private static class ReduceClass extends
