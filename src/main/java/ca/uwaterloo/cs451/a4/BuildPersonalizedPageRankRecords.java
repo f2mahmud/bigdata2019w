@@ -54,7 +54,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
 
             for(int i = 0; i < sources.length; i++){
                 SOURCES.add(Integer.parseInt(sources[i]));
-                node.setPageRank(i, Float.NEGATIVE_INFINITY);       //TODO::Might need to go over this
+                node.setPageRank(i, Float.NEGATIVE_INFINITY);
             }
 
         }
@@ -87,21 +87,15 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
                 context.getCounter("graph", "numActiveNodes").increment(1);
             }
 
-            System.out.println(">>>>>>>>>>Nid : " + nid.get());
-            System.out.println(">>>>>>>>>>>>Page Ranks1: " + node.getPageRanks().size());
-            System.out.println(">>>>>>>>>>>>Sources Size: " + SOURCES.size());
-
             //TODO::Does not work where duplicate sources are present
             for(int i = 0; i < SOURCES.size(); i++){
                 if(nid.get() == SOURCES.get(i)){
                     node.setPageRank(i,1);
-//                    System.out.println("Set source >>>>>> " + nid.get());
                     context.write(nid, node);
                     node.setPageRank(i, Float.NEGATIVE_INFINITY);
                     return;
                 }
             }
-            System.out.println(">>>>>>>>>>>>Page Ranks2: " + node.getPageRanks().size());
             context.write(nid,node);
         }
     }

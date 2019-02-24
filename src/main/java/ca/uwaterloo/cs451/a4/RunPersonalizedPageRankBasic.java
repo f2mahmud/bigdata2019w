@@ -41,6 +41,14 @@ import java.util.List;
 public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(RunPersonalizedPageRankBasic.class);
 
+    //TODO::REMOVE
+    void printPageRanks(PersonalizedPageRankNode node){
+        System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
+        for(float n: node.getPageRanks()){
+            System.out.println(n + "     ");
+        }
+    }
+
     private static enum PageRank {
         nodes, edges, massMessages, massMessagesSaved, massMessagesReceived, missingStructure
     }
@@ -70,17 +78,13 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
             int massMessages = 0;
 
-            System.out.println("Nid : " + nid.get());
-            System.out.println("pageranks : " + node.getPageRanks().size());
-            System.out.println("adjacency size : " + node.getAdjacencyList().size());
-
             // Distribute PageRank mass to neighbors (along outgoing edges).
             if (node.getAdjacencyList().size() > 0) {
                 // Each neighbor gets an equal share of PageRank mass.
                 ArrayListOfIntsWritable list = node.getAdjacencyList();
 
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
-                    intermediateMass.setPageRank(i, node.getPageRank(i) - (float) StrictMath.log(list.size()));
+                    intermediateMass.setPageRank(i, sumLogProbs(node.getPageRank(i), -(float) StrictMath.log(list.size())));
                 }
 
                 context.getCounter(PageRank.edges).increment(list.size());
@@ -103,11 +107,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
         }
 
-        @Override
-        public void cleanup(Context context) throws IOException {
-            System.out.println("Number of nodes >>>>>>>>>>>>>>>>  " + context.getCounter(PageRank.nodes).getValue());
-        }
-
     }
 
 
@@ -124,15 +123,12 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
                 totalMasses.add(i, Float.NEGATIVE_INFINITY);
             }
-            System.out.println("<<<<<<<<<<<<<<<<<<<<<Reduce Phase 1");
         }
 
         @Override
         public void reduce(IntWritable nid, Iterable<PersonalizedPageRankNode> iterable, Context context)
                 throws IOException, InterruptedException {
             Iterator<PersonalizedPageRankNode> values = iterable.iterator();
-            System.out.println("Nid : " + nid.get());
-
 
             // Create the node structure that we're going to assemble back together from shuffled pieces.
             PersonalizedPageRankNode node = new PersonalizedPageRankNode();
@@ -171,7 +167,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 context.write(nid, node);
 
                 // Keep track of total PageRank mass.
-                System.out.println("node PAge ransk >>>>>>>>>>>>>>>" + node.getPageRanks().size());
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
                     totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
                 }
