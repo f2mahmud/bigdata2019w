@@ -49,7 +49,7 @@ public class PersonalizedPageRankNode implements Writable {
     }
 
     public void setPageRank(int index, float rank) {
-        pageranks.add(index,rank);
+        pageranks.set(index,rank);
     }
 
     public int getNodeId() {
