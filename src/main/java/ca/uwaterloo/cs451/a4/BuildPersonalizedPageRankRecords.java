@@ -53,10 +53,9 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
             String[] sources = context.getConfiguration().get(SOURCES_STRING).split(",");
 
             for(int i = 0; i < sources.length; i++){
-                SOURCES.add(0,Integer.parseInt(sources[i]));
+                SOURCES.add(Integer.parseInt(sources[i]));
                 node.setPageRank(i, Float.NEGATIVE_INFINITY);       //TODO::Might need to go over this
             }
-            System.out.println(">>>>>>>>>>>>Page Ranks0: " + node.getPageRanks().size());
 
         }
 
@@ -90,11 +89,12 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
 
             System.out.println(">>>>>>>>>>Nid : " + nid.get());
             System.out.println(">>>>>>>>>>>>Page Ranks1: " + node.getPageRanks().size());
+            System.out.println(">>>>>>>>>>>>Sources Size: " + SOURCES.size());
 
             //TODO::Does not work where duplicate sources are present
             for(int i = 0; i < SOURCES.size(); i++){
                 if(nid.get() == SOURCES.get(i)){
-                    node.setPageRank(i,0);
+                    node.setPageRank(i,1);
 //                    System.out.println("Set source >>>>>> " + nid.get());
                     context.write(nid, node);
                     node.setPageRank(i, Float.NEGATIVE_INFINITY);
