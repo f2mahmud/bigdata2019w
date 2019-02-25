@@ -59,14 +59,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
         // For passing along node structure.
         private static final PersonalizedPageRankNode intermediateStructure = new PersonalizedPageRankNode();
-
-        //TODO::REMOVE
-        void printPageRanks(PersonalizedPageRankNode node){
-            System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
-            for(float n: node.getPageRanks()){
-                System.out.println(n + "     ");
-            }
-        }
+        
 
         @Override
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
@@ -76,7 +69,10 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
             intermediateStructure.setAdjacencyList(node.getAdjacencyList());
 
-            printPageRanks(node);
+            System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
+            for(float n: node.getPageRanks()){
+                System.out.println(n + "<<<<<<<<<<<<<<");
+            }
 
             context.write(nid, intermediateStructure);
 
