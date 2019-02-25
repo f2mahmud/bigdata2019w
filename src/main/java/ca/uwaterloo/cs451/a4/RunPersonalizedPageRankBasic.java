@@ -69,11 +69,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
             intermediateStructure.setAdjacencyList(node.getAdjacencyList());
 
-            System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
-            for(float n: node.getPageRanks()){
-                System.out.println(n + ">>>>>>>>>>>>>");
-            }
-
             context.write(nid, intermediateStructure);
 
             int massMessages = 0;
@@ -156,6 +151,11 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                     }
                     massMessagesReceived++;
                 }
+            }
+
+            System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
+            for(float n: node.getPageRanks()){
+                System.out.println(n + ">>>>>>>>>>>>>");
             }
 
             // Update the final accumulated PageRank mass.
