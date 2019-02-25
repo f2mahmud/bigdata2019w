@@ -42,7 +42,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(RunPersonalizedPageRankBasic.class);
 
     //TODO::REMOVE
-    void printPageRanks(PersonalizedPageRankNode node){
+    static void printPageRanks(PersonalizedPageRankNode node){
         System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
         for(float n: node.getPageRanks()){
             System.out.println(n + "     ");
@@ -73,6 +73,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             intermediateStructure.setNodeId(node.getNodeId());
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
             intermediateStructure.setAdjacencyList(node.getAdjacencyList());
+
+            printPageRanks(node);
 
             context.write(nid, intermediateStructure);
 
