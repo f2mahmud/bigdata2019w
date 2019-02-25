@@ -41,13 +41,7 @@ import java.util.List;
 public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(RunPersonalizedPageRankBasic.class);
 
-    //TODO::REMOVE
-    static void printPageRanks(PersonalizedPageRankNode node){
-        System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
-        for(float n: node.getPageRanks()){
-            System.out.println(n + "     ");
-        }
-    }
+
 
     private static enum PageRank {
         nodes, edges, massMessages, massMessagesSaved, massMessagesReceived, missingStructure
@@ -65,6 +59,14 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
         // For passing along node structure.
         private static final PersonalizedPageRankNode intermediateStructure = new PersonalizedPageRankNode();
+
+        //TODO::REMOVE
+        void printPageRanks(PersonalizedPageRankNode node){
+            System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
+            for(float n: node.getPageRanks()){
+                System.out.println(n + "     ");
+            }
+        }
 
         @Override
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
