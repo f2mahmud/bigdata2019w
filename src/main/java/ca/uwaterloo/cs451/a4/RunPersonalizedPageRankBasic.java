@@ -82,8 +82,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 ArrayListOfIntsWritable list = node.getAdjacencyList();
 
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
-                    if (node.getPageRank(i) == Float.NEGATIVE_INFINITY) {
-                        intermediateMass.setPageRank(i, Float.NEGATIVE_INFINITY);
+                    if (node.getPageRank(i) != Float.NEGATIVE_INFINITY) {
+                        intermediateMass.setPageRank(i, Float.NEGATIVE_INFINITY);   //since we dont want 0/list.size()
                     }else {
                         intermediateMass.setPageRank(i, sumLogProbs(node.getPageRank(i), -(float) StrictMath.log(list.size())));
                     }
@@ -240,15 +240,13 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         @Override
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
                 throws IOException, InterruptedException {
-            if (SOURCES_LIST.contains(nid.get())) {
+            if (SOURCES_LIST.contains(nid.get())) {     //TODO::wont be able to do duplicate page ranks
                 int index = SOURCES_LIST.indexOf(nid.get());
                 float p = node.getPageRank(index);
 
-                float jump = (float) Math.log(ALPHA);  // - Math.log(nodeCnt));
-                float link = (float) Math.log(1.0f - ALPHA)
-                        + sumLogProbs(p, (float) (Math.log(missingMass))); // - Math.log(nodeCnt)));
+                float link = (float) Math.log(1.0f - ALPHA) + sumLogProbs(p, (float) (Math.log(missingMass)));
 
-                p = sumLogProbs(jump, link);
+                p = sumLogProbs((float) Math.log(ALPHA) , link);
                 node.setPageRank(index, p);
             }
 
