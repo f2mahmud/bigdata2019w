@@ -82,7 +82,7 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
     }
 
     private static class MyReducer extends
-            Reducer<PairOfInts, FloatWritable, Text, IntWritable> {
+            Reducer<PairOfInts, FloatWritable, IntWritable, Text> {
         private List<TopScoredObjects<Integer>> queues;
         private List<Integer> sources;
 
@@ -114,17 +114,16 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
 
         @Override
         public void cleanup(Context context) throws IOException, InterruptedException {
-            IntWritable value = new IntWritable();
-            Text key = new Text();
+            Text value = new Text();
+            IntWritable key = new IntWritable();
 
             for (int i = 0; i < queues.size(); i++) {
-                key.set("Source: ");
-                value.set(sources.get(i));
+                value.set("Source: " + sources.get(i));
                 context.write(key, value);
                 for (PairOfObjectFloat<Integer> pair : queues.get(i).extractAll()) {
-                    key.set(String.format("%.5f %d", pair.getRightElement(), pair.getLeftElement()));
+                    value.set(String.format("%.5f %d", pair.getRightElement(), pair.getLeftElement()));
                     // We're outputting a string so we can control the formatting.
-                    value.set(pair.getLeftElement());
+                    key.set(pair.getLeftElement());
                     context.write(key, value);
                 }
             }
@@ -205,8 +204,8 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         job.setMapOutputKeyClass(PairOfInts.class);
         job.setMapOutputValueClass(FloatWritable.class);
 
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputKeyClass(IntWritable.class);
+        job.setOutputValueClass(Text.class);
         // Text instead of FloatWritable so we can control formatting
 
         job.setMapperClass(MyMapper.class);
