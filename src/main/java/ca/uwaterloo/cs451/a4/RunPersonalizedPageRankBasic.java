@@ -77,12 +77,16 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             int massMessages = 0;
 
             // Distribute PageRank mass to neighbors (along outgoing edges).
-            if (node.getAdjacencyList().size() > 0) {
+            if (node.getAdjacencyList().size() > 0 ) {
                 // Each neighbor gets an equal share of PageRank mass.
                 ArrayListOfIntsWritable list = node.getAdjacencyList();
 
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
-                    intermediateMass.setPageRank(i, sumLogProbs(node.getPageRank(i), -(float) StrictMath.log(list.size())));
+                    if (node.getPageRank(i) == Float.NEGATIVE_INFINITY) {
+                        intermediateMass.setPageRank(i, Float.NEGATIVE_INFINITY);
+                    }else {
+                        intermediateMass.setPageRank(i, sumLogProbs(node.getPageRank(i), -(float) StrictMath.log(list.size())));
+                    }
                 }
 
                 context.getCounter(PageRank.edges).increment(list.size());
