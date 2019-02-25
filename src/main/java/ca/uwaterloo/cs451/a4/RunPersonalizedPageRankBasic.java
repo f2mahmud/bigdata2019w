@@ -68,6 +68,9 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             intermediateStructure.setNodeId(node.getNodeId());
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
             intermediateStructure.setAdjacencyList(node.getAdjacencyList());
+            for(int i = 0; i < node.getPageRanks().size(); i++){
+                intermediateStructure.setPageRank(i,0);
+            }
 
             context.write(nid, intermediateStructure);
 
