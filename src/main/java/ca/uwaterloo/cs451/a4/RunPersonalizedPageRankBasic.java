@@ -160,10 +160,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 }
             }
 
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Node id " + node.getNodeId());
-            for(float n: node.getPageRanks()){
-                System.out.println(n + ">>>>>>>>>>>>>");
-            }
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>node: " + node.toString());
+
 
             // Update the final accumulated PageRank mass.
             context.getCounter(PageRank.massMessagesReceived).increment(massMessagesReceived);
