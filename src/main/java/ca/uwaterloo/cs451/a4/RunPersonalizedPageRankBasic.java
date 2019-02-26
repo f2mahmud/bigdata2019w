@@ -160,7 +160,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 }
             }
 
-            System.out.println(">>>>>>>>>>>>Node id " + node.getNodeId());
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Node id " + node.getNodeId());
             for(float n: node.getPageRanks()){
                 System.out.println(n + ">>>>>>>>>>>>>");
             }

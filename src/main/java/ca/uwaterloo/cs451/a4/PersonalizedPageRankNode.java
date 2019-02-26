@@ -1,5 +1,6 @@
 package ca.uwaterloo.cs451.a4;
 
+import io.bespin.java.mapreduce.pagerank.PageRankNode;
 import org.apache.hadoop.io.Writable;
 import tl.lin.data.array.ArrayListOfFloatsWritable;
 import tl.lin.data.array.ArrayListOfIntsWritable;
@@ -12,27 +13,8 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class PersonalizedPageRankNode implements Writable {
+public class PersonalizedPageRankNode extends PageRankNode {
 
-
-    public static enum Type {
-        Complete((byte) 0),  // PageRank mass and adjacency list.
-        Mass((byte) 1),      // PageRank mass only.
-        Structure((byte) 2); // Adjacency list only.
-
-        public byte val;
-
-        private Type(byte v) {
-            this.val = v;
-        }
-    }
-
-    ;
-
-    private static final Type[] mapping = new Type[]{Type.Complete, Type.Mass, Type.Structure};
-
-    private Type type;
-    private int nodeid;
     private ArrayListOfFloatsWritable pageranks;
     private ArrayListOfIntsWritable adjacencyList;
 
@@ -52,14 +34,6 @@ public class PersonalizedPageRankNode implements Writable {
         pageranks.set(index,rank);
     }
 
-    public int getNodeId() {
-        return nodeid;
-    }
-
-    public void setNodeId(int n) {
-        this.nodeid = n;
-    }
-
     public ArrayListOfIntsWritable getAdjacencyList() {
         return adjacencyList;
     }
@@ -68,13 +42,6 @@ public class PersonalizedPageRankNode implements Writable {
         this.adjacencyList = list;
     }
 
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
 
     /**
      * Deserializes this object.
@@ -85,15 +52,13 @@ public class PersonalizedPageRankNode implements Writable {
     @Override
     public void readFields(DataInput in) throws IOException {
         int b = in.readByte();
-        type = mapping[b];
-        nodeid = in.readInt();
 
-        if (type.equals(Type.Mass)) {
+        if (getType().equals(Type.Mass)) {
             pageranks.readFields(in);
             return;
         }
 
-        if (type.equals(Type.Complete)) {
+        if (getType().equals(Type.Complete)) {
             pageranks.readFields(in);
         }
 
@@ -109,15 +74,14 @@ public class PersonalizedPageRankNode implements Writable {
      */
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeByte(type.val);
-        out.writeInt(nodeid);
+        out.writeByte(getType().val);
 
-        if (type.equals(Type.Mass)) {
+        if (getType().equals(Type.Mass)) {
             pageranks.write(out);
             return;
         }
 
-        if (type.equals(Type.Complete)) {
+        if (getType().equals(Type.Complete)) {
             pageranks.write(out);
         }
 
@@ -126,7 +90,7 @@ public class PersonalizedPageRankNode implements Writable {
 
     @Override
     public String toString() {
-        return String.format("{%d %.4f %s}", nodeid, pageranks, (adjacencyList == null ? "[]"
+        return String.format("{%d %.5s %s}", getNodeId(), (pageranks == null ? "[ ]" : pageranks.toString()) , (adjacencyList == null ? "[]"
                 : adjacencyList.toString(10)));
     }
 
