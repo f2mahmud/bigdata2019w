@@ -15,6 +15,11 @@ import java.io.IOException;
 
 public class PersonalizedPageRankNode extends PageRankNode {
 
+    static {
+        mapping = new PageRankNode.Type[]{PageRankNode.Type.Complete, PageRankNode.Type.Mass, PageRankNode.Type.Structure};
+    }
+
+    private static final PersonalizedPageRankNode.Type[] mapping;
     private ArrayListOfFloatsWritable pageranks;
     private ArrayListOfIntsWritable adjacencyList;
 
@@ -52,7 +57,7 @@ public class PersonalizedPageRankNode extends PageRankNode {
     @Override
     public void readFields(DataInput in) throws IOException {
         int b = in.readByte();
-
+        setType(mapping[b]);
         if (getType().equals(Type.Mass)) {
             pageranks.readFields(in);
             return;
@@ -75,7 +80,7 @@ public class PersonalizedPageRankNode extends PageRankNode {
     @Override
     public void write(DataOutput out) throws IOException {
         out.writeByte(getType().val);
-
+        out.writeInt(getNodeId());
         if (getType().equals(Type.Mass)) {
             pageranks.write(out);
             return;
@@ -95,20 +100,6 @@ public class PersonalizedPageRankNode extends PageRankNode {
     }
 
     /**
-     * Returns the serialized representation of this object as a byte array.
-     *
-     * @return byte array representing the serialized representation of this object
-     * @throws IOException if any exception is encountered during object serialization
-     */
-    public byte[] serialize() throws IOException {
-        ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-        DataOutputStream dataOut = new DataOutputStream(bytesOut);
-        write(dataOut);
-
-        return bytesOut.toByteArray();
-    }
-
-    /**
      * Creates object from a <code>DataInput</code>.
      *
      * @param in source for reading the serialized representation
@@ -118,7 +109,6 @@ public class PersonalizedPageRankNode extends PageRankNode {
     public static PersonalizedPageRankNode create(DataInput in) throws IOException {
         PersonalizedPageRankNode m = new PersonalizedPageRankNode();
         m.readFields(in);
-
         return m;
     }
 
