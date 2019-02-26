@@ -246,6 +246,12 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
                 p = sumLogProbs((float) Math.log(ALPHA) , link);
                 node.setPageRank(index, p);
+            }else if (node.getAdjacencyList().size() != 0){         //dangling node
+                for(int i = 0; i < node.getPageRanks().size(); i++){
+                    node.setPageRank(i,0);
+                }
+            }else{
+
             }
 
             context.write(nid, node);

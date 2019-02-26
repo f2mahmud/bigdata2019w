@@ -21,7 +21,6 @@ public class PersonalizedPageRankNode extends PageRankNode {
 
     private static final PersonalizedPageRankNode.Type[] mapping;
     private ArrayListOfFloatsWritable pageranks;
-    private ArrayListOfIntsWritable adjacencyList;
 
     public PersonalizedPageRankNode() {
         pageranks = new ArrayListOfFloatsWritable();
@@ -37,14 +36,6 @@ public class PersonalizedPageRankNode extends PageRankNode {
 
     public void setPageRank(int index, float rank) {
         pageranks.set(index,rank);
-    }
-
-    public ArrayListOfIntsWritable getAdjacencyList() {
-        return adjacencyList;
-    }
-
-    public void setAdjacencyList(ArrayListOfIntsWritable list) {
-        this.adjacencyList = list;
     }
 
 
@@ -67,8 +58,10 @@ public class PersonalizedPageRankNode extends PageRankNode {
             pageranks.readFields(in);
         }
 
-        adjacencyList = new ArrayListOfIntsWritable();
-        adjacencyList.readFields(in);
+        ArrayListOfIntsWritable list = new ArrayListOfIntsWritable();
+        list.readFields(in);
+
+        setAdjacencyList(list);
     }
 
     /**
@@ -90,13 +83,13 @@ public class PersonalizedPageRankNode extends PageRankNode {
             pageranks.write(out);
         }
 
-        adjacencyList.write(out);
+        getAdjacencyList().write(out);
     }
 
     @Override
     public String toString() {
-        return String.format("{%d %.5s %s}", getNodeId(), (pageranks == null ? "[ ]" : pageranks.toString()) , (adjacencyList == null ? "[]"
-                : adjacencyList.toString(10)));
+        return String.format("{%d %.5s %s}", getNodeId(), (pageranks == null ? "[ ]" : pageranks.toString()) , (getAdjacencyList() == null ? "[]"
+                : getAdjacencyList().toString(10)));
     }
 
     /**
