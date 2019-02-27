@@ -29,13 +29,19 @@ public class PersonalizedPageRankNode extends PageRankNode {
         return pageranks.size() < sourceIndex + 1 ? Float.NEGATIVE_INFINITY : pageranks.get(sourceIndex) ;
     }
 
+    public void setPageRank(int index, Float rank) {
+        pageranks.set(index,rank);
+    }
+
     public ArrayListOfFloatsWritable getPageRanks(){
         return pageranks;
     }
 
-    public void setPageRank(int index, Float rank) {
-        pageranks.set(index,rank);
+    public void setPageRanks(ArrayListOfFloatsWritable pageRanks){
+        pageranks = pageRanks;
     }
+
+
 
 
     /**

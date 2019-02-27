@@ -156,6 +156,9 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 PersonalizedPageRankNode n = values.next();
 
                 if (n.getType().equals(PersonalizedPageRankNode.Type.Structure)) {
+                    if(node.getPageRanks().isEmpty()){
+                        node.setPageRanks(n.getPageRanks());
+                    }
                     structureReceived++;
                     node.setAdjacencyList(n.getAdjacencyList());
                 } else {
@@ -163,9 +166,11 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 }
                 // This is a message that contains PageRank mass; accumulate.
                 for (int i = 0; i < n.getPageRanks().size(); i++) {
+                    System.out.println("<<<<<<<<<<<<Getting mass   " + n.getPageRank(i));
                     node.setPageRank(i, sumLogProbs(node.getPageRank(i), n.getPageRank(i)));
                 }
             }
+
             System.out.println(">>>>>>>>>>>>>Set node efter accumulattion: " + node);
             for (int i = 0; i < node.getPageRanks().size(); i++) {
                 node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
