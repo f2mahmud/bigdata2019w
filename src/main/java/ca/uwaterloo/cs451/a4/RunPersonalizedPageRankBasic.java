@@ -163,8 +163,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             for (int i = 0; i < node.getPageRanks().size(); i++) {
                 node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
             }
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>node: " + node.toString());
-
 
             // Update the final accumulated PageRank mass.
             context.getCounter(PageRank.massMessagesReceived).increment(massMessagesReceived);
@@ -178,8 +176,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 if (node.getAdjacencyList().size() != 0) {
                     for (int i = 0; i < node.getPageRanks().size(); i++) {
                         totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
-                        System.out.println(">>>>>>>>>>>>>>>>1111100" + i + "    " + totalMasses.get(i));
-                    }
+s                    }
                 }
             } else if (structureReceived == 0) {
                 // We get into this situation if there exists an edge pointing to a node which has no
@@ -210,7 +207,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             FileSystem fs = FileSystem.get(context.getConfiguration());
             FSDataOutputStream out = fs.create(new Path(path + "/" + taskId), false);
             for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
-                System.out.println(">>>>>>>>>>>>>>>>2222200" + i + "    " + totalMasses.get(i));
                 out.writeFloat(totalMasses.get(i));
             }
             out.close();
@@ -236,21 +232,24 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             }
             System.out.println(">>>>>>>>>>>>>>>>4444400" +  "    " + MISSING_MASSES);
 
-
         }
 
 
         @Override
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
                 throws IOException, InterruptedException {
-
+            //TODO::ERROR HERE, index out of range
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>nodebefore: " + node.toString());
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>list: " + SOURCES_LIST + "    " );
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
                     node.setPageRank(i, sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
                 }
             }
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>nodeafter: " + node.toString());
             context.write(nid, node);
         }
+
     }
 
     // Random jump factor.
@@ -357,6 +356,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         StringBuilder builder = new StringBuilder();
         // Find out how much PageRank mass got lost at the dangling nodes.
         for (int k = 0; k < sources.split(",").length; k++) {
+            //TODO::Might need to use log on the 1 here
             builder.append(1.0f - masses.get(k)).append(",");
         }
 
