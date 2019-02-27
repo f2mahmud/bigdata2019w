@@ -85,8 +85,9 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
                     if (node.getPageRank(i) != Float.NEGATIVE_INFINITY) {       //node has proper page rank
                         System.out.println(">>>>>>>>>>>>>>sending from " + node);
-                        float toBeDistributed = node.getPageRank(i) - (float) Math.log(list.size());
-                        intermediateMass.setPageRank(i, toBeDistributed);   //TODO::Not enough decimal points
+
+                        intermediateMass.setPageRank(i, node.getPageRank(i) - (float) Math.log(list.size()));
+                        float toBeDistributed = intermediateMass.getPageRank(i);
                         System.out.println(">>>>>>>>>Result = " + toBeDistributed);
                         noPageRanks = false;
                         System.out.println(">>>>>>>>>>>>>>sending " + intermediateMass);
