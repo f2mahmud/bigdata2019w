@@ -84,6 +84,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                     if (node.getPageRank(i) != Float.NEGATIVE_INFINITY) {       //node has proper page rank
                         intermediateMass.setPageRank(i, node.getPageRank(i) - (float) StrictMath.log(list.size()));
                         noPageRanks = false;
+                        System.out.println(">>>>>>>>>>>>>>sending " + intermediateMass);
                     } else {
                         intermediateMass.setPageRank(i, Float.NEGATIVE_INFINITY);
                     }
@@ -159,10 +160,12 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                     node.setPageRank(i, sumLogProbs(node.getPageRank(i), n.getPageRank(i)));
                 }
             }
-
+            System.out.println(">>>>>>>>>>>>>Set node efter accumulattion: " + node);
             for (int i = 0; i < node.getPageRanks().size(); i++) {
                 node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
             }
+
+            System.out.println(">>>>>>>>>>>>>Set node after using alpha: " + node);
 
             // Update the final accumulated PageRank mass.
             context.getCounter(PageRank.massMessagesReceived).increment(massMessagesReceived);
@@ -238,14 +241,12 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         @Override
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
                 throws IOException, InterruptedException {
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>nodebefore: " + node.toString());
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>list: " + SOURCES_LIST + "    " );
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
                     node.setPageRank(i, sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
+                    System.out.println(">>>>>>>>>after adding missing mass : " + node);
                 }
             }
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>nodeafter: " + node.toString());
             context.write(nid, node);
         }
 
