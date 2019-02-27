@@ -149,7 +149,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 PersonalizedPageRankNode n = values.next();
 
                 if (n.getType().equals(PersonalizedPageRankNode.Type.Structure)) {
-                    if (node.getPageRanks().isEmpty()) {
+                    if (node.getPageRanks() == null || node.getPageRanks().isEmpty()) {
                         node.setPageRanks(n.getPageRanks());
                     }
                     structureReceived++;
@@ -246,7 +246,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
                     node.setPageRank(i, sumLogProbs(node.getPageRank(i), (float) Math.log(MISSING_MASSES.get(i))));
-                    System.out.println(">>>>>>>>>after adding missing mass : " + node);
                 }
             }
             context.write(nid, node);
@@ -359,7 +358,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         StringBuilder builder = new StringBuilder();
         // Find out how much PageRank mass got lost at the dangling nodes.
         for (int k = 0; k < sources.split(",").length; k++) {
-            //TODO::Might need to use log on the 1 here
             builder.append(1.0f - (float) Math.exp(masses.get(k))).append(",");
         }
 
