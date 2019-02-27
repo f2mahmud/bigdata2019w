@@ -57,6 +57,7 @@ public class PersonalizedPageRankNode extends PageRankNode {
         if (getType().equals(Type.Complete)) {
             pageranks.readFields(in);
         }
+        System.out.println(pageranks);
 
         ArrayListOfIntsWritable list = new ArrayListOfIntsWritable();
         list.readFields(in);
