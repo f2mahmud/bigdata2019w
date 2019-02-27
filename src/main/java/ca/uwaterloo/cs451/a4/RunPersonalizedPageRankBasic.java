@@ -217,7 +217,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             Mapper<IntWritable, PersonalizedPageRankNode, IntWritable, PersonalizedPageRankNode> {
 
         private List<Float> MISSING_MASSES = new ArrayList<>();
-        private static List<Integer> SOURCES_LIST = new ArrayList<>();
+        private List<Integer> SOURCES_LIST = new ArrayList<>();
 
         @Override
         public void setup(Context context) throws IOException {
@@ -227,8 +227,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             String[] sources = conf.get(SOURCES).split(",");
 
             for (int i = 0; i < sources.length; i++) {
-                SOURCES_LIST.add(Integer.parseInt(sources[i]));
-                MISSING_MASSES.add(Float.parseFloat(missing[i]));
+                SOURCES_LIST.add(i,Integer.parseInt(sources[i]));
+                MISSING_MASSES.add(i,Float.parseFloat(missing[i]));
             }
             System.out.println(">>>>>>>>>>>>>>>>4444400" +  "    " + MISSING_MASSES);
 
