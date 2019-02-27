@@ -90,7 +90,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
             //TODO::Does not work where duplicate sources are present
             for(int i = 0; i < SOURCES.size(); i++){
                 if(nid.get() == SOURCES.get(i)){
-                    node.setPageRank(i,0);
+                    node.setPageRank(i,0.0f);
                     context.write(nid, node);
                     node.setPageRank(i, Float.NEGATIVE_INFINITY);
                     return;

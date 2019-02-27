@@ -1,16 +1,13 @@
 package ca.uwaterloo.cs451.a4;
 
 import io.bespin.java.mapreduce.pagerank.PageRankNode;
-import org.apache.hadoop.io.Writable;
 import tl.lin.data.array.ArrayListOfFloatsWritable;
 import tl.lin.data.array.ArrayListOfIntsWritable;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class PersonalizedPageRankNode extends PageRankNode {
