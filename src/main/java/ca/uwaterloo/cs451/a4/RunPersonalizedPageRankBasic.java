@@ -238,7 +238,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         @Override
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
                 throws IOException, InterruptedException {
-            //TODO::ERROR HERE, index out of range
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>nodebefore: " + node.toString());
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>list: " + SOURCES_LIST + "    " );
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
