@@ -254,7 +254,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
-                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
+                    node.setPageRank(i, (float) sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
                 }
             }
             context.write(nid, node);

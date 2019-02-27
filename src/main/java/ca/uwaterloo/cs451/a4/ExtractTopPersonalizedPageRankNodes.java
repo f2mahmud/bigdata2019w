@@ -9,10 +9,12 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -21,9 +23,11 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.util.LineReader;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import scala.xml.Null;
 import tl.lin.data.pair.PairOfInts;
 import tl.lin.data.pair.PairOfObjectFloat;
 import tl.lin.data.queue.TopScoredObjects;
@@ -82,7 +86,7 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
     }
 
     private static class MyReducer extends
-            Reducer<PairOfInts, FloatWritable, IntWritable, Text> {
+            Reducer<PairOfInts, FloatWritable, Text, NullWritable> {
         private List<TopScoredObjects<Integer>> queues;
         private List<Integer> sources;
 
@@ -114,19 +118,15 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
 
         @Override
         public void cleanup(Context context) throws IOException, InterruptedException {
-            Text value = new Text();
-            IntWritable key = new IntWritable();
+            Text key = new Text();
 
             for (int i = 0; i < queues.size(); i++) {
-                value.set("Source: " + sources.get(i));
-                context.write(key, value);
-                System.out.println(value);
+                key.set("Source: " + sources.get(i));
+                context.write(key, NullWritable.get());
                 for (PairOfObjectFloat<Integer> pair : queues.get(i).extractAll()) {
-                    value.set(String.format("%.5f %d", pair.getRightElement(), pair.getLeftElement()));
+                    key.set(String.format("%.5f %d", Math.exp(pair.getRightElement()), pair.getLeftElement()));
                     // We're outputting a string so we can control the formatting.
-                    key.set(pair.getLeftElement());
-                    context.write(key, value);
-                    System.out.println(value);
+                    context.write(key, NullWritable.get());
                 }
             }
 
@@ -206,8 +206,8 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         job.setMapOutputKeyClass(PairOfInts.class);
         job.setMapOutputValueClass(FloatWritable.class);
 
-        job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(Text.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(NullWritable.class);
         // Text instead of FloatWritable so we can control formatting
 
         job.setMapperClass(MyMapper.class);
@@ -217,6 +217,17 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         FileSystem.get(conf).delete(new Path(outputPath), true);
 
         job.waitForCompletion(true);
+
+        FileSystem fs = FileSystem.get(getConf());
+        FSDataInputStream fin = fs.open(new Path(outputPath + "/part-r-00000"));
+        LineReader reader = new LineReader(fin.getWrappedStream());
+        Text line = new Text();
+        for (int k = 0; k < top + 1; k++) {
+            reader.readLine(line);
+            System.out.println(line);
+
+        }
+        fin.close();
 
         return 0;
     }
