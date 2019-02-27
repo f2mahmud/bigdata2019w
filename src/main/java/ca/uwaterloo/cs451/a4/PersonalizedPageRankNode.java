@@ -23,7 +23,7 @@ public class PersonalizedPageRankNode extends PageRankNode {
         pageranks = new ArrayListOfFloatsWritable();
     }
 
-    public float getPageRank(int sourceIndex) {
+    public Float getPageRank(int sourceIndex) {
         return pageranks.size() < sourceIndex + 1 ? Float.NEGATIVE_INFINITY : pageranks.get(sourceIndex) ;
     }
 
@@ -31,7 +31,7 @@ public class PersonalizedPageRankNode extends PageRankNode {
         return pageranks;
     }
 
-    public void setPageRank(int index, float rank) {
+    public void setPageRank(int index, Float rank) {
         pageranks.set(index,rank);
     }
 
