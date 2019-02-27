@@ -150,7 +150,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             int massMessagesReceived = 0;
             int structureReceived = 0;
 
-            float mass = Float.NEGATIVE_INFINITY;
             while (values.hasNext()) {
                 PersonalizedPageRankNode n = values.next();
 
@@ -187,6 +186,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 if (node.getAdjacencyList().size() != 0) {
                     for (int i = 0; i < node.getPageRanks().size(); i++) {
                         totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
+                        System.out.println(">>>>>>>>>>>>>>>>11111" + i + "    " + totalMasses.get(i));
                     }
                 }
             } else if (structureReceived == 0) {
@@ -218,6 +218,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             FileSystem fs = FileSystem.get(context.getConfiguration());
             FSDataOutputStream out = fs.create(new Path(path + "/" + taskId), false);
             for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
+                System.out.println(">>>>>>>>>>>>>>>>22222" + i + "    " + totalMasses.get(i));
                 out.writeFloat(totalMasses.get(i));
             }
             out.close();
@@ -360,7 +361,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
         // Job 1: distribute PageRank mass along outgoing edges.
         List<Float> masses = phase1(i, j, basePath, numNodes, useCombiner, useInMapperCombiner, sources);
-        System.out.println("MASSSSSSSESSSSSSSSSSSSSSSS::::" + masses);
 
         StringBuilder builder = new StringBuilder();
         // Find out how much PageRank mass got lost at the dangling nodes.
