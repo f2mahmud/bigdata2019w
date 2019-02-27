@@ -82,14 +82,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
                     if (node.getPageRank(i) != Float.NEGATIVE_INFINITY) {       //node has proper page rank
-                        System.out.println(">>>>>>>>>>>>>>sending from " + node);
-
                         intermediateMass.setPageRank(i, node.getPageRank(i) - (float) Math.log(list.size()));
-                        float toBeDistributed = intermediateMass.getPageRank(i);
-                        float test1 = 1.0f + toBeDistributed;
-                        float test2 = 1.0f + intermediateMass.getPageRank(i);
-                        System.out.println(">>>>>>>>>Test1 = " + test1);
-                        System.out.println(">>>>>>>>>Test2 = " + test2);
                         noPageRanks = false;
                     } else {
                         intermediateMass.setPageRank(i, Float.NEGATIVE_INFINITY);
@@ -107,6 +100,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                         intermediateMass.setNodeId(list.get(i));
 
                         // Emit messages with PageRank mass to neighbors.
+                        System.out.println(">>>>>>>>>>>>>>sending " + intermediateMass);
                         context.write(neighborId, intermediateMass);
                         massMessages++;
                     }
@@ -156,19 +150,20 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 PersonalizedPageRankNode n = values.next();
 
                 if (n.getType().equals(PersonalizedPageRankNode.Type.Structure)) {
-                    if(node.getPageRanks().isEmpty()){
+                    if (node.getPageRanks().isEmpty()) {
                         node.setPageRanks(n.getPageRanks());
                     }
                     structureReceived++;
                     node.setAdjacencyList(n.getAdjacencyList());
                 } else {
+                    // This is a message that contains PageRank mass; accumulate.
+                    for (int i = 0; i < n.getPageRanks().size(); i++) {
+                        System.out.println("<<<<<<<<<<<<Getting mass   " + i + " " + n);
+                        node.setPageRank(i, sumLogProbs(node.getPageRank(i), n.getPageRank(i)));
+                    }
                     massMessagesReceived++;
                 }
-                // This is a message that contains PageRank mass; accumulate.
-                for (int i = 0; i < n.getPageRanks().size(); i++) {
-                    System.out.println("<<<<<<<<<<<<Getting mass   " + n.getPageRank(i));
-                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), n.getPageRank(i)));
-                }
+
             }
 
             System.out.println(">>>>>>>>>>>>>Set node efter accumulattion: " + node);
@@ -241,10 +236,10 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             String[] sources = conf.get(SOURCES).split(",");
 
             for (int i = 0; i < sources.length; i++) {
-                SOURCES_LIST.add(i,Integer.parseInt(sources[i]));
-                MISSING_MASSES.add(i,Float.parseFloat(missing[i]));
+                SOURCES_LIST.add(i, Integer.parseInt(sources[i]));
+                MISSING_MASSES.add(i, Float.parseFloat(missing[i]));
             }
-            System.out.println(">>>>>>>>>>>>>>>>4444400" +  "    " + MISSING_MASSES);
+            System.out.println(">>>>>>>>>>>>>>>>4444400" + "    " + MISSING_MASSES);
 
         }
 
@@ -277,7 +272,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         ToolRunner.run(new RunPersonalizedPageRankBasic(), args);
     }
 
-    public RunPersonalizedPageRankBasic() { }
+    public RunPersonalizedPageRankBasic() {
+    }
 
     private static final String BASE = "base";
     private static final String NUM_NODES = "numNodes";
