@@ -62,6 +62,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         @Override
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
                 throws IOException, InterruptedException {
+
+            System.out.println(">>>>>>>>>>Entry Node = " + node);
             // Pass along node structure.
             intermediateStructure.setNodeId(node.getNodeId());
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
@@ -235,7 +237,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 SOURCES_LIST.add(i, Integer.parseInt(sources[i]));
                 MISSING_MASSES.add(i, Float.parseFloat(missing[i]));
             }
-            System.out.println(">>>>>>>>>>>>>>>>4444400" + "    " + MISSING_MASSES);
 
         }
 
@@ -248,6 +249,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                     node.setPageRank(i, sumLogProbs(node.getPageRank(i), (float) Math.log(MISSING_MASSES.get(i))));
                 }
             }
+            System.out.println(">>>>>>>>>Exit Node = " + node);
             context.write(nid, node);
         }
 
@@ -351,7 +353,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     private void iteratePageRank(int i, int j, String basePath, int numNodes,
                                  boolean useCombiner, boolean useInMapperCombiner, String sources) throws Exception {
         // Each iteration consists of two phases (two MapReduce jobs).
-
+        System.out.println(">>>>>>>>>>>>>>>>>>> iteration  " + i);
         // Job 1: distribute PageRank mass along outgoing edges.
         List<Float> masses = phase1(i, j, basePath, numNodes, useCombiner, useInMapperCombiner, sources);
 
@@ -361,7 +363,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             builder.append(1.0f - (float) Math.exp(masses.get(k))).append(",");
         }
 
-        System.out.println(">>>>>>>>>>>>>>>>2222200B" + i + "    " + builder.toString());
+        System.out.println(">>>>>>>>>>>>>>>>Mass Being sent" + i + "    " + builder.toString());
 
         // Job 2: distribute missing mass, take care of random jump factor.
         phase2(i, j, builder.toString(), basePath, numNodes, sources);
