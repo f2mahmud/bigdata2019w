@@ -68,12 +68,12 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             intermediateStructure.setNodeId(node.getNodeId());
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
             intermediateStructure.setAdjacencyList(node.getAdjacencyList());
-            intermediateStructure.setPageRanks(node.getPageRanks());
+            //intermediateStructure.setPageRanks(node.getPageRanks());
 
             context.write(nid, intermediateStructure);
 
             int massMessages = 0;
-            boolean noPageRanks = true;
+            //boolean noPageRanks = true;
 
             // Distribute PageRank mass to neighbors (along outgoing edges).
             if (node.getAdjacencyList().size() > 0) {
@@ -81,16 +81,16 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 ArrayListOfIntsWritable list = node.getAdjacencyList();
 
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
-                    if (node.getPageRank(i) != Float.NEGATIVE_INFINITY) {       //node has proper page rank
+              //      if (node.getPageRank(i) != Float.NEGATIVE_INFINITY) {       //node has proper page rank
                         intermediateMass.setPageRank(i, node.getPageRank(i) - (float) Math.log(list.size()));
-                        noPageRanks = false;
-                    } else {
-                        intermediateMass.setPageRank(i, Float.NEGATIVE_INFINITY);
-                    }
+                //        noPageRanks = false;
+                  //  } else {
+                      //  intermediateMass.setPageRank(i, Float.NEGATIVE_INFINITY);
+                    //}
                 }
 
                 context.getCounter(PageRank.edges).increment(list.size());
-                if (!noPageRanks) {
+                //if (!noPageRanks) {
 
                     intermediateMass.setType(PersonalizedPageRankNode.Type.Mass);
 
@@ -103,7 +103,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                         context.write(neighborId, intermediateMass);
                         massMessages++;
                     }
-                }
+                //}
             }
 
             // Bookkeeping.
@@ -149,9 +149,9 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 PersonalizedPageRankNode n = values.next();
 
                 if (n.getType().equals(PersonalizedPageRankNode.Type.Structure)) {
-                    if (node.getPageRanks() == null || node.getPageRanks().isEmpty()) {
-                        node.setPageRanks(n.getPageRanks());
-                    }
+                    //if (node.getPageRanks() == null || node.getPageRanks().isEmpty()) {
+                    //    node.setPageRanks(n.getPageRanks());
+                    //}
                     structureReceived++;
                     node.setAdjacencyList(n.getAdjacencyList());
                 } else {
@@ -177,7 +177,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 context.write(nid, node);
 
                 // Keep track of total PageRank mass. Also taking care of dangling node issue
-                if (node.getAdjacencyList().size() != 0) {
+                if (node.getAdjacencyList().size() > 0) {
                     for (int i = 0; i < node.getPageRanks().size(); i++) {
                         totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
                     }
