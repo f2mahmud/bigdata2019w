@@ -19,17 +19,17 @@ public class PersonalizedPageRankNode extends PageRankNode {
     }
 
     private static final PersonalizedPageRankNode.Type[] mapping;
-    private FloatArrayWritable pageranks;
+    private ArrayListOfFloatsWritable pageranks;
 
     public PersonalizedPageRankNode() {
-        pageranks = new FloatArrayWritable();
+        pageranks = new ArrayListOfFloatsWritable();
     }
 
     public Float getPageRank(int sourceIndex) {
         return pageranks.size() < sourceIndex + 1 ? Float.NEGATIVE_INFINITY : pageranks.get(sourceIndex) ;
     }
 
-    public FloatArrayWritable getPageRanks(){
+    public ArrayListOfFloatsWritable getPageRanks(){
         return pageranks;
     }
 
