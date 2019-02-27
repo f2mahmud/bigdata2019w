@@ -1,8 +1,10 @@
 package ca.uwaterloo.cs451.a4;
 
 import io.bespin.java.mapreduce.pagerank.PageRankNode;
+import org.apache.hadoop.io.Writable;
 import tl.lin.data.array.ArrayListOfFloatsWritable;
 import tl.lin.data.array.ArrayListOfIntsWritable;
+import tl.lin.data.array.FloatArrayWritable;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -17,17 +19,17 @@ public class PersonalizedPageRankNode extends PageRankNode {
     }
 
     private static final PersonalizedPageRankNode.Type[] mapping;
-    private ArrayListOfFloatsWritable pageranks;
+    private FloatArrayWritable pageranks;
 
     public PersonalizedPageRankNode() {
-        pageranks = new ArrayListOfFloatsWritable();
+        pageranks = new FloatArrayWritable();
     }
 
     public Float getPageRank(int sourceIndex) {
         return pageranks.size() < sourceIndex + 1 ? Float.NEGATIVE_INFINITY : pageranks.get(sourceIndex) ;
     }
 
-    public ArrayListOfFloatsWritable getPageRanks(){
+    public FloatArrayWritable getPageRanks(){
         return pageranks;
     }
 
