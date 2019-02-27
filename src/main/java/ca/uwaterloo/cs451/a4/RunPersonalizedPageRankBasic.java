@@ -42,7 +42,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(RunPersonalizedPageRankBasic.class);
 
 
-    private static enum PageRank {
+    private enum PageRank {
         nodes, edges, massMessages, massMessagesSaved, massMessagesReceived, missingStructure
     }
 
@@ -129,11 +129,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
                 totalMasses.add(i, Float.NEGATIVE_INFINITY);
             }
-//            String[] sourceArray = conf.get(SOURCES).split(",");
-//            for(String source : sourceArray){
-//                sources.add(Integer.parseInt(source));
-//            }
-
         }
 
         @Override
@@ -154,17 +149,14 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 PersonalizedPageRankNode n = values.next();
 
                 if (n.getType().equals(PersonalizedPageRankNode.Type.Structure)) {
-                    // This is the structure; update accordingly.
-                    ArrayListOfIntsWritable list = n.getAdjacencyList();
                     structureReceived++;
-
-                    node.setAdjacencyList(list);
+                    node.setAdjacencyList(n.getAdjacencyList());
                 } else {
-                    // This is a message that contains PageRank mass; accumulate.
-                    for (int i = 0; i < n.getPageRanks().size(); i++) {
-                        node.setPageRank(i, sumLogProbs(node.getPageRank(i), n.getPageRank(i)));
-                    }
                     massMessagesReceived++;
+                }
+                // This is a message that contains PageRank mass; accumulate.
+                for (int i = 0; i < n.getPageRanks().size(); i++) {
+                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), n.getPageRank(i)));
                 }
             }
 
@@ -186,7 +178,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 if (node.getAdjacencyList().size() != 0) {
                     for (int i = 0; i < node.getPageRanks().size(); i++) {
                         totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
-                        System.out.println(">>>>>>>>>>>>>>>>11111" + i + "    " + totalMasses.get(i));
+                        System.out.println(">>>>>>>>>>>>>>>>1111100" + i + "    " + totalMasses.get(i));
                     }
                 }
             } else if (structureReceived == 0) {
@@ -218,15 +210,13 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             FileSystem fs = FileSystem.get(context.getConfiguration());
             FSDataOutputStream out = fs.create(new Path(path + "/" + taskId), false);
             for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
-                System.out.println(">>>>>>>>>>>>>>>>22222" + i + "    " + totalMasses.get(i));
+                System.out.println(">>>>>>>>>>>>>>>>2222200" + i + "    " + totalMasses.get(i));
                 out.writeFloat(totalMasses.get(i));
             }
             out.close();
         }
     }
 
-    // Mapper that distributes the missing PageRank mass (lost at the dangling nodes) and takes care
-    // of the random jump factor.
     private static class MapPageRankMassDistributionClass extends
             Mapper<IntWritable, PersonalizedPageRankNode, IntWritable, PersonalizedPageRankNode> {
 
@@ -244,6 +234,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 SOURCES_LIST.add(Integer.parseInt(sources[i]));
                 MISSING_MASSES.add(Float.parseFloat(missing[i]));
             }
+            System.out.println(">>>>>>>>>>>>>>>>4444400" +  "    " + MISSING_MASSES);
+
 
         }
 
@@ -254,7 +246,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
-                    node.setPageRank(i, (float) sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
+                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
                 }
             }
             context.write(nid, node);
@@ -367,6 +359,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         for (int k = 0; k < sources.split(",").length; k++) {
             builder.append(1.0f - masses.get(k)).append(",");
         }
+
+        System.out.println(">>>>>>>>>>>>>>>>2222200B" + i + "    " + builder.toString());
 
         // Job 2: distribute missing mass, take care of random jump factor.
         phase2(i, j, builder.toString(), basePath, numNodes, sources);
