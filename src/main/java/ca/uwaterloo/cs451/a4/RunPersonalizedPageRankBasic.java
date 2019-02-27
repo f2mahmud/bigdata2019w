@@ -364,8 +364,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
         StringBuilder builder = new StringBuilder();
         // Find out how much PageRank mass got lost at the dangling nodes.
-        for (int k = 0; k < sources.split(",").length; i++) {
-            builder.append(1.0f - masses.get(i)).append(",");
+        for (int k = 0; k < sources.split(",").length; k++) {
+            builder.append(1.0f - masses.get(k)).append(",");
         }
 
         // Job 2: distribute missing mass, take care of random jump factor.
