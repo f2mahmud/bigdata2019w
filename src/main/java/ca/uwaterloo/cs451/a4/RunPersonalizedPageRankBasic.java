@@ -176,7 +176,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 if (node.getAdjacencyList().size() != 0) {
                     for (int i = 0; i < node.getPageRanks().size(); i++) {
                         totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
-s                    }
+                    }
                 }
             } else if (structureReceived == 0) {
                 // We get into this situation if there exists an edge pointing to a node which has no
