@@ -100,7 +100,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                         intermediateMass.setNodeId(list.get(i));
 
                         // Emit messages with PageRank mass to neighbors.
-                        System.out.println(">>>>>>>>>>>>>>sending " + intermediateMass);
                         context.write(neighborId, intermediateMass);
                         massMessages++;
                     }
@@ -166,12 +165,9 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
             }
 
-            System.out.println(">>>>>>>>>>>>>Set node efter accumulattion: " + node);
             for (int i = 0; i < node.getPageRanks().size(); i++) {
                 node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
             }
-
-            System.out.println(">>>>>>>>>>>>>Set node after using alpha: " + node);
 
             // Update the final accumulated PageRank mass.
             context.getCounter(PageRank.massMessagesReceived).increment(massMessagesReceived);
@@ -249,7 +245,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 throws IOException, InterruptedException {
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
-                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
+                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), (float) Math.log(MISSING_MASSES.get(i))));
                     System.out.println(">>>>>>>>>after adding missing mass : " + node);
                 }
             }
@@ -364,7 +360,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         // Find out how much PageRank mass got lost at the dangling nodes.
         for (int k = 0; k < sources.split(",").length; k++) {
             //TODO::Might need to use log on the 1 here
-            builder.append(1.0f - masses.get(k)).append(",");
+            builder.append(1.0f - (float) Math.exp(masses.get(k))).append(",");
         }
 
         System.out.println(">>>>>>>>>>>>>>>>2222200B" + i + "    " + builder.toString());
