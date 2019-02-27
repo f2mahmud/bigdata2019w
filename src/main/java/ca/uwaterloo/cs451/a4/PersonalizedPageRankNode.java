@@ -47,28 +47,22 @@ public class PersonalizedPageRankNode extends PageRankNode {
      */
     @Override
     public void readFields(DataInput in) throws IOException {
-        System.out.println("READDDDINNNGG");
         int b = in.readByte();
         setType(mapping[b]);
-        System.out.println("TYPE:::::::" + getType());
         setNodeId(in.readInt());
-        System.out.println("NodeId:::::::" + getNodeId());
         if (getType().equals(Type.Mass)) {
             pageranks.readFields(in);
-            System.out.println("PageRanks::::" + pageranks);
             return;
         }
 
         if (getType().equals(Type.Complete)) {
             pageranks.readFields(in);
         }
-        System.out.println("PageRanks::::" + pageranks);
 
         ArrayListOfIntsWritable list = new ArrayListOfIntsWritable();
         list.readFields(in);
 
         setAdjacencyList(list);
-        System.out.println("Neighbours::::" + getAdjacencyList());
     }
 
     /**
@@ -79,23 +73,17 @@ public class PersonalizedPageRankNode extends PageRankNode {
      */
     @Override
     public void write(DataOutput out) throws IOException {
-        System.out.println("WRITING");
         out.writeByte(getType().val);
-        System.out.println("TYPE:::::::" + getType());
         out.writeInt(getNodeId());
-        System.out.println("NodeId:::::::" + getNodeId());
         if (getType().equals(Type.Mass)) {
             pageranks.write(out);
-            System.out.println("PageRanks::::" + pageranks);
             return;
         }
 
         if (getType().equals(Type.Complete)) {
             pageranks.write(out);
         }
-        System.out.println("PageRanks::::" + pageranks);
         getAdjacencyList().write(out);
-        System.out.println("Neighbours::::" + getAdjacencyList());
     }
 
     @Override

@@ -253,7 +253,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
-                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), node.getPageRank(i)));
+                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
                 }
             }
             context.write(nid, node);
@@ -360,6 +360,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
         // Job 1: distribute PageRank mass along outgoing edges.
         List<Float> masses = phase1(i, j, basePath, numNodes, useCombiner, useInMapperCombiner, sources);
+        System.out.println("MASSSSSSSESSSSSSSSSSSSSSSS::::" + masses);
 
         StringBuilder builder = new StringBuilder();
         // Find out how much PageRank mass got lost at the dangling nodes.
