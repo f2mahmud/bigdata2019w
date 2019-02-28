@@ -438,7 +438,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         job.setJarByClass(RunPersonalizedPageRankBasic.class);
 
         LOG.info("missing PageRank mass: " + missingMasses);
-        LOG.info("missing PageRank mass list size: " + missingMasses.split(",").length);        //TODO::Need to get rid of this
         LOG.info("sources: " + sources);
         LOG.info("number of nodes: " + numNodes);
 

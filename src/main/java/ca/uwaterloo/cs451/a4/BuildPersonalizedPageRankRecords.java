@@ -38,7 +38,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
 
     private static class MyMapper extends Mapper<LongWritable, Text, IntWritable, PersonalizedPageRankNode> {
         private static final IntWritable nid = new IntWritable();
-        private static final PersonalizedPageRankNode node = new PersonalizedPageRankNode();
+        private final PersonalizedPageRankNode node = new PersonalizedPageRankNode();
         private static List<Integer> SOURCES = new ArrayList<>();
 
         @Override
@@ -87,7 +87,6 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
                 context.getCounter("graph", "numActiveNodes").increment(1);
             }
 
-            //TODO::Does not work where duplicate sources are present
             for(int i = 0; i < SOURCES.size(); i++){
                 if(nid.get() == SOURCES.get(i)){
                     node.setPageRank(i,0.0f);
