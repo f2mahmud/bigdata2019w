@@ -156,10 +156,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
             }
 
-            for (int i = 0; i < node.getPageRanks().size(); i++) {
-                node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
-            }
-
             // Update the final accumulated PageRank mass.
             context.getCounter(PageRank.massMessagesReceived).increment(massMessagesReceived);
 
@@ -235,7 +231,9 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 throws IOException, InterruptedException {
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
-                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), (float) Math.log(MISSING_MASSES.get(i))));
+                    node.setPageRank(i, sumLogProbs((float) Math.log(ALPHA), (float) Math.log(1.0f - ALPHA) + sumLogProbs(node.getPageRank(i), (float) Math.log(MISSING_MASSES.get(i)))));
+                } else {
+                    node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
                 }
             }
             System.out.println(">>>>>>>>>Exit Node = " + node);
