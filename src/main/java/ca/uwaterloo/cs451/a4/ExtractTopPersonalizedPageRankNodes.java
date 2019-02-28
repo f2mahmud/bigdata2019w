@@ -181,7 +181,7 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         String inputPath = cmdline.getOptionValue(INPUT);
         String outputPath = cmdline.getOptionValue(OUTPUT);
         int top = Integer.parseInt(cmdline.getOptionValue(TOP));
-        //String[] sources = cmdline.getOptionValue(SOURCES_STRING).split(",");
+        String[] sources = cmdline.getOptionValue(SOURCES_STRING).split(",");
 
         LOG.info("Tool name: " + ExtractTopPersonalizedPageRankNodes.class.getSimpleName());
         LOG.info(" - input: " + inputPath);
@@ -221,16 +221,15 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         job.waitForCompletion(true);
 
         FileSystem fs = FileSystem.get(getConf());
-        try (FSDataInputStream fin = fs.open(new Path(outputPath + "/part-r-00000"));
-        ) {
-            LineReader reader = new LineReader(fin.getWrappedStream());
-            Text line = new Text();
-            while (true) {
+        FSDataInputStream fin = fs.open(new Path(outputPath + "/part-r-00000"));
+        LineReader reader = new LineReader(fin.getWrappedStream());
+        Text line = new Text();
+        for(int j = 0 ; j < sources.length; j++) {
+            for (int i = 0; i < top; i++) {
                 reader.readLine(line);
                 System.out.println(line);
-
             }
-        } catch (EOFException e) {
+            System.out.println();
         }
 
 
