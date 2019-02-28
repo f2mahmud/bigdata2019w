@@ -23,6 +23,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import tl.lin.data.array.ArrayListOfFloatsWritable;
 import tl.lin.data.array.ArrayListOfIntsWritable;
 
 import java.io.IOException;
@@ -38,8 +39,8 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
 
     private static class MyMapper extends Mapper<LongWritable, Text, IntWritable, PersonalizedPageRankNode> {
         private static final IntWritable nid = new IntWritable();
-        private final PersonalizedPageRankNode node = new PersonalizedPageRankNode();
-        private static List<Integer> SOURCES = new ArrayList<>();
+        private static final PersonalizedPageRankNode node = new PersonalizedPageRankNode();
+        private static final List<Integer> SOURCES = new ArrayList<>();
 
         @Override
         public void setup(Mapper<LongWritable, Text, IntWritable, PersonalizedPageRankNode>.Context context) {
@@ -53,7 +54,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
             String[] sources = context.getConfiguration().get(SOURCES_STRING).split(",");
 
             for(int i = 0; i < sources.length; i++){
-                SOURCES.add(Integer.parseInt(sources[i]));
+                SOURCES.set(i, Integer.parseInt(sources[i]));
                 node.setPageRank(i, Float.NEGATIVE_INFINITY);
             }
 
@@ -87,15 +88,16 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
                 context.getCounter("graph", "numActiveNodes").increment(1);
             }
 
+            ArrayListOfFloatsWritable baseRanks = node.getPageRanks();
+
             for(int i = 0; i < SOURCES.size(); i++){
                 if(nid.get() == SOURCES.get(i)){
                     node.setPageRank(i,0.0f);
-                    context.write(nid, node);
-                    node.setPageRank(i, Float.NEGATIVE_INFINITY);
-                    return;
                 }
             }
             context.write(nid,node);
+            System.out.println(">>>>>>>>>>>   " + node);
+            node.setPageRanks(baseRanks);
         }
     }
 
