@@ -225,7 +225,7 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         LineReader reader = new LineReader(fin.getWrappedStream());
         Text line = new Text();
         for(int j = 0 ; j < sources.length; j++) {
-            for (int i = 0; i < top; i++) {
+            for (int i = 0; i < top + 1; i++) {
                 reader.readLine(line);
                 System.out.println(line);
             }
