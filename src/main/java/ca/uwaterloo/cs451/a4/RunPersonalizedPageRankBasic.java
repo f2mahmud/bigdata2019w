@@ -68,7 +68,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             intermediateStructure.setNodeId(node.getNodeId());
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
             intermediateStructure.setAdjacencyList(node.getAdjacencyList());
-            //intermediateStructure.setPageRanks(node.getPageRanks());
 
             context.write(nid, intermediateStructure);
 
@@ -86,7 +85,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 }
 
                 context.getCounter(PageRank.edges).increment(list.size());
-                //if (!noPageRanks) {
 
                 intermediateMass.setType(PersonalizedPageRankNode.Type.Mass);
 
@@ -116,13 +114,13 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             Reducer<IntWritable, PersonalizedPageRankNode, IntWritable, PersonalizedPageRankNode> {
         // For keeping track of PageRank mass encountered, so we can compute missing PageRank mass lost
         // through dangling nodes.
-        private List<Float> totalMasses = new ArrayList<>();
+        private List<Float> missingMasses = new ArrayList<>();
 
         @Override
         public void setup(Context context) throws IOException {
             Configuration conf = context.getConfiguration();
             for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
-                totalMasses.add(i, Float.NEGATIVE_INFINITY);
+                missingMasses.add(i, Float.NEGATIVE_INFINITY);
             }
         }
 
@@ -156,24 +154,26 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
             }
 
-            for (int i = 0; i < node.getPageRanks().size(); i++) {
-                node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
-            }
-
             // Update the final accumulated PageRank mass.
             context.getCounter(PageRank.massMessagesReceived).increment(massMessagesReceived);
 
             // Error checking.
             if (structureReceived == 1) {
+
+                if (node.getAdjacencyList().size() == 0) {
+                    for (int i = 0; i < node.getPageRanks().size(); i++) {
+                        missingMasses.set(i, sumLogProbs(missingMasses.get(i), node.getPageRank(i)));
+                        node.setPageRank(i, Float.NEGATIVE_INFINITY);
+                    }
+                } else {
+                    for (int i = 0; i < node.getPageRanks().size(); i++) {
+                        node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
+                        missingMasses.set(i, sumLogProbs(missingMasses.get(i), (float) Math.log(ALPHA) + node.getPageRank(i)));
+                    }
+                }
                 // Everything checks out, emit final node structure with updated PageRank value.
                 context.write(nid, node);
 
-                // Keep track of total PageRank mass. Also taking care of dangling node issue
-                if (node.getAdjacencyList().size() > 0) {
-                    for (int i = 0; i < node.getPageRanks().size(); i++) {
-                        totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
-                    }
-                }
             } else if (structureReceived == 0) {
                 // We get into this situation if there exists an edge pointing to a node which has no
                 // corresponding node structure (i.e., PageRank mass was passed to a non-existent node)...
@@ -202,8 +202,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             // Write to a file the amount of PageRank mass we've seen in this reducer.
             FileSystem fs = FileSystem.get(context.getConfiguration());
             FSDataOutputStream out = fs.create(new Path(path + "/" + taskId), false);
-            for (int i = 0; i < conf.get(SOURCES).split(",").length; i++) {
-                out.writeFloat(totalMasses.get(i));
+            for (Float mass : missingMasses) {
+                out.writeFloat(mass);
             }
             out.close();
         }
@@ -235,7 +235,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 throws IOException, InterruptedException {
             for (int i = 0; i < SOURCES_LIST.size(); i++) {
                 if (SOURCES_LIST.get(i).equals(nid.get())) {
-                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), (float) Math.log(MISSING_MASSES.get(i))));
+                    node.setPageRank(i, sumLogProbs(node.getPageRank(i), MISSING_MASSES.get(i)));
                 }
             }
             System.out.println(">>>>>>>>>Exit Node = " + node);
@@ -349,7 +349,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         StringBuilder builder = new StringBuilder();
         // Find out how much PageRank mass got lost at the dangling nodes.
         for (int k = 0; k < sources.split(",").length; k++) {
-            builder.append(1.0f - (float) Math.exp(masses.get(k))).append(",");
+            builder.append(masses.get(k)).append(",");
         }
 
         System.out.println(">>>>>>>>>>>>>>>>Mass Being sent" + i + "    " + builder.toString());

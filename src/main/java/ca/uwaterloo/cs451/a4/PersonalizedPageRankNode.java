@@ -26,23 +26,20 @@ public class PersonalizedPageRankNode extends PageRankNode {
     }
 
     public Float getPageRank(int sourceIndex) {
-        return pageranks.size() < sourceIndex + 1 ? Float.NEGATIVE_INFINITY : pageranks.get(sourceIndex) ;
+        return pageranks.size() < sourceIndex + 1 ? Float.NEGATIVE_INFINITY : pageranks.get(sourceIndex);
     }
 
     public void setPageRank(int index, Float rank) {
-        pageranks.set(index,rank);
+        pageranks.set(index, rank);
     }
 
-    public ArrayListOfFloatsWritable getPageRanks(){
+    public ArrayListOfFloatsWritable getPageRanks() {
         return pageranks;
     }
 
-    public void setPageRanks(ArrayListOfFloatsWritable pageRanks){
+    public void setPageRanks(ArrayListOfFloatsWritable pageRanks) {
         pageranks = pageRanks;
     }
-
-
-
 
     /**
      * Deserializes this object.
@@ -93,7 +90,7 @@ public class PersonalizedPageRankNode extends PageRankNode {
 
     @Override
     public String toString() {
-        return String.format("{%d %.5s %s}", getNodeId(), (pageranks == null ? "[ ]" : pageranks.toString()) , (getAdjacencyList() == null ? "[]"
+        return String.format("{%d %.5s %s}", getNodeId(), (pageranks == null ? "[ ]" : pageranks.toString()), (getAdjacencyList() == null ? "[]"
                 : getAdjacencyList().toString(10)));
     }
 
