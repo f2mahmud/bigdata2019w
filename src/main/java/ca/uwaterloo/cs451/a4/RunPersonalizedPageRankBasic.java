@@ -67,7 +67,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             intermediateStructure.setNodeId(node.getNodeId());
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
             intermediateStructure.setAdjacencyList(node.getAdjacencyList());
-            //intermediateStructure.setPageRanks(node.getPageRanks());
 
             context.write(nid, intermediateStructure);
 
@@ -310,6 +309,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         int n = Integer.parseInt(cmdline.getOptionValue(NUM_NODES));
         int s = Integer.parseInt(cmdline.getOptionValue(START));
         int e = Integer.parseInt(cmdline.getOptionValue(END));
+
+        //boolean useCombiner = true;
         boolean useCombiner = cmdline.hasOption(COMBINER);
         boolean useInmapCombiner = cmdline.hasOption(INMAPPER_COMBINER);
         boolean useRange = cmdline.hasOption(RANGE);
@@ -399,7 +400,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         job.setOutputValueClass(PersonalizedPageRankNode.class);
 
         job.setMapperClass(MapClass.class);
-//
+
 //        if (useCombiner) {        //TODO::Should be defaulted to on
 //            job.setCombinerClass(CombineClass.class);
 //        }

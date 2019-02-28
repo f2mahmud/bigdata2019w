@@ -23,6 +23,8 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import tl.lin.data.array.ArrayListOfFloats;
+import tl.lin.data.array.ArrayListOfFloatsWritable;
 import tl.lin.data.array.ArrayListOfIntsWritable;
 
 import java.io.IOException;
@@ -52,7 +54,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
 
             String[] sources = context.getConfiguration().get(SOURCES_STRING).split(",");
 
-            for(int i = 0; i < sources.length; i++){
+            for (int i = 0; i < sources.length; i++) {
                 SOURCES.add(Integer.parseInt(sources[i]));
                 node.setPageRank(i, Float.NEGATIVE_INFINITY);
             }
@@ -87,20 +89,21 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
                 context.getCounter("graph", "numActiveNodes").increment(1);
             }
 
-            //TODO::Does not work where duplicate sources are present
-            for(int i = 0; i < SOURCES.size(); i++){
-                if(nid.get() == SOURCES.get(i)){
-                    node.setPageRank(i,0.0f);
-                    context.write(nid, node);
-                    node.setPageRank(i, Float.NEGATIVE_INFINITY);
-                    return;
+            ArrayListOfFloatsWritable basicRanks = node.getPageRanks();
+
+            for (int i = 0; i < SOURCES.size(); i++) {
+                if (nid.get() == SOURCES.get(i)) {
+                    node.setPageRank(i, 0.0f);
                 }
             }
-            context.write(nid,node);
+            context.write(nid, node);
+
+            node.setPageRanks(basicRanks);
         }
     }
 
-    public BuildPersonalizedPageRankRecords() {}
+    public BuildPersonalizedPageRankRecords() {
+    }
 
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
@@ -110,7 +113,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
     /**
      * Runs this tool.
      */
-    @SuppressWarnings({ "static-access" })
+    @SuppressWarnings({"static-access"})
     public int run(String[] args) throws Exception {
         Options options = new Options();
 
