@@ -63,6 +63,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
                 throws IOException, InterruptedException {
 
+            System.out.println(">>>>>>>>>>>>>>> " + node);
             // Pass along node structure.
             intermediateStructure.setNodeId(node.getNodeId());
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
