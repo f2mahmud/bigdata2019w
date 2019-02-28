@@ -92,7 +92,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
             for (int i = 0; i < SOURCES.size(); i++) {
                 node.setPageRank(i, (nid.get() == SOURCES.get(i) ? 0.0f : Float.NEGATIVE_INFINITY));
             }
-            
+
             context.write(nid, node);
 
         }
