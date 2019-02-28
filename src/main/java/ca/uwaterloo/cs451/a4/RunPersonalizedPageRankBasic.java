@@ -335,7 +335,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     private void iteratePageRank(int i, int j, String basePath, int numNodes,
                                  boolean useCombiner, boolean useInMapperCombiner, String sources) throws Exception {
         // Each iteration consists of two phases (two MapReduce jobs).
-        System.out.println(">>>>>>>>>>>>>>>>>>> iteration  " + i);
         // Job 1: distribute PageRank mass along outgoing edges.
         List<Float> masses = phase1(i, j, basePath, numNodes, useCombiner, useInMapperCombiner, sources);
 
@@ -344,8 +343,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         for (int k = 0; k < sources.split(",").length; k++) {
             builder.append(1.0f - (float) Math.exp(masses.get(k))).append(",");
         }
-
-        System.out.println(">>>>>>>>>>>>>>>>Mass Being sent" + i + "    " + builder.toString());
 
         // Job 2: distribute missing mass, take care of random jump factor.
         phase2(i, j, builder.toString(), basePath, numNodes, sources);
