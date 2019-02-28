@@ -32,6 +32,7 @@ import tl.lin.data.pair.PairOfInts;
 import tl.lin.data.pair.PairOfObjectFloat;
 import tl.lin.data.queue.TopScoredObjects;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +64,7 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         @Override
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context) throws IOException,
                 InterruptedException {
-            System.out.println(">>>>>>>>>>>>>>>>>node id  " + node );
+            System.out.println(">>>>>>>>>>>>>>>>>node id  " + node);
             for (int i = 0; i < sources.size(); i++) {
                 queues.get(i).add(node.getNodeId(), node.getPageRank(i));
             }
@@ -220,15 +221,18 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
         job.waitForCompletion(true);
 
         FileSystem fs = FileSystem.get(getConf());
-        FSDataInputStream fin = fs.open(new Path(outputPath + "/part-r-00000"));
-        LineReader reader = new LineReader(fin.getWrappedStream());
-        Text line = new Text();
-        for (int k = 0; k < top + 1; k++) {
-            reader.readLine(line);
-            System.out.println(line);
+        try (FSDataInputStream fin = fs.open(new Path(outputPath + "/part-r-00000"));
+        ) {
+            LineReader reader = new LineReader(fin.getWrappedStream());
+            Text line = new Text();
+            while (true) {
+                reader.readLine(line);
+                System.out.println(line);
 
+            }
+        } catch (EOFException e) {
         }
-        fin.close();
+
 
         return 0;
     }

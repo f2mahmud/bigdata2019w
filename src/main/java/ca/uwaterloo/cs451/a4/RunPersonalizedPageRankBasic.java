@@ -81,29 +81,25 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 ArrayListOfIntsWritable list = node.getAdjacencyList();
 
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
-              //      if (node.getPageRank(i) != Float.NEGATIVE_INFINITY) {       //node has proper page rank
-                        intermediateMass.setPageRank(i, node.getPageRank(i) - (float) Math.log(list.size()));
-                //        noPageRanks = false;
-                  //  } else {
-                      //  intermediateMass.setPageRank(i, Float.NEGATIVE_INFINITY);
-                    //}
+                    intermediateMass.setPageRank(i, node.getPageRank(i) - (float) Math.log(list.size()));
+
                 }
 
                 context.getCounter(PageRank.edges).increment(list.size());
                 //if (!noPageRanks) {
 
-                    intermediateMass.setType(PersonalizedPageRankNode.Type.Mass);
+                intermediateMass.setType(PersonalizedPageRankNode.Type.Mass);
 
-                    // Iterate over neighbors.
-                    for (int i = 0; i < list.size(); i++) {
-                        neighborId.set(list.get(i));
-                        intermediateMass.setNodeId(list.get(i));
+                // Iterate over neighbors.
+                for (int i = 0; i < list.size(); i++) {
+                    neighborId.set(list.get(i));
+                    intermediateMass.setNodeId(list.get(i));
 
-                        // Emit messages with PageRank mass to neighbors.
-                        context.write(neighborId, intermediateMass);
-                        massMessages++;
-                    }
-                //}
+                    // Emit messages with PageRank mass to neighbors.
+                    context.write(neighborId, intermediateMass);
+                    massMessages++;
+                }
+
             }
 
             // Bookkeeping.
@@ -121,7 +117,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         // For keeping track of PageRank mass encountered, so we can compute missing PageRank mass lost
         // through dangling nodes.
         private List<Float> totalMasses = new ArrayList<>();
-        // private static List<Integer> sources = new ArrayList<>();
 
         @Override
         public void setup(Context context) throws IOException {
@@ -149,9 +144,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 PersonalizedPageRankNode n = values.next();
 
                 if (n.getType().equals(PersonalizedPageRankNode.Type.Structure)) {
-                    //if (node.getPageRanks() == null || node.getPageRanks().isEmpty()) {
-                    //    node.setPageRanks(n.getPageRanks());
-                    //}
                     structureReceived++;
                     node.setAdjacencyList(n.getAdjacencyList());
                 } else {
