@@ -53,9 +53,8 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
 
             String[] sources = context.getConfiguration().get(SOURCES_STRING).split(",");
 
-            for(int i = 0; i < sources.length; i++){
+            for (int i = 0; i < sources.length; i++) {
                 SOURCES.add(i, Integer.parseInt(sources[i]));
-                node.setPageRank(i, Float.NEGATIVE_INFINITY);
             }
 
         }
@@ -88,20 +87,22 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
                 context.getCounter("graph", "numActiveNodes").increment(1);
             }
 
-            ArrayListOfFloatsWritable baseRanks = node.getPageRanks();
+            float[] pageRanks = new float[SOURCES.size()];
 
-            for(int i = 0; i < SOURCES.size(); i++){
-                if(nid.get() == SOURCES.get(i)){
-                    node.setPageRank(i,0.0f);
-                }
+            for (int i = 0; i < SOURCES.size(); i++) {
+                pageRanks[i] = (nid.get() == SOURCES.get(i) ? 0.0f : Float.NEGATIVE_INFINITY);
+
             }
-            context.write(nid,node);
+            node.setPageRanks(new ArrayListOfFloatsWritable(pageRanks));
+
+            context.write(nid, node);
+
             System.out.println(">>>>>>>>>>>   " + node);
-            node.setPageRanks(baseRanks);
         }
     }
 
-    public BuildPersonalizedPageRankRecords() {}
+    public BuildPersonalizedPageRankRecords() {
+    }
 
     private static final String INPUT = "input";
     private static final String OUTPUT = "output";
@@ -111,7 +112,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
     /**
      * Runs this tool.
      */
-    @SuppressWarnings({ "static-access" })
+    @SuppressWarnings({"static-access"})
     public int run(String[] args) throws Exception {
         Options options = new Options();
 
