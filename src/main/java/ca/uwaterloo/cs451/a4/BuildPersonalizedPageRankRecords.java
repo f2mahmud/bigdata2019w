@@ -54,7 +54,7 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
             String[] sources = context.getConfiguration().get(SOURCES_STRING).split(",");
 
             for(int i = 0; i < sources.length; i++){
-                SOURCES.set(i, Integer.parseInt(sources[i]));
+                SOURCES.add(i, Integer.parseInt(sources[i]));
                 node.setPageRank(i, Float.NEGATIVE_INFINITY);
             }
 
