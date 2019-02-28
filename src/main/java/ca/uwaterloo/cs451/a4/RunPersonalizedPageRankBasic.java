@@ -81,7 +81,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
                 for (int i = 0; i < node.getPageRanks().size(); i++) {
                     intermediateMass.setPageRank(i, node.getPageRank(i) - (float) Math.log(list.size()));
-
                 }
 
                 context.getCounter(PageRank.edges).increment(list.size());
@@ -163,7 +162,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 if (node.getAdjacencyList().size() == 0) {
                     for (int i = 0; i < node.getPageRanks().size(); i++) {
                         missingMasses.set(i, sumLogProbs(missingMasses.get(i), node.getPageRank(i)));
-                        node.setPageRank(i, Float.NEGATIVE_INFINITY);
                     }
                 } else {
                     for (int i = 0; i < node.getPageRanks().size(); i++) {
@@ -447,7 +445,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         job.setJarByClass(RunPersonalizedPageRankBasic.class);
 
         LOG.info("missing PageRank mass: " + missingMasses);
-        LOG.info("missing PageRank mass list size: " + missingMasses.split(",").length);        //TODO::Need to get rid of this
         LOG.info("sources: " + sources);
         LOG.info("number of nodes: " + numNodes);
 
