@@ -87,18 +87,12 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
                 context.getCounter("graph", "numActiveNodes").increment(1);
             }
 
-            float[] pageRanks = new float[SOURCES.size()];
+            node.getPageRanks().setSize(SOURCES.size());
 
             for (int i = 0; i < SOURCES.size(); i++) {
-                pageRanks[i] = (nid.get() == SOURCES.get(i) ? 0.0f : Float.NEGATIVE_INFINITY);
+                node.setPageRank(i, (nid.get() == SOURCES.get(i) ? 0.0f : Float.NEGATIVE_INFINITY));
             }
-
-            node.setPageRanks(new ArrayListOfFloatsWritable(pageRanks));
-
-            for(float item : node.getPageRanks()){
-                System.out.println(">>>>>>>>>>>>>>>item " + nid.get() + "    " + item);
-            }
-
+            
             context.write(nid, node);
 
         }
