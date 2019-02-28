@@ -63,7 +63,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
         public void map(IntWritable nid, PersonalizedPageRankNode node, Context context)
                 throws IOException, InterruptedException {
 
-            System.out.println(">>>>>>>>>>Entry Node = " + node);
             // Pass along node structure.
             intermediateStructure.setNodeId(node.getNodeId());
             intermediateStructure.setType(PersonalizedPageRankNode.Type.Structure);     //adjacency list
@@ -73,7 +72,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
             context.write(nid, intermediateStructure);
 
             int massMessages = 0;
-            //boolean noPageRanks = true;
 
             // Distribute PageRank mass to neighbors (along outgoing edges).
             if (node.getAdjacencyList().size() > 0) {
@@ -86,7 +84,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 }
 
                 context.getCounter(PageRank.edges).increment(list.size());
-                //if (!noPageRanks) {
 
                 intermediateMass.setType(PersonalizedPageRankNode.Type.Mass);
 
@@ -165,11 +162,10 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                 context.write(nid, node);
 
                 // Keep track of total PageRank mass. Also taking care of dangling node issue
-                if (node.getAdjacencyList().size() > 0) {
-                    for (int i = 0; i < node.getPageRanks().size(); i++) {
-                        totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
-                    }
+                for (int i = 0; i < node.getPageRanks().size(); i++) {
+                    totalMasses.set(i, sumLogProbs(totalMasses.get(i), node.getPageRank(i)));
                 }
+
             } else if (structureReceived == 0) {
                 // We get into this situation if there exists an edge pointing to a node which has no
                 // corresponding node structure (i.e., PageRank mass was passed to a non-existent node)...
@@ -236,7 +232,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
                     node.setPageRank(i, (float) Math.log(1.0f - ALPHA) + node.getPageRank(i));
                 }
             }
-            System.out.println(">>>>>>>>>Exit Node = " + node);
             context.write(nid, node);
         }
 
