@@ -60,7 +60,7 @@ object Q2 {
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
           val lineArray = line.split("\\|")
-          lineItems.foreach(lineItem => {
+          lineItems.collect().foreach(lineItem => {
             if (lineItem.equals(lineArray(0))) {
               println("(" + lineArray(6) + "," + lineArray(0) + ")")
             }
@@ -76,18 +76,25 @@ object Q2 {
       val lineItemDF = sparkSession.read.parquet(args.input() + "/lineitem")
       val ordersDF = sparkSession.read.parquet(args.input() + "/orders")
 
-      val lineItems = lineItemDF.rdd
-      val orders = ordersDF.rdd
+      val lineItemsRDD = lineItemDF.rdd
+      val ordersRDD = ordersDF.rdd
 
-      val filteredItems = lineItems
+      val filteredLineItems = lineItemsRDD
         .map(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            count.add(1)
+            line.get(0)
           }
         })
 
-      
+      val orders = ordersRDD.foreach(line => {
+        filteredLineItems.collect().foreach(lineItem => {
+          if (lineItem.equals(line.get(0))) {
+            println("(" + line(6) + "," + line(0) + ")")
+          }
+        })
+      })
+
 
     }
 
