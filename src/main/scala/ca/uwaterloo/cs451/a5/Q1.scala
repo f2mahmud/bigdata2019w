@@ -34,6 +34,7 @@ object Q1 {
 
     val date = args.date()
 
+    log.info("date value : " + date)
 
 
     if (args.text.apply()) {
@@ -47,6 +48,7 @@ object Q1 {
         .foreach(line => {
           val dateFromRow = line.split("\\|")(10)
           if(dateFromRow.equals(date)){
+            println("Found text + = " + dateFromRow)
             count += 1
           }
         })
@@ -67,6 +69,7 @@ object Q1 {
         .foreach(line => {
           val dateFromRow = line.get(10)
           if(dateFromRow.equals(date)){
+            println("Found parquet + = " + dateFromRow)
             count += 1
           }
         })
