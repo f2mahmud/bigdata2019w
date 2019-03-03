@@ -56,7 +56,7 @@ object Q1 {
       log.info("type : parquet")
 
       val sparkSession = SparkSession.builder().getOrCreate()
-      val textFileDF = sparkSession.read.parquet(args.input() + "/lineitem.tbl")
+      val textFileDF = sparkSession.read.parquet(args.input() + "/lineitem")
       val textFile = textFileDF.rdd
 
       val items = textFile
