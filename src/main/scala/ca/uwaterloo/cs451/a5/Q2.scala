@@ -53,7 +53,7 @@ object Q2 {
           if (lineArray(10).substring(0, date.length).equals(date)) {
             lineArray(0)
           }
-        }).sortBy(_.toString,false).take(20)
+        }).sortBy(_.toString, false).take(20)
 
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
@@ -77,13 +77,13 @@ object Q2 {
       val lineItemsRDD = lineItemDF.rdd
       val ordersRDD = ordersDF.rdd
 
-      val filteredLineItems = lineItemsRDD
+      val filteredLineItems: Array[Any] = lineItemsRDD
         .map(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            line.get(0).toString
+            line.get(0)
           }
-        }).sortBy(_.toString,false).take(20)
+        }).sortBy(_.toString, false).take(20)
 
       val orders = ordersRDD.foreach(line => {
         filteredLineItems.foreach(lineItem => {
