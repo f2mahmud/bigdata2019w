@@ -28,15 +28,6 @@ object Q2 {
 
   val log = Logger.getLogger(getClass().getName())
 
-  def isContained(value: Array[String], list: RDD[Any]): Boolean = {
-    for (orderId <- list) {
-      if (orderId.equals(value(0))) {
-        true
-      }
-    }
-    false
-  }
-
 
   def main(argv: Array[String]) {
 
@@ -57,7 +48,7 @@ object Q2 {
 
       log.info("type : text")
 
-      //Getting all the ordes on that day
+      //Getting all the orders on that day
       val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
@@ -69,10 +60,11 @@ object Q2 {
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
           val lineArray = line.split("\\|")
-          if (isContained(lineArray, lineItems)) {
-            println("(" + lineArray(6) + "," + lineArray(0) + ")")
-          }
-
+          lineItems.foreach(lineItem => {
+            if (lineItem.equals(lineArray(0))) {
+              println("(" + lineArray(6) + "," + lineArray(0) + ")")
+            }
+          })
         })
 
     } else {
@@ -80,16 +72,22 @@ object Q2 {
       log.info("type : parquet")
 
       val sparkSession = SparkSession.builder().getOrCreate()
-      val textFileDF = sparkSession.read.parquet(args.input() + "/lineitem")
-      val textFile = textFileDF.rdd
 
-      val items = textFile
-        .foreach(line => {
+      val lineItemDF = sparkSession.read.parquet(args.input() + "/lineitem")
+      val ordersDF = sparkSession.read.parquet(args.input() + "/orders")
+
+      val lineItems = lineItemDF.rdd
+      val orders = ordersDF.rdd
+
+      val filteredItems = lineItems
+        .map(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
             count.add(1)
           }
         })
+
+      val
 
     }
 
