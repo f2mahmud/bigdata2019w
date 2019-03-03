@@ -34,26 +34,31 @@ object Q1 {
 
     val date = args.date()
 
-    var count = 0
+
 
     if (args.text.apply()) {
 
       log.info("type : text")
 
+      var count = 0
       val textFile = sc.textFile(args.input() + "/lineitem.tbl")
 
       val items = textFile
         .foreach(line => {
-          val dateFromRow = line.split("|")(10)
+          val dateFromRow = line.split("\\|")(10)
           println("Q1 text dateFromRow = " + dateFromRow)
           if(dateFromRow.equals(date)){
             count += 1
           }
         })
 
+      println("Q1 ANSWER=" + count )
+
     }else{
 
       log.info("type : parquet")
+
+      var count = 0
 
       val sparkSession = SparkSession.builder().getOrCreate()
       val textFileDF = sparkSession.read.parquet(args.input() + "/lineitem")
@@ -67,10 +72,10 @@ object Q1 {
             count += 1
           }
         })
-
+      println("Q1 ANSWER=" + count )
     }
 
-    println("Q1 ANSWER=" + count )
+
 
   }
 
