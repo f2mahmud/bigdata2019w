@@ -7,6 +7,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
 
 //query : select count(*) from lineitem where l_shipdate = 'YYYY-MM-DD';
+//done
 
 class Q1Conf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, date)
@@ -35,9 +36,6 @@ object Q1 {
     val date = args.date()
     var count = sc.longAccumulator
 
-    log.info("date value : " + date)
-
-
     if (args.text.apply()) {
 
       log.info("type : text")
@@ -47,7 +45,7 @@ object Q1 {
       val items = textFile
         .foreach(line => {
           val dateFromRow = line.split("\\|")(10)
-          if (dateFromRow.equals(date)) {
+          if (dateFromRow.substring(0, date.length).equals(date)) {
             count.add(1)
           }
         })
@@ -62,15 +60,15 @@ object Q1 {
 
       val items = textFile
         .foreach(line => {
-          val dateFromRow = line.get(10)
-          if (dateFromRow.equals(date)) {
+          val dateFromRow = line.getString(10)
+          if (dateFromRow.substring(0, date.length).equals(date)) {
             count.add(1)
           }
         })
 
     }
 
-    println("Q1 ANSWER=" + count.value)
+    println("ANSWER=" + count.value)
 
   }
 
