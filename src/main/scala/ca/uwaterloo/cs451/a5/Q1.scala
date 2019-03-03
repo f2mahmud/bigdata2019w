@@ -46,7 +46,6 @@ object Q1 {
       val items = textFile
         .foreach(line => {
           val dateFromRow = line.split("\\|")(10)
-          println("Q1 text dateFromRow = " + dateFromRow)
           if(dateFromRow.equals(date)){
             count += 1
           }
@@ -67,7 +66,6 @@ object Q1 {
       val items = textFile
         .foreach(line => {
           val dateFromRow = line.get(10)
-          println("Q1 parquet dateFromRow= " + dateFromRow)
           if(dateFromRow.equals(date)){
             count += 1
           }
