@@ -40,8 +40,6 @@ object Q3 {
 
 
     val date = args.date()
-    var count = sc.longAccumulator
-
 
     if (args.text.apply()) {
 

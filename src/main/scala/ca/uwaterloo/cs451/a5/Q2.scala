@@ -41,8 +41,6 @@ object Q2 {
 
 
     val date = args.date()
-    var count = sc.longAccumulator
-
 
     if (args.text.apply()) {
 
@@ -55,7 +53,7 @@ object Q2 {
           if (lineArray(10).substring(0, date.length).equals(date)) {
             lineArray(0)
           }
-        }).collect()
+        }).takeOrdered(20)
 
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
@@ -85,7 +83,7 @@ object Q2 {
           if (dateFromRow.substring(0, date.length).equals(date)) {
             line.get(0)
           }
-        }).collect()
+        }).takeOrdered(20)
 
       val orders = ordersRDD.foreach(line => {
         filteredLineItems.foreach(lineItem => {
