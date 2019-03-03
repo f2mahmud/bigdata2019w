@@ -33,6 +33,7 @@ object Q1 {
     val sc = new SparkContext(conf)
 
     val date = args.date()
+    var count = sc.longAccumulator
 
     log.info("date value : " + date)
 
@@ -41,25 +42,19 @@ object Q1 {
 
       log.info("type : text")
 
-      var count = 0
       val textFile = sc.textFile(args.input() + "/lineitem.tbl")
 
       val items = textFile
         .foreach(line => {
           val dateFromRow = line.split("\\|")(10)
-          if(dateFromRow.equals(date)){
-            println("Found text + = " + dateFromRow)
-            count += 1
+          if (dateFromRow.equals(date)) {
+            count.add(1)
           }
         })
 
-      println("Q1 ANSWER=" + count )
-
-    }else{
+    } else {
 
       log.info("type : parquet")
-
-      var count = 0
 
       val sparkSession = SparkSession.builder().getOrCreate()
       val textFileDF = sparkSession.read.parquet(args.input() + "/lineitem")
@@ -68,15 +63,14 @@ object Q1 {
       val items = textFile
         .foreach(line => {
           val dateFromRow = line.get(10)
-          if(dateFromRow.equals(date)){
-            println("Found parquet + = " + dateFromRow)
-            count += 1
+          if (dateFromRow.equals(date)) {
+            count.add(1)
           }
         })
-      println("Q1 ANSWER=" + count )
+
     }
 
-
+    println("Q1 ANSWER=" + count.value)
 
   }
 
