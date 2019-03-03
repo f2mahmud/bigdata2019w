@@ -47,13 +47,13 @@ object Q2 {
       log.info("type : text")
 
       //Getting all the orders on that day
-      val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
+      val lineItems: Array[Any] = sc.textFile(args.input() + "/lineitem.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
             lineArray(0)
           }
-        }).takeOrdered(20)
+        }).sortBy(_.toString,false).take(20)
 
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
@@ -81,9 +81,9 @@ object Q2 {
         .map(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            line.get(0)
+            line.get(0).toString
           }
-        }).takeOrdered(20)
+        }).sortBy(_.toString,false).take(20)
 
       val orders = ordersRDD.foreach(line => {
         filteredLineItems.foreach(lineItem => {
