@@ -55,12 +55,12 @@ object Q2 {
           if (lineArray(10).substring(0, date.length).equals(date)) {
             lineArray(0)
           }
-        })
+        }).collect()
 
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
           val lineArray = line.split("\\|")
-          lineItems.collect().foreach(lineItem => {
+          lineItems.foreach(lineItem => {
             if (lineItem.equals(lineArray(0))) {
               println("(" + lineArray(6) + "," + lineArray(0) + ")")
             }
@@ -85,10 +85,10 @@ object Q2 {
           if (dateFromRow.substring(0, date.length).equals(date)) {
             line.get(0)
           }
-        })
+        }).collect()
 
       val orders = ordersRDD.foreach(line => {
-        filteredLineItems.collect().foreach(lineItem => {
+        filteredLineItems.foreach(lineItem => {
           if (lineItem.equals(line.get(0))) {
             println("(" + line(6) + "," + line(0) + ")")
           }
