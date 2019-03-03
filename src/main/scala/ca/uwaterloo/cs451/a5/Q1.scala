@@ -29,8 +29,6 @@ object Q1 {
     log.info("input : " + args.input)
     log.info("date : " + args.date)
 
-    log.info("parquet : " + args.parquet)
-
     val conf = new SparkConf().setAppName("Pairs PMI")
     val sc = new SparkContext(conf)
 
@@ -47,6 +45,7 @@ object Q1 {
       val items = textFile
         .foreach(line => {
           val dateFromRow = line.split("|")(10)
+          println("Q1 text dateFromRow = " + dateFromRow)
           if(dateFromRow.equals(date)){
             count += 1
           }
@@ -57,13 +56,13 @@ object Q1 {
       log.info("type : parquet")
 
       val sparkSession = SparkSession.builder().getOrCreate()
-      val textFileDF = sparkSession.read.parquet(args.input())
+      val textFileDF = sparkSession.read.parquet(args.input() + "/lineitem.tbl")
       val textFile = textFileDF.rdd
 
       val items = textFile
         .foreach(line => {
           val dateFromRow = line.get(10)
-          println("dateFromRow= " + dateFromRow)
+          println("Q1 parquet dateFromRow= " + dateFromRow)
           if(dateFromRow.equals(date)){
             count += 1
           }
@@ -71,7 +70,7 @@ object Q1 {
 
     }
 
-    println("ANSWER=" + count )
+    println("Q1 ANSWER=" + count )
 
   }
 
