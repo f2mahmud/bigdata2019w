@@ -50,7 +50,6 @@ object Q2 {
       val lineItems: Array[String] = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
           val lineArray = line.split("\\|")
-          println(">>>>>>>>" + lineArray(10) + "      " + lineArray(0))
           if (lineArray(10).substring(0, date.length).equals(date)) {
             List(lineArray(0))
           }else {
@@ -58,19 +57,13 @@ object Q2 {
           }
         }
         }.takeOrdered(20)(Ordering[String])
-      //if line.split("\\|")(10).substring(0, date.length).equals(date) => }
-      //        .map(line => {
-      //          val lineArray = line.split("\\|")
-      //          if (lineArray(10).substring(0, date.length).equals(date)) {
-      //            List(lineArray(0))
-      //          }
-      //        }).sortBy(_.toString, true).take(20)
+
+      println("?>>>>>>>>>>>  " + lineItems)
 
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
           val lineArray = line.split("\\|")
           lineItems.foreach(lineItem => {
-            println(">>>>>>>>> " + lineItem + "  vs  " + lineArray(0))
             if (lineItem.toString.equals(lineArray(0))) {
               println("(" + lineArray(6) + "," + lineArray(0) + ")")
             }
