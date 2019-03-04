@@ -56,7 +56,13 @@ object Q2 {
             List()
           }
         }
-        }.sortBy[String]({orderId => orderId}, true).take(20)
+        }.sortBy[String]({orderId => orderId}, true).collect()
+
+      lineItems.foreach(line => {
+        println(">>>>>>>> " + line)
+      })
+
+
 
 
       val orders = sc.textFile(args.input() + "/orders.tbl")
