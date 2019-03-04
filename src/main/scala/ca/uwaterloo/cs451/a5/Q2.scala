@@ -100,9 +100,9 @@ object Q2 {
     //TODO:REMOVE
     val sqlContext = new SQLContext(sc)
 
-    val lineItemdf = sqlContext.read.parquet(parquet + "/lineitem")
-    val ordersdf = sqlContext.read.parquet(parquet + "/orders")
-    ordersdf.printSchema()
+    val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
+    val orders = sqlContext.read.parquet(parquet + "/orders")
+    orders.printSchema()
     //lineItemdf.
     val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = " +
       date + " order by o_orderkey asc limit 20")
