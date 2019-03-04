@@ -105,12 +105,10 @@ object Q2 {
     orders.printSchema()
     lineitem.registerTempTable("lineitem")
     orders.registerTempTable("orders")
+    println("Given >>>>>>>>>> ")
     val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = " +
-      date + " order by o_orderkey asc limit 20")
+      date + " order by o_orderkey asc limit 20").show()
 
-    sqlAns.foreach(line => {
-      println("Given >>>>>>>>>> " + line)
-    })
 
   }
 }
