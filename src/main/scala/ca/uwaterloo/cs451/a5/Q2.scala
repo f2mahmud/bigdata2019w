@@ -40,7 +40,7 @@ object Q2 {
     val sc = new SparkContext(conf)
 
 
-    val date :String = args.date()
+    val date: String = args.date()
 
     if (args.text.apply()) {
 
@@ -52,13 +52,12 @@ object Q2 {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
             List(lineArray(0))
-          }else {
+          } else {
             List()
           }
         }
-        }.takeOrdered(20)(Ordering[String])
+        }.sortBy[String]({orderId => orderId}, true).take(20)
 
-      println("?>>>>>>>>>>>  " + lineItems)
 
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
