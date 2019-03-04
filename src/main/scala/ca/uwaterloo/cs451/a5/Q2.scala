@@ -4,6 +4,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
+import scala.collection.mutable.MutableList
 
 /*
     select o_clerk, o_orderkey from lineitem, orders
@@ -45,14 +46,22 @@ object Q2 {
 
       log.info("type : text")
 
-      //Getting all the orders on that day
+      //Getting top 20 orders on that day
       val lineItems: Array[Any] = sc.textFile(args.input() + "/lineitem.tbl")
-        .map(line => {
+        .collect { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
             lineArray(0)
           }
-        }).sortBy(_.toString, true).take(20)
+        }
+        }.sortBy(_.toString, true).take(20)
+      //if line.split("\\|")(10).substring(0, date.length).equals(date) => }
+      //        .map(line => {
+      //          val lineArray = line.split("\\|")
+      //          if (lineArray(10).substring(0, date.length).equals(date)) {
+      //            List(lineArray(0))
+      //          }
+      //        }).sortBy(_.toString, true).take(20)
 
       val orders = sc.textFile(args.input() + "/orders.tbl")
         .foreach(line => {
