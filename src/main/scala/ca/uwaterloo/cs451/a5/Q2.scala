@@ -40,21 +40,24 @@ object Q2 {
     val sc = new SparkContext(conf)
 
 
-    val date = args.date()
+    val date :String = args.date()
 
     if (args.text.apply()) {
 
       log.info("type : text")
 
       //Getting top 20 orders on that day
-      val lineItems: Array[Any] = sc.textFile(args.input() + "/lineitem.tbl")
-        .collect { case line => {
+      val lineItems: Array[String] = sc.textFile(args.input() + "/lineitem.tbl")
+        .flatMap { case line => {
           val lineArray = line.split("\\|")
+          println(">>>>>>>>" + lineArray(10) + "      " + lineArray(0))
           if (lineArray(10).substring(0, date.length).equals(date)) {
             List(lineArray(0))
+          }else {
+            List()
           }
         }
-        }.sortBy(_.toString, true).take(20)
+        }.takeOrdered(20)(Ordering[String])
       //if line.split("\\|")(10).substring(0, date.length).equals(date) => }
       //        .map(line => {
       //          val lineArray = line.split("\\|")
