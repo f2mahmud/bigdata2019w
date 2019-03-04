@@ -107,15 +107,9 @@ object Q2 {
     orders.registerTempTable("orders")
     println("Given >>>>>>>>>> ")
 
-    val initialSql = sqlContext.sql("select o_clerk, o_orderkey from orders").show()
-    val initialSql2 = sqlContext.sql("select * from lineitem where l_shipdate = '" + date + "'").show()
-    println(">>>>>>>>>again")
-    val initialSql3 = sqlContext.sql("select * from lineitem where l_shipdate = 1996-01-01").show()
-    println(">>>>>>>>>>last time")
-    val initialSql4 = sqlContext.sql("select * from lineitem where l_shipdate = '1996-01-01'").show()
-
-    val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = " +
-      date + " order by o_orderkey asc limit 20").show()
+    //TODO:: the ''s need to be there for date
+    val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = '" +
+      date + "' order by o_orderkey asc limit 20").show()
 
 
   }
