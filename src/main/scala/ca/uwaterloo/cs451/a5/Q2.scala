@@ -107,8 +107,8 @@ object Q2 {
     orders.registerTempTable("orders")
     println("Given >>>>>>>>>> ")
 
-    val initialSql = sqlContext.sql("select * from orders")
-    val initialSql2 = sqlContext.sql("select * from lineitem")
+    val initialSql = sqlContext.sql("select * from orders").show()
+    val initialSql2 = sqlContext.sql("select * from lineitem").show()
     val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = " +
       date + " order by o_orderkey asc limit 20").show()
 
