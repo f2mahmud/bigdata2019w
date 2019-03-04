@@ -1,7 +1,6 @@
 package ca.uwaterloo.cs451.a5
 
 import org.apache.log4j.Logger
-import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -96,9 +95,15 @@ object Q2 {
 
     }
 
+    val parquet = "TPC-H-0.1-PARQUET"
 
     //TODO:REMOVE
     val sqlContext = new SQLContext(sc)
+
+    val lineItemdf = sqlContext.read.parquet(parquet + "/lineitem")
+    val ordersdf = sqlContext.read.parquet(parquet + "/orders")
+    ordersdf.printSchema()
+    //lineItemdf.
     val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = " +
       date + " order by o_orderkey asc limit 20")
 
