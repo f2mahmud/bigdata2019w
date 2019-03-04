@@ -83,11 +83,15 @@ object Q2 {
         .flatMap(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            List(line.get(0).toString)
+            List(line.getString(0))
           } else {
             List()
           }
         }).sortBy(_.toInt, true).take(20)
+
+      filteredLineItems.foreach(line => {
+        println(">>>>>>> " + line)
+      })
 
       val orders = ordersRDD.foreach(line => {
         filteredLineItems.foreach(lineItem => {
