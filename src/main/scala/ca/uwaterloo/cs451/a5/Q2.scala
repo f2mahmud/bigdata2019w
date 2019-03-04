@@ -79,15 +79,16 @@ object Q2 {
       val lineItemsRDD = lineItemDF.rdd
       val ordersRDD = ordersDF.rdd
 
-      val filteredLineItems: Array[String] = lineItemsRDD
+      //FIXME::Sorting does not work properly
+      val filteredLineItems: Array[Int] = lineItemsRDD
         .flatMap(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            List(line.getString(0))
+            List(line.getInt(0))
           } else {
             List()
           }
-        }).sortBy(_.toInt, true).take(20)
+        }).sortBy(item => item).take(20)
 
       filteredLineItems.foreach(line => {
         println(">>>>>>> " + line)
@@ -95,7 +96,7 @@ object Q2 {
 
       val orders = ordersRDD.foreach(line => {
         filteredLineItems.foreach(lineItem => {
-          if (lineItem.equals(line.get(0))) {
+          if (lineItem.equals(line.getInt(0))) {
             println("(" + line(6) + "," + line(0) + ")")
           }
         })
