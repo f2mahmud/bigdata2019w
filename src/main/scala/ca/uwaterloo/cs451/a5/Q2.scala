@@ -58,6 +58,7 @@ object Q2 {
         .foreach(line => {
           val lineArray = line.split("\\|")
           lineItems.foreach(lineItem => {
+            println(">>>>>>>>> " + lineItem + "  vs  " + lineArray(0))
             if (lineItem.toString.equals(lineArray(0))) {
               println("(" + lineArray(6) + "," + lineArray(0) + ")")
             }
