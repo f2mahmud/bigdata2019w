@@ -51,7 +51,7 @@ object Q2 {
         .collect { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            lineArray(0)
+            List(lineArray(0))
           }
         }
         }.sortBy(_.toString, true).take(20)
