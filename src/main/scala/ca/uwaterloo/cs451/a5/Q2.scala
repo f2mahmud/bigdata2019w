@@ -102,10 +102,13 @@ object Q2 {
 
     val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
     val orders = sqlContext.read.parquet(parquet + "/orders")
-    orders.printSchema()
+
     lineitem.registerTempTable("lineitem")
     orders.registerTempTable("orders")
     println("Given >>>>>>>>>> ")
+
+    val initialSql = sqlContext.sql("select * from orders")
+    val initialSql2 = sqlContext.sql("select * from lineitem")
     val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = " +
       date + " order by o_orderkey asc limit 20").show()
 
