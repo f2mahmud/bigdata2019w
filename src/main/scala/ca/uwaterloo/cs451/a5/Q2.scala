@@ -45,7 +45,7 @@ object Q2 {
     if (args.text.apply()) {
 
       log.info("type : text")
-  //FIXME:: Sorting does not work
+  //FIXME:: Sorting does work
       //Getting top 20 orders on that day
       val lineItems: Array[String] = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
@@ -56,7 +56,7 @@ object Q2 {
             List()
           }
         }
-        }.sortBy(_.toInt, true).collect()
+        }.sortBy(_.toInt, true).take(20)
 
       lineItems.foreach(line => {
         println(">>>>>>>> " + line)
@@ -69,7 +69,8 @@ object Q2 {
         .foreach(line => {
           val lineArray = line.split("\\|")
           lineItems.foreach(lineItem => {
-            if (lineItem.toString.equals(lineArray(0))) {
+//            if (lineItem.toString.equals(lineArray(0))) { //This worked
+            if (lineItem.equals(lineArray(0))) {
               println("(" + lineArray(6) + "," + lineArray(0) + ")")
             }
           })
