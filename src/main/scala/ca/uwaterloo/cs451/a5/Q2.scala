@@ -56,7 +56,11 @@ object Q2 {
             List()
           }
         }
-        }
+        }.sortByKey()
+
+      lineItems.foreach(item =>{
+        println(">>>>>>>>>>>>  " + item._1)
+      })
 
 
       val orders: RDD[(Int, String)] = sc.textFile(args.input() + "/orders.tbl")
@@ -65,11 +69,11 @@ object Q2 {
           List((orderArray(0).toInt, orderArray(6)))
         })
 
-      val results = lineItems.cogroup(orders)
-        .sortByKey(true)//.take(20)
-        .foreach(item => {
-          println("(" + item._2._2.toList(0) + "," + item._1 + ")")
-        })
+//      val results = lineItems.cogroup(orders)
+//        .sortByKey(true)//.take(20)
+//        .foreach(item => {
+//          println("(" + item._2._2.toList(0) + "," + item._1 + ")")
+//        })
       //        .foreach(line => {
       //          val lineArray = line.split("\\|")
       //          lineItems.foreach(lineItem => {
