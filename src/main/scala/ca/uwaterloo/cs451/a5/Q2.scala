@@ -46,13 +46,8 @@ object Q2 {
 
       log.info("type : text")
 
-      val orders: RDD[(Int, String)] = sc.textFile(args.input() + "/orders.tbl")
-        .flatMap(order => {
-          val orderArray = order.split("\\|")
-          List((orderArray(0).toInt, orderArray(6)))
-        })
-
-      val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
+      //Getting top 20 orders on that day
+      val lineItems: RDD[(Int, String)] = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
@@ -61,12 +56,21 @@ object Q2 {
             List()
           }
         }
-        }.cogroup(orders).sortByKey(numPartitions = 1).take(20)
+        }
+
+      val orders: RDD[(Int, String)] = sc.textFile(args.input() + "/orders.tbl")
+        .flatMap(order => {
+          val orderArray = order.split("\\|")
+          List((orderArray(0).toInt, orderArray(6)))
+        })
+
+      val results = lineItems
+        .sortByKey(numPartitions = 1)
+        .cogroup(orders)
+        .take(20)
         .foreach(item => {
           println("(" + item._2._2.toList(0) + "," + item._1 + ")")
         })
-     // val results = lineItems.cogroup(orders)
-
       //        .foreach(line => {
       //          val lineArray = line.split("\\|")
       //          lineItems.foreach(lineItem => {
