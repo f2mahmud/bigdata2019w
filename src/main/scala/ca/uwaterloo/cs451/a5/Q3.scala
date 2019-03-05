@@ -52,11 +52,23 @@ object Q3 {
           (lineArray(0), lineArray(1)) //key,name
         }).collectAsMap()
 
+      parts.foreach(item => {
+        println(">>>>>>>>>>>> " + item._1 + "   " + item._2)
+      })
+
+      println(">>>>>>>>>>part done")
+
       val suppliers = sc.textFile(args.input() + "/supplier.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
           (lineArray(0), lineArray(1)) //key, name
         }).collectAsMap()
+
+      suppliers.foreach(item => {
+        println(">>>>>>>>>>>> " + item._1 + "   " + item._2)
+      })
+
+      println(">>>>>>>>>>supplier done")
 
       //Getting top 20 orders on that day
       val lineItems: Array[ListBuffer[String]] = sc.textFile(args.input() + "/lineitem.tbl")
@@ -69,6 +81,11 @@ object Q3 {
           }
         }
         }.sortBy(_ (0).toInt, true).take(20)
+
+      lineItems.foreach(line => {
+        println(">>>>>>>>>>>>>>> " + line(0) + "   " + line(1) + "   " + line(2))
+      })
+
 
       lineItems.foreach(lineitem => {
         val partName = parts.get(lineitem(1))
@@ -95,23 +112,41 @@ object Q3 {
         (part(0), part(1))
       }).collectAsMap()
 
+      parts.foreach(item => {
+        println(">>>>>>>>>>>> " + item._1 + "   " + item._2)
+      })
+
+      println(">>>>>>>>>>part done")
+
       val suppliers = suppliersRDD.map(supplier => {
         (supplier(0), supplier(1))
       }).collectAsMap()
 
-      lineItemsRDD.flatMap(line => {
+      suppliers.foreach(item => {
+        println(">>>>>>>>>>>> " + item._1 + "   " + item._2)
+      })
+
+      println(">>>>>>>>>>supplier done")
+
+      val lineItems = lineItemsRDD.flatMap(line => {
         val dateFromRow = line.getString(10)
         if (dateFromRow.substring(0, date.length).equals(date)) {
           List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
         } else {
           List()
         }
-      }).sortBy(item => item(0)).take(20)
-              .foreach(item => {
-                val partName = parts.get(item(1))
-                val supplierName = suppliers.get(item(2))
-                println("(" + item(0) + "," + partName + "," + supplierName + ")")
-              })
+      })
+
+      lineItems.foreach(line => {
+        println(">>>>>>>>>>>>>>> " + line(0) + "   " + line(1) + "   " + line(2))
+      })
+
+      lineItems.sortBy(item => item(0)).take(20)
+        .foreach(item => {
+          val partName = parts.get(item(1))
+          val supplierName = suppliers.get(item(2))
+          println("(" + item(0) + "," + partName + "," + supplierName + ")")
+        })
 
     }
 
@@ -135,7 +170,7 @@ object Q3 {
     val sqlAns = sqlContext.sql("select l_orderkey, p_name, s_name from lineitem, part," +
       " supplier where l_partkey = p_partkey and l_suppkey = s_suppkey and " +
       "l_shipdate = '" +
-      date + "' order by o_orderkey asc limit 20").show()
+      date + "' order by l_orderkey asc limit 20").show()
 
   }
 }

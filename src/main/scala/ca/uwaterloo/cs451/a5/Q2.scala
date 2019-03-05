@@ -44,6 +44,7 @@ object Q2 {
     if (args.text.apply()) {
 
       log.info("type : text")
+
       //Getting top 20 orders on that day
       val lineItems: Array[String] = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
