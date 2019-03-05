@@ -5,8 +5,6 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
 
-import scala.collection.mutable.ListBuffer
-
 /*
     select l_orderkey, p_name, s_name from lineitem, part, supplier
       where
@@ -31,7 +29,7 @@ object Q3 {
 
   def main(argv: Array[String]) {
 
-    val args = new Q2Conf(argv)
+    val args = new Q3Conf(argv)
 
     log.info("input : " + args.input)
     log.info("date : " + args.date)
