@@ -4,7 +4,6 @@ import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
-import scala.collection.mutable.MutableList
 
 /*
     select o_clerk, o_orderkey from lineitem, orders
@@ -79,7 +78,6 @@ object Q2 {
       val lineItemsRDD = lineItemDF.rdd
       val ordersRDD = ordersDF.rdd
 
-      //FIXME::Sorting does not work properly
       val filteredLineItems: Array[Int] = lineItemsRDD
         .flatMap(line => {
           val dateFromRow = line.getString(10)
@@ -89,10 +87,6 @@ object Q2 {
             List()
           }
         }).sortBy(item => item).take(20)
-
-      filteredLineItems.foreach(line => {
-        println(">>>>>>> " + line)
-      })
 
       val orders = ordersRDD.foreach(line => {
         filteredLineItems.foreach(lineItem => {
