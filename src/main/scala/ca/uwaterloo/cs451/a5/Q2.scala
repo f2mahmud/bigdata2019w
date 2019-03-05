@@ -56,7 +56,7 @@ object Q2 {
             List()
           }
         }
-        }.sortByKey()
+        }.sortBy(item => item._1)
 
       lineItems.foreach(item =>{
         println(">>>>>>>>>>>>  " + item._1)
