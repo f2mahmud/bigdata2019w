@@ -49,42 +49,26 @@ object Q3 {
       val parts = sc.textFile(args.input() + "/part.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
-          (lineArray(0), lineArray(1)) //key,name
+          lineArray(0).toInt -> lineArray(1) //key,name
         }).collectAsMap()
-
-      parts.foreach(item => {
-        println(">>>>>>>>>>>> " + item._1 + "   " + item._2)
-      })
-
-      println(">>>>>>>>>>part done")
 
       val suppliers = sc.textFile(args.input() + "/supplier.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
-          (lineArray(0), lineArray(1)) //key, name
+          (lineArray(0).toInt, lineArray(1)) //key, name
         }).collectAsMap()
 
-      suppliers.foreach(item => {
-        println(">>>>>>>>>>>> " + item._1 + "   " + item._2)
-      })
-
-      println(">>>>>>>>>>supplier done")
-
       //Getting top 20 orders on that day
-      val lineItems: Array[ListBuffer[String]] = sc.textFile(args.input() + "/lineitem.tbl")
+      val lineItems: Array[List[Int]] = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            List(ListBuffer(lineArray(0), lineArray(1), lineArray(2))) //orderkey, partkey, supkey
+            List(List(lineArray(0).toInt, lineArray(1).toInt, lineArray(2).toInt)) //orderkey, partkey, supkey
           } else {
             List()
           }
         }
-        }.sortBy(_ (0).toInt, true).take(20)
-
-      lineItems.foreach(line => {
-        println(">>>>>>>>>>>>>>> " + line(0) + "   " + line(1) + "   " + line(2))
-      })
+        }.sortBy(_(0), true).take(20)
 
 
       lineItems.foreach(lineitem => {
