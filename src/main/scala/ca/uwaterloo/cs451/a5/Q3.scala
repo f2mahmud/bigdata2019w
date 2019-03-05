@@ -71,11 +71,10 @@ object Q3 {
         }.sortBy(_(0), true).take(20)
 
 
-      lineItems.foreach(lineitem => {
-        println(">>>>>>>>>>> " + lineitem(1))
-        val partName = parts.get(lineitem(1))
-        val supplierName = suppliers.get(lineitem(2))
-        println("(" + lineItems(0) + "," + partName + "," + supplierName + ")")
+      lineItems.foreach(lineItem => {
+        val partName = parts(lineItem(1))
+        val supplierName = suppliers(lineItem(2))
+        println("(" + lineItem(0) + "," + partName + "," + supplierName + ")")
       })
 
 
@@ -97,21 +96,9 @@ object Q3 {
         (part(0), part(1))
       }).collectAsMap()
 
-      parts.foreach(item => {
-        println(">>>>>>>>>>>> " + item._1 + "   " + item._2)
-      })
-
-      println(">>>>>>>>>>part done")
-
       val suppliers = suppliersRDD.map(supplier => {
         (supplier(0), supplier(1))
       }).collectAsMap()
-
-      suppliers.foreach(item => {
-        println(">>>>>>>>>>>> " + item._1 + "   " + item._2)
-      })
-
-      println(">>>>>>>>>>supplier done")
 
       val lineItems = lineItemsRDD.flatMap(line => {
         val dateFromRow = line.getString(10)
@@ -122,14 +109,10 @@ object Q3 {
         }
       })
 
-      lineItems.foreach(line => {
-        println(">>>>>>>>>>>>>>> " + line(0) + "   " + line(1) + "   " + line(2))
-      })
-
       lineItems.sortBy(item => item(0)).take(20)
         .foreach(item => {
-          val partName = parts.get(item(1))
-          val supplierName = suppliers.get(item(2))
+          val partName = parts(item(1))
+          val supplierName = suppliers(item(2))
           println("(" + item(0) + "," + partName + "," + supplierName + ")")
         })
 
