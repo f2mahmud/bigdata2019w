@@ -72,6 +72,7 @@ object Q3 {
 
 
       lineItems.foreach(lineitem => {
+        println(">>>>>>>>>>> " + lineitem(1))
         val partName = parts.get(lineitem(1))
         val supplierName = suppliers.get(lineitem(2))
         println("(" + lineItems(0) + "," + partName + "," + supplierName + ")")
