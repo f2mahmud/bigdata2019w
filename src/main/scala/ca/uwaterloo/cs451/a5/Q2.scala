@@ -1,6 +1,7 @@
 package ca.uwaterloo.cs451.a5
 
 import org.apache.log4j.Logger
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -46,26 +47,38 @@ object Q2 {
       log.info("type : text")
 
       //Getting top 20 orders on that day
-      val lineItems: Array[String] = sc.textFile(args.input() + "/lineitem.tbl")
+      val lineItems: RDD[(Int, String)] = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            List(lineArray(0))
+            List((lineArray(0).toInt, ""))
           } else {
             List()
           }
         }
-        }.sortBy(_.toInt, true).take(20)
+        } //.sortBy(item => item, true).take(20)
 
-      val orders = sc.textFile(args.input() + "/orders.tbl")
-        .foreach(line => {
-          val lineArray = line.split("\\|")
-          lineItems.foreach(lineItem => {
-            if (lineItem.equals(lineArray(0))) {
-              println("(" + lineArray(6) + "," + lineArray(0) + ")")
-            }
-          })
+
+      val orders: RDD[(Int, String)] = sc.textFile(args.input() + "/orders.tbl")
+        .flatMap(order => {
+          val orderArray = order.split("\\|")
+          List((orderArray(0).toInt, orderArray(6)))
         })
+
+      val results = lineItems.cogroup(orders)
+        .sortByKey(true).take(20)
+        .foreach(item => {
+          println(">>>>>>>>>> " + item._2._1.take(1))
+          println("(" + item._2._2.take(1) + "," + item._1 + ")")
+        })
+      //        .foreach(line => {
+      //          val lineArray = line.split("\\|")
+      //          lineItems.foreach(lineItem => {
+      //            if (lineItem.equals(lineArray(0))) {
+      //              println("(" + lineArray(6) + "," + lineArray(0) + ")")
+      //            }
+      //          })
+      //        })
 
     } else {
 

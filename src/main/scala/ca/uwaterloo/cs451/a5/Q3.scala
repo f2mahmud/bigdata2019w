@@ -14,6 +14,8 @@ import org.rogach.scallop.{ScallopConf, ScallopOption}
     order by l_orderkey asc limit 20;
 */
 
+//TODO::need to implement hash join
+
 class Q3Conf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, date)
   val input: ScallopOption[String] = opt[String](descr = "input path", required = true)

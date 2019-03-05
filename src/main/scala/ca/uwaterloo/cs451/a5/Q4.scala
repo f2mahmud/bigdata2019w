@@ -40,6 +40,18 @@ object Q4 {
       val customers = sc.textFile(args.input() + "/customer.tbl")
       val order = sc.textFile(args.input() + "/order.tbl")
 
+      //Getting top 20 orders on that day
+      val lineItems: Array[List[Int]] = sc.textFile(args.input() + "/lineitem.tbl")
+        .flatMap { case line => {
+          val lineArray = line.split("\\|")
+          if (lineArray(10).substring(0, date.length).equals(date)) {
+            List(List(lineArray(0).toInt)) //orderkey
+          } else {
+            List()
+          }
+        }
+        }.collect()
+
       val parts = sc.textFile(args.input() + "/part.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
@@ -51,18 +63,6 @@ object Q4 {
           val lineArray = line.split("\\|")
           (lineArray(0).toInt, lineArray(1)) //key, name
         }).collectAsMap()
-
-      //Getting top 20 orders on that day
-      val lineItems: Array[List[Int]] = sc.textFile(args.input() + "/lineitem.tbl")
-        .flatMap { case line => {
-          val lineArray = line.split("\\|")
-          if (lineArray(10).substring(0, date.length).equals(date)) {
-            List(List(lineArray(0).toInt, lineArray(1).toInt, lineArray(2).toInt)) //orderkey, partkey, supkey
-          } else {
-            List()
-          }
-        }
-        }.sortBy(_(0), true).take(20)
 
 
       lineItems.foreach(lineItem => {
