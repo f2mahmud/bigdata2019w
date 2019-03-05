@@ -99,9 +99,10 @@ object Q2 {
 
     }
 
+    //TODO:REMOVE
     val parquet = "TPC-H-0.1-PARQUET"
 
-    //TODO:REMOVE
+
     val sqlContext = new SQLContext(sc)
 
     val lineitem = sqlContext.read.parquet(parquet + "/lineitem")

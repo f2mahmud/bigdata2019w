@@ -5,6 +5,8 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
 
+import scala.collection.mutable.ListBuffer
+
 /*
     select l_orderkey, p_name, s_name from lineitem, part, supplier
       where
@@ -27,6 +29,15 @@ object Q3 {
 
   val log = Logger.getLogger(getClass().getName())
 
+  def isContained(list: List[ListBuffer[String]], item: String): Int = {
+    for ((key, value) <- n) {
+      if (accum.contains(key)) {
+        accum += key -> (accum(key) + value)
+      } else accum += key -> value
+    }
+    accum
+  }
+
 
   def main(argv: Array[String]) {
 
@@ -45,24 +56,36 @@ object Q3 {
 
       log.info("type : text")
 
-      //Getting all the orders on that day
-      val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
+      val parts = sc.textFile(args.input() + "/part.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
-          if (lineArray(10).substring(0, date.length).equals(date)) {
-            lineArray(0)
-          }
-        })
+          (lineArray(0), lineArray(1)) //key,name
+        }).collectAsMap()
 
-      val orders = sc.textFile(args.input() + "/orders.tbl")
-        .foreach(line => {
+      val suppliers = sc.textFile(args.input() + "/supplier.tbl")
+        .map(line => {
           val lineArray = line.split("\\|")
-          lineItems.collect().foreach(lineItem => {
-            if (lineItem.equals(lineArray(0))) {
-              println("(" + lineArray(6) + "," + lineArray(0) + ")")
-            }
-          })
-        })
+          (lineArray(0), lineArray(1)) //key, name
+        }).collectAsMap()
+
+      //Getting top 20 orders on that day
+      val lineItems: Array[ListBuffer[String]] = sc.textFile(args.input() + "/lineitem.tbl")
+        .flatMap { case line => {
+          val lineArray = line.split("\\|")
+          if (lineArray(10).substring(0, date.length).equals(date)) {
+            List(ListBuffer(lineArray(0), lineArray(1), lineArray(2))) //orderkey, partkey, supkey
+          } else {
+            List()
+          }
+        }
+        }.sortBy(_ (0).toInt, true).take(20)
+
+      lineItems.foreach(lineitem => {
+        val partName = parts.get(lineitem(1))
+        val supplierName = suppliers.get(lineitem(2))
+        println("(" + lineItems(0) + "," + partName + "," + supplierName + ")")
+      })
+
 
     } else {
 
@@ -97,13 +120,25 @@ object Q3 {
 
 
     //TODO:REMOVE
-    val sqlContext = new SQLContext(sc)
-    val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = " +
-      date + " order by o_orderkey asc limit 20")
+    val parquet = "TPC-H-0.1-PARQUET"
 
-    sqlAns.foreach(line => {
-      println("Given >>>>>>>>>> " + line)
-    })
+
+    val sqlContext = new SQLContext(sc)
+
+    val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
+    val part = sqlContext.read.parquet(parquet + "/part")
+    val supplier = sqlContext.read.parquet(parquet + "/supplier")
+
+    lineitem.registerTempTable("lineitem")
+    part.registerTempTable("part")
+    supplier.registerTempTable("supplier")
+    println("Given >>>>>>>>>> ")
+
+    //TODO:: the ''s need to be there for date
+    val sqlAns = sqlContext.sql("select l_orderkey, p_name, s_name from lineitem, part," +
+      " supplier where l_partkey = p_partkey and l_suppkey = s_suppkey and " +
+      "l_shipdate = '" +
+      date + "' order by o_orderkey asc limit 20").show()
 
   }
 }
