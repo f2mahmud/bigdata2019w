@@ -29,16 +29,6 @@ object Q3 {
 
   val log = Logger.getLogger(getClass().getName())
 
-  def isContained(list: List[ListBuffer[String]], item: String): Int = {
-    for ((key, value) <- n) {
-      if (accum.contains(key)) {
-        accum += key -> (accum(key) + value)
-      } else accum += key -> value
-    }
-    accum
-  }
-
-
   def main(argv: Array[String]) {
 
     val args = new Q2Conf(argv)
@@ -94,27 +84,34 @@ object Q3 {
       val sparkSession = SparkSession.builder().getOrCreate()
 
       val lineItemDF = sparkSession.read.parquet(args.input() + "/lineitem")
-      val ordersDF = sparkSession.read.parquet(args.input() + "/orders")
+      val partsDF = sparkSession.read.parquet(args.input() + "/part")
+      val suppliersDF = sparkSession.read.parquet(args.input() + "/supplier")
 
       val lineItemsRDD = lineItemDF.rdd
-      val ordersRDD = ordersDF.rdd
+      val partsRDD = partsDF.rdd
+      val suppliersRDD = suppliersDF.rdd
 
-      val filteredLineItems = lineItemsRDD
-        .map(line => {
-          val dateFromRow = line.getString(10)
-          if (dateFromRow.substring(0, date.length).equals(date)) {
-            line.get(0)
-          }
-        })
+      val parts = partsRDD.map(part => {
+        (part(0), part(1))
+      }).collectAsMap()
 
-      val orders = ordersRDD.foreach(line => {
-        filteredLineItems.collect().foreach(lineItem => {
-          if (lineItem.equals(line.get(0))) {
-            println("(" + line(6) + "," + line(0) + ")")
-          }
-        })
-      })
+      val suppliers = suppliersRDD.map(supplier => {
+        (supplier(0), supplier(1))
+      }).collectAsMap()
 
+      lineItemsRDD.flatMap(line => {
+        val dateFromRow = line.getString(10)
+        if (dateFromRow.substring(0, date.length).equals(date)) {
+          List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
+        } else {
+          List()
+        }
+      }).sortBy(item => item(0)).take(20)
+              .foreach(item => {
+                val partName = parts.get(item(1))
+                val supplierName = suppliers.get(item(2))
+                println("(" + item(0) + "," + partName + "," + supplierName + ")")
+              })
 
     }
 
