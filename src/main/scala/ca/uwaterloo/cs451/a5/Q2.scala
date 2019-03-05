@@ -66,7 +66,7 @@ object Q2 {
         })
 
       val results = lineItems.cogroup(orders)
-        //.sortByKey(true).take(20)
+        .sortByKey(true)//.take(20)
         .foreach(item => {
           println("(" + item._2._2.toList(0) + "," + item._1 + ")")
         })
