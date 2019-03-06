@@ -64,10 +64,11 @@ object Q2 {
           List((orderArray(0).toInt, orderArray(6)))
         })
 
-      //TODO::Does not show all results
+
       val results = lineItems.cogroup(orders)
         .filter { case item => item._2._1.toList.length > 0 }
-        .sortBy(item => item._1)
+        .sortBy(item => item._1, numPartitions = 1)
+        .take(20)
         .map(filteredItems => {
           (filteredItems._2._2.toList(0), filteredItems._1)
         })
