@@ -48,11 +48,15 @@ object Q2 {
 
       //Getting top 20 orders on that day
       val lineItems: RDD[(Int, String)] = sc.textFile(args.input() + "/lineitem.tbl")
-        .flatMap { case line => {
+        .flatMap(line => {
           val lineArray = line.split("\\|")
-          List((lineArray(0).toInt, lineArray(10)))
+          if (lineArray(10).substring(0, date.length).equals(date)) {
+            List((lineArray(0).toInt, lineArray(10)))
+          } else {
+            List()
+          }
         }
-        }
+        )
 
       val orders: RDD[(Int, String)] = sc.textFile(args.input() + "/orders.tbl")
         .flatMap(order => {
@@ -61,16 +65,17 @@ object Q2 {
         })
 
       //TODO::Does not show all results
-      val results = lineItems.cogroup(orders).sortBy(item => item._1)
-        .foreach(item => {println(">>>>>>>>>>" + item._1 + "    " + item._2.toString() )})
-//        .filter { case item => item._2._1.toList(0).substring(0, date.length).equals(date) }
-//        .sortBy(item => item._1)
-//        .map(filteredItems => {
-//          (filteredItems._2._2.toList(0), filteredItems._1)
-//        })
-//        .foreach(item => {
-//          println("(" + item._1 + "," + item._2 + ")")
-//        })
+      val results = lineItems.cogroup(orders)
+        .filter { case item => item._2._1.toList.length > 0 }
+        .sortBy(item => item._1)
+        .map(filteredItems => {
+          (filteredItems._2._2.toList(0), filteredItems._1)
+        })
+        .foreach(item => {
+          println("(" + item._1 + "," + item._2 + ")")
+        })
+
+
       //        .foreach(item => {
       //          )
       //          {
@@ -91,7 +96,8 @@ object Q2 {
       //          })
       //        })
 
-    } else {
+    }
+    else {
 
       log.info("type : parquet")
 
