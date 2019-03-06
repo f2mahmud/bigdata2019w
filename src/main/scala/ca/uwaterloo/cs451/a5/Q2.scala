@@ -63,7 +63,6 @@ object Q2 {
       val results = lineItems.cogroup(orders)
         .filter { case item => item._2._1.toList(0).substring(0, date.length).equals(date) }
         .sortBy(item => item._1, numPartitions = 0)
-        .take(20)
         .map(filteredItems => {
           (filteredItems._2._2.toList(0), filteredItems._1)
         })
