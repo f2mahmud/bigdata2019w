@@ -60,9 +60,10 @@ object Q2 {
           List((orderArray(0).toInt, orderArray(6)))
         })
 
+      //TODO::Does not show all results
       val results = lineItems.cogroup(orders)
         .filter { case item => item._2._1.toList(0).substring(0, date.length).equals(date) }
-        .sortBy(item => item._1, numPartitions = 0)
+        .sortBy(item => item._1)
         .map(filteredItems => {
           (filteredItems._2._2.toList(0), filteredItems._1)
         })
