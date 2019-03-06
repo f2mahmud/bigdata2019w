@@ -50,11 +50,7 @@ object Q2 {
       val lineItems: RDD[(Int, String)] = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
           val lineArray = line.split("\\|")
-          if (lineArray(10).substring(0, date.length).equals(date)) {
-            List((lineArray(0).toInt, ""))
-          } else {
-            List()
-          }
+          List((lineArray(0).toInt, lineArray(10)))
         }
         }
 
@@ -64,13 +60,27 @@ object Q2 {
           List((orderArray(0).toInt, orderArray(6)))
         })
 
-      val results = lineItems
-        .cogroup(orders)
+      val results = lineItems.cogroup(orders)
+        .filter { case item => item._2._1.toList(0).substring(0, date.length).equals(date) }
         .sortBy(item => item._1, numPartitions = 1)
         .take(20)
-        .foreach(item => {
-          println("(" + item._2._2.toList(0) + "," + item._1 + ")")
+        .map(filteredItems => {
+          (filteredItems._2._2.toList(0), filteredItems._1)
         })
+        .foreach(item => {
+          println("(" + item._1 + "," + item._2 + ")")
+        })
+      //        .foreach(item => {
+      //          )
+      //          {
+      //
+      //          }
+      //          else
+      //          {
+      //            List()
+      //          }
+      //          println("(" + item._2._2.toList(0) + "," + item._1 + ")")
+      //        })
       //        .foreach(line => {
       //          val lineArray = line.split("\\|")
       //          lineItems.foreach(lineItem => {
