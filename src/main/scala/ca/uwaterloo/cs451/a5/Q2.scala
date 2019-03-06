@@ -61,15 +61,16 @@ object Q2 {
         })
 
       //TODO::Does not show all results
-      val results = lineItems.cogroup(orders)
-        .filter { case item => item._2._1.toList(0).substring(0, date.length).equals(date) }
-        .sortBy(item => item._1)
-        .map(filteredItems => {
-          (filteredItems._2._2.toList(0), filteredItems._1)
-        })
-        .foreach(item => {
-          println("(" + item._1 + "," + item._2 + ")")
-        })
+      val results = lineItems.cogroup(orders).sortBy(item => item._1)
+        .foreach(item => {println(">>>>>>>>>>" + item._1 + "    " + item._2.toString() )})
+//        .filter { case item => item._2._1.toList(0).substring(0, date.length).equals(date) }
+//        .sortBy(item => item._1)
+//        .map(filteredItems => {
+//          (filteredItems._2._2.toList(0), filteredItems._1)
+//        })
+//        .foreach(item => {
+//          println("(" + item._1 + "," + item._2 + ")")
+//        })
       //        .foreach(item => {
       //          )
       //          {
