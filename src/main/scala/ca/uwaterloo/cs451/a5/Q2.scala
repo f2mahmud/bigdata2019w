@@ -79,11 +79,11 @@ object Q2 {
       //        })
 
       var i = 0
-      while (i < 20) {
+      while (i < results.length) {
         val recordCount = results(i)._2._1.toList
         val order = results(i)._1
         recordCount.foreach(record => {
-          println("(" + record + "," + results(i)._1 + ")")
+          println("(" + results(i)._2._2.toList(1) + "," + results(i)._1 + ")")
         })
         i += recordCount.length
       }
