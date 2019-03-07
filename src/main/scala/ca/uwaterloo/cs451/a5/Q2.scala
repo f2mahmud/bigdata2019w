@@ -78,13 +78,15 @@ object Q2 {
       //          println("(" + filteredItems._2._2.toList(0) + "," + filteredItems._1 + ")")
       //        })
 
-      val i = 0
+      var i = 0
       while (i < 20) {
         val recordCount = results(i)._2._1.toList
         val order = results(i)._1
         for (j <- 0 to recordCount.length) {
           println("(" + recordCount(j) + "," + results(i)._1 + ")")
+
         }
+        i += recordCount.length
       }
 
       //        .foreach(item => {
