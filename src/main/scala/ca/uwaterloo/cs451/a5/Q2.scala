@@ -82,10 +82,9 @@ object Q2 {
       while (i < 20) {
         val recordCount = results(i)._2._1.toList
         val order = results(i)._1
-        for (j <- 0 to recordCount.length) {
-          println("(" + recordCount(j) + "," + results(i)._1 + ")")
-
-        }
+        recordCount.foreach(record => {
+          println("(" + record + "," + results(i)._1 + ")")
+        })
         i += recordCount.length
       }
 
