@@ -70,9 +70,11 @@ object Q2 {
         .sortBy(item => item._1, numPartitions = 1)
         .take(20)
         .foreach(item => {
-          item._2._2.foreach(println(_))
+          item._2._1.foreach(sub => {
+            println(item._2._2.toList.head)
+          })
         })
-//        .flatMap(_._2._2)
+      //        .flatMap(_._2._2)
       //        .foreach(println(_))
 
 
