@@ -27,7 +27,7 @@ object Q4 {
     log.info("input : " + args.input)
     log.info("date : " + args.date)
 
-    val conf = new SparkConf().setAppName("Pairs PMI")
+    val conf = new SparkConf().setAppName("Q4")
     val sc = new SparkContext(conf)
 
 
@@ -110,7 +110,7 @@ object Q4 {
         }
       })
 
-      lineItems.sortBy(item => item(0)).take(20)
+      lineItems.sortBy(item => item(0), numPartitions = 1).take(20)
         .foreach(item => {
           val partName = parts(item(1))
           val supplierName = suppliers(item(2))
@@ -127,7 +127,7 @@ object Q4 {
     val sqlContext = new SQLContext(sc)
 
     val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
-    val order = sqlContext.read.parquet(parquet + "/order")
+    val order = sqlContext.read.parquet(parquet + "/orders")
     val customer = sqlContext.read.parquet(parquet + "/customer")
     val nation = sqlContext.read.parquet(parquet + "/nation")
 
