@@ -46,7 +46,7 @@ object Q4 {
       val customers = sc.broadcast(sc.textFile(args.input() + "/customer.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
-          lineArray(0) -> ((lineArray(3).toInt, nations.value(lineArray(3))), 1) //key -> nationkey, nation name
+          lineArray(0) -> (lineArray(3).toInt, nations.value(lineArray(3))) //key -> nationkey, nation name
         }).collectAsMap())
 
       val orders: RDD[(String, String)] = sc.textFile(args.input() + "/orders.tbl")
@@ -71,15 +71,9 @@ object Q4 {
 
       val results = lineItems.cogroup(orders)
         .filter(_._2._1.toList.length > 0)
-        .flatMap(item => {
-          val l: List[String] = List()
-          item._2._1.foreach(sub => {
-            l ++ item._2._2
-          })
-          println("?>>>>>>>>>>>>>>>>" + l.size + "    " + l + "     " + l.head)
-          l
+        .map(item => {
+          (customers.value(item._2._2.head), item._2._1.size)
         })
-        .map(customers.value(_))
         .reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
         .take(20)
