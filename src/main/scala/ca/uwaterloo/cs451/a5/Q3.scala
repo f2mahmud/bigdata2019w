@@ -66,7 +66,6 @@ object Q3 {
         }
 
       parts.unpersist()
-      parts.destroy()
 
       val suppliers = sc.broadcast(sc.textFile(args.input() + "/supplier.tbl")
         .map(line => {
