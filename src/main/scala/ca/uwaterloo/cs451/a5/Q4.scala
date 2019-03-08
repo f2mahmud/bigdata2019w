@@ -73,7 +73,7 @@ object Q4 {
         .flatMap(_._2._2)
         .map(customers.value(_))
         .reduceByKey(_ + _)
-        .sortBy(_._1, true)
+        .sortBy(_._1, true, numPartitions = 1)
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
         })
