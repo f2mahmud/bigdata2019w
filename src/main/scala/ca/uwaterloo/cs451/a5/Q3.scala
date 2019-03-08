@@ -53,43 +53,33 @@ object Q3 {
           lineArray(0) -> lineArray(1) //key,name
         }).collectAsMap())
 
-      //Getting top 20 orders on that day
-      val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
-        .flatMap { case line => {
-          val lineArray = line.split("\\|")
-          if (lineArray(10).substring(0, date.length).equals(date)) {
-            List((lineArray(0).toInt, parts.value(lineArray(1)), lineArray(2))) //orderkey, partkey, supkey
-          } else {
-            List()
-          }
-        }
-        }
-
-      parts.destroy()
-
       val suppliers = sc.broadcast(sc.textFile(args.input() + "/supplier.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
           lineArray(0) -> lineArray(1) //key, name
         }).collectAsMap())
 
-      lineItems.map { case (order, part, supplier) => (order, part, suppliers.value(supplier)) }
+      //Getting top 20 orders on that day
+      val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
+        .flatMap { case line => {
+          val lineArray = line.split("\\|")
+          if (lineArray(10).substring(0, date.length).equals(date)) {
+            List((lineArray(0).toInt, parts.value(lineArray(1)), suppliers.value(lineArray(2)))) //orderkey, partkey, supkey
+          } else {
+            List()
+          }
+        }}
         .sortBy({ case (order, part, supplier) => order }, true)
         .take(20)
         .foreach {
           case (order, part, supplier) => println("(" + order + "," + part + "," + supplier + ")")
         }
+      
+      parts.unpersist()
+      parts.destroy()
 
       suppliers.unpersist()
       suppliers.destroy()
-
-
-      //      lineItems
-      //      lineItems.foreach(lineItem => {
-      //        val partName = parts(lineItem(1))
-      //        val supplierName = suppliers(lineItem(2))
-      //        println("(" + lineItem(0) + "," + partName + "," + supplierName + ")")
-      //      })
 
 
     } else {
