@@ -1,6 +1,7 @@
 package ca.uwaterloo.cs451.a5
 
 import org.apache.log4j.Logger
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -57,7 +58,7 @@ object Q3 {
         .flatMap { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            List(List(lineArray(0).toInt, parts.value(lineArray(1)), lineArray(2))) //orderkey, partkey, supkey
+            List((lineArray(0).toInt, parts.value(lineArray(1)), lineArray(2))) //orderkey, partkey, supkey
           } else {
             List()
           }
@@ -83,12 +84,12 @@ object Q3 {
       suppliers.unpersist()
       suppliers.destroy()
 
-//      lineItems
-//      lineItems.foreach(lineItem => {
-//        val partName = parts(lineItem(1))
-//        val supplierName = suppliers(lineItem(2))
-//        println("(" + lineItem(0) + "," + partName + "," + supplierName + ")")
-//      })
+      //      lineItems
+      //      lineItems.foreach(lineItem => {
+      //        val partName = parts(lineItem(1))
+      //        val supplierName = suppliers(lineItem(2))
+      //        println("(" + lineItem(0) + "," + partName + "," + supplierName + ")")
+      //      })
 
 
     } else {

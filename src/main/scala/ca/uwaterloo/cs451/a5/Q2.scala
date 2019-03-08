@@ -65,17 +65,21 @@ object Q2 {
           List((orderArray(0).toInt, "(" + orderArray(6) + "," + orderArray(0) + ")")) //orderid, clerk
         })
 
+      var listBuffer: ListBuffer[String] = ListBuffer()
+
       val results = lineItems.cogroup(orders)
         .filter(_._2._1.toList.length > 0)
         .sortBy(item => item._1, numPartitions = 1)
         .take(20)
         .foreach(item => {
           item._2._1.foreach(sub => {
-            println(item._2._2.toList.head)
+            listBuffer ++ item._2._2.toList.head
           })
         })
-      //        .flatMap(_._2._2)
-      //        .foreach(println(_))
+
+      for (i <- 1 to 20) {
+        println(listBuffer(i))
+      }
 
 
     }
