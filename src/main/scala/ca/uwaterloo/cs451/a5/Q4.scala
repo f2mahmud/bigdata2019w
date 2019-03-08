@@ -132,7 +132,7 @@ object Q4 {
     val nation = sqlContext.read.parquet(parquet + "/nation")
 
     lineitem.registerTempTable("lineitem")
-    order.registerTempTable("order")
+    order.registerTempTable("orders")
     customer.registerTempTable("customer")
     nation.registerTempTable("nation")
     println("Given >>>>>>>>>> ")
