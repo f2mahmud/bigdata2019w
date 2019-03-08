@@ -82,6 +82,7 @@ object Q3 {
 
       suppliers.unpersist()
       suppliers.destroy()
+      parts.destroy()
 
       //      lineItems
       //      lineItems.foreach(lineItem => {

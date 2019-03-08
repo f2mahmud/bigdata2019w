@@ -77,7 +77,7 @@ object Q2 {
           })
         })
 
-      for (i <- 1 to 20) {
+      for (i <- 0 to 19) {
         println(listBuffer(i))
       }
 
