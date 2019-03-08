@@ -74,7 +74,7 @@ object Q4 {
         .flatMap(item => {
           var l: List[String] = List()
           item._2._1.foreach(sub => {
-            l += item._2._2.head
+            l ++ item._2._2
           })
           l
         })
