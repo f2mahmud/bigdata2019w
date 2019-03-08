@@ -60,20 +60,28 @@ object Q4 {
         .flatMap { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            List((lineArray(0), lineArray(0))) //orderkey, random
+            List((lineArray(0), lineArray(10))) //orderkey, random
           } else {
             List()
           }
         }
         }
 
+      //Possible issue : maybe ther are two items from line item, but orders only consider 1
 
       val results = lineItems.cogroup(orders)
         .filter(_._2._1.toList.length > 0)
-        .flatMap(_._2._2)
+        .flatMap(item => {
+          var l = List()
+          item._2._1.foreach(sub => {
+            l += item._2._2.head
+          })
+          l
+        })
         .map(customers.value(_))
         .reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
+        .take(20)
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
         })
