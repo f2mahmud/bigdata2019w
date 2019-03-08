@@ -72,7 +72,7 @@ object Q4 {
       val results = lineItems.cogroup(orders)
         .filter(_._2._1.toList.length > 0)
         .flatMap(item => {
-          var l = List()
+          var l: List[String] = List()
           item._2._1.foreach(sub => {
             l += item._2._2.head
           })
