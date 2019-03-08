@@ -1,6 +1,7 @@
 package ca.uwaterloo.cs451.a5
 
 import org.apache.log4j.Logger
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -36,40 +37,46 @@ object Q4 {
 
       log.info("type : text")
 
-      val nations = sc.textFile(args.input() + "/nation.tbl")
-      val customers = sc.textFile(args.input() + "/customer.tbl")
-      val order = sc.textFile(args.input() + "/order.tbl")
+      val nations = sc.broadcast(sc.textFile(args.input() + "/nation.tbl")
+        .map(line => {
+          val lineArray = line.split("\\|")
+          (lineArray(0), lineArray(1)) //key, name
+        }).collectAsMap())
 
-      //Getting top 20 orders on that day
-      val lineItems: Array[List[Int]] = sc.textFile(args.input() + "/lineitem.tbl")
+      val customers = sc.broadcast(sc.textFile(args.input() + "/customer.tbl")
+        .map(line => {
+          val lineArray = line.split("\\|")
+          lineArray(0) -> ((lineArray(3).toInt, nations.value(lineArray(3))), 1) //key -> nationkey, nation name
+        }).collectAsMap())
+
+      val orders: RDD[(String, String)] = sc.textFile(args.input() + "/orders.tbl")
+        .flatMap(order => {
+          val orderArray = order.split("\\|")
+          List((orderArray(0), orderArray(1))) //orderid, custkey
+        })
+
+
+      val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            List(List(lineArray(0).toInt)) //orderkey
+            List((lineArray(0), lineArray(0))) //orderkey, random
           } else {
             List()
           }
         }
-        }.collect()
-
-      val parts = sc.textFile(args.input() + "/part.tbl")
-        .map(line => {
-          val lineArray = line.split("\\|")
-          lineArray(0).toInt -> lineArray(1) //key,name
-        }).collectAsMap()
-
-      val suppliers = sc.textFile(args.input() + "/supplier.tbl")
-        .map(line => {
-          val lineArray = line.split("\\|")
-          (lineArray(0).toInt, lineArray(1)) //key, name
-        }).collectAsMap()
+        }
 
 
-      lineItems.foreach(lineItem => {
-        val partName = parts(lineItem(1))
-        val supplierName = suppliers(lineItem(2))
-        println("(" + lineItem(0) + "," + partName + "," + supplierName + ")")
-      })
+      val results = lineItems.cogroup(orders)
+        .filter(_._2._1.toList.length > 0)
+        .flatMap(_._2._2)
+        .map(customers.value(_))
+        .reduceByKey(_ + _)
+        .sortBy(_._1, true)
+        .foreach(item => {
+          println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
+        })
 
 
     } else {
@@ -120,19 +127,20 @@ object Q4 {
     val sqlContext = new SQLContext(sc)
 
     val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
-    val part = sqlContext.read.parquet(parquet + "/part")
-    val supplier = sqlContext.read.parquet(parquet + "/supplier")
+    val order = sqlContext.read.parquet(parquet + "/order")
+    val customer = sqlContext.read.parquet(parquet + "/customer")
+    val nation = sqlContext.read.parquet(parquet + "/nation")
 
     lineitem.registerTempTable("lineitem")
-    part.registerTempTable("part")
-    supplier.registerTempTable("supplier")
+    order.registerTempTable("order")
+    customer.registerTempTable("customer")
+    nation.registerTempTable("nation")
     println("Given >>>>>>>>>> ")
 
     //TODO:: the ''s need to be there for date
-    val sqlAns = sqlContext.sql("select l_orderkey, p_name, s_name from lineitem, part," +
-      " supplier where l_partkey = p_partkey and l_suppkey = s_suppkey and " +
-      "l_shipdate = '" +
-      date + "' order by l_orderkey asc limit 20").show()
+    val sqlAns = sqlContext.sql("select n_nationkey, n_name, count(*) from lineitem, orders, customer, nation " +
+      "where  l_orderkey = o_orderkey and  o_custkey = c_custkey and  c_nationkey = n_nationkey and  l_shipdate = '" +
+      date + "'group by n_nationkey, n_name order by n_nationkey asc").show()
 
   }
 }

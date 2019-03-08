@@ -74,7 +74,7 @@ object Q3 {
         .foreach {
           case (order, part, supplier) => println("(" + order + "," + part + "," + supplier + ")")
         }
-      
+
       parts.unpersist()
       parts.destroy()
 

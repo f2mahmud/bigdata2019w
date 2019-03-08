@@ -68,7 +68,7 @@ object Q2 {
       var listBuffer: ListBuffer[String] = ListBuffer[String]()
 
       val results = lineItems.cogroup(orders)
-        .filter(_._2._1.toList.length > 0)
+        //.filter(_._2._1.toList.length > 0)    TODO::Take a look at this to see if it works without this line
         .sortBy(item => item._1, numPartitions = 1)
         .take(20)
         .foreach(item => {
