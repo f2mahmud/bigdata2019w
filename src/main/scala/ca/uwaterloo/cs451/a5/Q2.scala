@@ -62,15 +62,18 @@ object Q2 {
       val orders: RDD[(Int, String)] = sc.textFile(args.input() + "/orders.tbl")
         .flatMap(order => {
           val orderArray = order.split("\\|")
-          List((orderArray(0).toInt, "(" + orderArray(0) + "," + orderArray(6) + ")")) //orderid, clerk
+          List((orderArray(0).toInt, "(" + orderArray(6) + "," + orderArray(0) + ")")) //orderid, clerk
         })
 
       val results = lineItems.cogroup(orders)
         .filter(_._2._1.toList.length > 0)
         .sortBy(item => item._1, numPartitions = 1)
         .take(20)
-        .flatMap(_._2._2)
-        .foreach(println(_))
+        .foreach(item => {
+          item._2._2.foreach(println(_))
+        })
+//        .flatMap(_._2._2)
+      //        .foreach(println(_))
 
 
     }

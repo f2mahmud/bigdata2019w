@@ -68,7 +68,7 @@ object Q3 {
             List()
           }
         }
-        }.sortBy(_(0), true).take(20)
+        }.sortBy(_ (0), true).take(20)
 
 
       lineItems.foreach(lineItem => {
@@ -92,13 +92,13 @@ object Q3 {
       val partsRDD = partsDF.rdd
       val suppliersRDD = suppliersDF.rdd
 
-      val parts = partsRDD.map(part => {
+      val parts = sc.broadcast(partsRDD.map(part => {
         (part(0), part(1))
-      }).collectAsMap()
+      }).collectAsMap())
 
-      val suppliers = suppliersRDD.map(supplier => {
+      val suppliers = sc.broadcast(suppliersRDD.map(supplier => {
         (supplier(0), supplier(1))
-      }).collectAsMap()
+      }).collectAsMap())
 
       val lineItems = lineItemsRDD.flatMap(line => {
         val dateFromRow = line.getString(10)
