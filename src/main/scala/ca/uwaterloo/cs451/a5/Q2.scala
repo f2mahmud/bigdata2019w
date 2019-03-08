@@ -65,7 +65,7 @@ object Q2 {
           List((orderArray(0).toInt, "(" + orderArray(6) + "," + orderArray(0) + ")")) //orderid, clerk
         })
 
-      var listBuffer: ListBuffer[String] = ListBuffer()
+      var listBuffer: ListBuffer[String] = ListBuffer[String]()
 
       val results = lineItems.cogroup(orders)
         .filter(_._2._1.toList.length > 0)
@@ -73,7 +73,7 @@ object Q2 {
         .take(20)
         .foreach(item => {
           item._2._1.foreach(sub => {
-            listBuffer ++ item._2._2.toList.head
+            listBuffer += item._2._2.toList.head
           })
         })
 
