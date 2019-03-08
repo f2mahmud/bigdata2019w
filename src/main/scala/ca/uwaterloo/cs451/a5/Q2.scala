@@ -5,6 +5,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
+import scala.collection.mutable.ListBuffer
 
 /*
     select o_clerk, o_orderkey from lineitem, orders
@@ -61,52 +62,17 @@ object Q2 {
       val orders: RDD[(Int, String)] = sc.textFile(args.input() + "/orders.tbl")
         .flatMap(order => {
           val orderArray = order.split("\\|")
-          List((orderArray(0).toInt, orderArray(6))) //orderid, clerk
+          List((orderArray(0).toInt, "(" + orderArray(0) + "," + orderArray(6) + ")")) //orderid, clerk
         })
-
 
       val results = lineItems.cogroup(orders)
-        .filter { case item => item._2._1.toList.length > 0 }
+        .filter(_._2._1.toList.length > 0)
         .sortBy(item => item._1, numPartitions = 1)
         .take(20)
-      //        .map(item => {
-      //          item._2._1.foreach(values => {
-      //
-      //          })
-      //        })
-      //        .foreach(filteredItems => {
-      //          println("(" + filteredItems._2._2.toList(0) + "," + filteredItems._1 + ")")
-      //        })
+        .flatMap(_._2._2)
+        .take(20)
+        .foreach(println(_))
 
-      var i = 0
-      while (i < 20) {
-        val recordCount = results(i)._2._1.toList
-        val order = results(i)._1
-        recordCount.foreach(record => {
-          println("(" + results(i)._2._2.toList(0) + "," + results(i)._1 + ")")
-        })
-        i += 1
-      }
-
-      //        .foreach(item => {
-      //          )
-      //          {
-      //
-      //          }
-      //          else
-      //          {
-      //            List()
-      //          }
-      //          println("(" + item._2._2.toList(0) + "," + item._1 + ")")
-      //        })
-      //        .foreach(line => {
-      //          val lineArray = line.split("\\|")
-      //          lineItems.foreach(lineItem => {
-      //            if (lineItem.equals(lineArray(0))) {
-      //              println("(" + lineArray(6) + "," + lineArray(0) + ")")
-      //            }
-      //          })
-      //        })
 
     }
     else {
