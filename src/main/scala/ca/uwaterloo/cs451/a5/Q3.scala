@@ -46,36 +46,49 @@ object Q3 {
 
       log.info("type : text")
 
-      val parts = sc.textFile(args.input() + "/part.tbl")
+      val parts = sc.broadcast(sc.textFile(args.input() + "/part.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
-          lineArray(0).toInt -> lineArray(1) //key,name
-        }).collectAsMap()
-
-      val suppliers = sc.textFile(args.input() + "/supplier.tbl")
-        .map(line => {
-          val lineArray = line.split("\\|")
-          (lineArray(0).toInt, lineArray(1)) //key, name
-        }).collectAsMap()
+          lineArray(0) -> lineArray(1) //key,name
+        }).collectAsMap())
 
       //Getting top 20 orders on that day
-      val lineItems: Array[List[Int]] = sc.textFile(args.input() + "/lineitem.tbl")
+      val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
         .flatMap { case line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            List(List(lineArray(0).toInt, lineArray(1).toInt, lineArray(2).toInt)) //orderkey, partkey, supkey
+            List(List(lineArray(0).toInt, parts.value(lineArray(1)), lineArray(2))) //orderkey, partkey, supkey
           } else {
             List()
           }
         }
-        }.sortBy(_ (0), true).take(20)
+        }
 
+      parts.unpersist()
+      parts.destroy()
 
-      lineItems.foreach(lineItem => {
-        val partName = parts(lineItem(1))
-        val supplierName = suppliers(lineItem(2))
-        println("(" + lineItem(0) + "," + partName + "," + supplierName + ")")
-      })
+      val suppliers = sc.broadcast(sc.textFile(args.input() + "/supplier.tbl")
+        .map(line => {
+          val lineArray = line.split("\\|")
+          lineArray(0) -> lineArray(1) //key, name
+        }).collectAsMap())
+
+      lineItems.map { case (order, part, supplier) => (order, part, suppliers.value(supplier)) }
+        .sortBy({ case (order, part, supplier) => order }, true)
+        .take(20)
+        .foreach {
+          case (order, part, supplier) => println("(" + order + "," + part + "," + supplier + ")")
+        }
+
+      suppliers.unpersist()
+      suppliers.destroy()
+
+//      lineItems
+//      lineItems.foreach(lineItem => {
+//        val partName = parts(lineItem(1))
+//        val supplierName = suppliers(lineItem(2))
+//        println("(" + lineItem(0) + "," + partName + "," + supplierName + ")")
+//      })
 
 
     } else {
@@ -92,30 +105,32 @@ object Q3 {
       val partsRDD = partsDF.rdd
       val suppliersRDD = suppliersDF.rdd
 
-      val parts = sc.broadcast(partsRDD.map(part => {
-        (part(0), part(1))
-      }).collectAsMap())
+      val parts = sc.broadcast(
+        partsRDD.map(part => {
+          part(0) -> part(1)
+        }))
 
-      val suppliers = sc.broadcast(suppliersRDD.map(supplier => {
-        (supplier(0), supplier(1))
-      }).collectAsMap())
+      val suppliers = sc.broadcast(
+        suppliersRDD.map(supplier => {
+          supplier(0) -> supplier(1)
+        }))
 
       val lineItems = lineItemsRDD
         .flatMap(line => {
-        val dateFromRow = line.getString(10)
-        if (dateFromRow.substring(0, date.length).equals(date)) {
-          List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
-        } else {
-          List()
-        }
-      })
+          val dateFromRow = line.getString(10)
+          if (dateFromRow.substring(0, date.length).equals(date)) {
+            List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
+          } else {
+            List()
+          }
+        })
 
-//      lineItems.sortBy(item => item(0)).take(20)
-//        .foreach(item => {
-//          val partName = parts(item(1))
-//          val supplierName = suppliers(item(2))
-//          println("(" + item(0) + "," + partName + "," + supplierName + ")")
-//        })
+      //      lineItems.sortBy(item => item(0)).take(20)
+      //        .foreach(item => {
+      //          val partName = parts(item(1))
+      //          val supplierName = suppliers(item(2))
+      //          println("(" + item(0) + "," + partName + "," + supplierName + ")")
+      //        })
 
     }
 
