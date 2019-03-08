@@ -70,7 +70,6 @@ object Q2 {
         .sortBy(item => item._1, numPartitions = 1)
         .take(20)
         .flatMap(_._2._2)
-        .take(20)
         .foreach(println(_))
 
 
