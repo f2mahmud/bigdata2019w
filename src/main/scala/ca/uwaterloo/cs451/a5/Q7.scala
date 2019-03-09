@@ -106,7 +106,7 @@ object Q7 {
           }
         }).reduceByKey(_ + _)
         .sortBy(_._2, false, 1)
-        .take(10)
+        //.take(10)
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
         })
@@ -134,21 +134,21 @@ object Q7 {
         (supplier(0), supplier(1))
       }).collectAsMap()
 
-//      val lineItems = lineItemsRDD.flatMap(line => {
-//        val dateFromRow = line.getString(10)
-//        if (dateFromRow.substring(0, date.length).equals(date)) {
-//          List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
-//        } else {
-//          List()
-//        }
-//      })
-//
-//      lineItems.sortBy(item => item(0), numPartitions = 1).take(20)
-//        .foreach(item => {
-//          val partName = parts(item(1))
-//          val supplierName = suppliers(item(2))
-//          println("(" + item(0) + "," + partName + "," + supplierName + ")")
-//        })
+      //      val lineItems = lineItemsRDD.flatMap(line => {
+      //        val dateFromRow = line.getString(10)
+      //        if (dateFromRow.substring(0, date.length).equals(date)) {
+      //          List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
+      //        } else {
+      //          List()
+      //        }
+      //      })
+      //
+      //      lineItems.sortBy(item => item(0), numPartitions = 1).take(20)
+      //        .foreach(item => {
+      //          val partName = parts(item(1))
+      //          val supplierName = suppliers(item(2))
+      //          println("(" + item(0) + "," + partName + "," + supplierName + ")")
+      //        })
 
     }
 
@@ -165,12 +165,11 @@ object Q7 {
     println("Given >>>>>>>>>> ")
 
     //TODO:: the ''s need to be there for date
-    val sqlAns = sqlContext.sql("select  l_returnflag,  l_linestatus,  sum(l_quantity) as sum_qty," +
-      " sum(l_extendedprice) as sum_base_price,  sum(l_extendedprice*(1-l_discount)) as sum_disc_price," +
-      "sum(l_extendedprice*(1-l_discount)*(1+l_tax)) as sum_charge, avg(l_quantity) as avg_qty," +
-      " avg(l_extendedprice) as avg_price,  avg(l_discount) as avg_disc,  count(*) as count_order " +
-      "from lineitem\nwhere\n  l_shipdate = '" +
-      date + "' group by l_returnflag, l_linestatus").show(200)
+    val sqlAns = sqlContext.sql("select  c_name,  l_orderkey,  sum(l_extendedprice*(1-l_discount)) as revenue," +
+      " o_orderdate, o_shippriority from customer, orders, lineitem " +
+      "where c_custkey = o_custkey and l_orderkey = o_orderkey and o_orderdate < '" + date + "' and " +
+      "l_shipdate > '" + date + "' group by c_name, l_orderkey, o_orderdate, o_shippriority order by revenue desc limit 10;")
+      .show(200)
 
   }
 }
