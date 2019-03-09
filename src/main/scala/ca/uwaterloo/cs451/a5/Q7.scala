@@ -134,21 +134,21 @@ object Q7 {
         (supplier(0), supplier(1))
       }).collectAsMap()
 
-      val lineItems = lineItemsRDD.flatMap(line => {
-        val dateFromRow = line.getString(10)
-        if (dateFromRow.substring(0, date.length).equals(date)) {
-          List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
-        } else {
-          List()
-        }
-      })
-
-      lineItems.sortBy(item => item(0), numPartitions = 1).take(20)
-        .foreach(item => {
-          val partName = parts(item(1))
-          val supplierName = suppliers(item(2))
-          println("(" + item(0) + "," + partName + "," + supplierName + ")")
-        })
+//      val lineItems = lineItemsRDD.flatMap(line => {
+//        val dateFromRow = line.getString(10)
+//        if (dateFromRow.substring(0, date.length).equals(date)) {
+//          List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
+//        } else {
+//          List()
+//        }
+//      })
+//
+//      lineItems.sortBy(item => item(0), numPartitions = 1).take(20)
+//        .foreach(item => {
+//          val partName = parts(item(1))
+//          val supplierName = suppliers(item(2))
+//          println("(" + item(0) + "," + partName + "," + supplierName + ")")
+//        })
 
     }
 
