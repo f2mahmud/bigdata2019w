@@ -109,7 +109,7 @@ object Q5 {
 
       val lineItems = lineItemsRDD.flatMap(line => {
         val dateFromRow = line.getString(10)
-        if (dateFromRow.substring(0, date.length).equals(date)) {
+        if (dateFromRow.substring(0, 8).equals(8)) {
           List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
         } else {
           List()
@@ -144,9 +144,9 @@ object Q5 {
     println("Given >>>>>>>>>> ")
 
     //TODO:: the ''s need to be there for date
-    val sqlAns = sqlContext.sql("select n_nationkey, n_name, count(*) from lineitem, orders, customer, nation " +
-      "where  l_orderkey = o_orderkey and  o_custkey = c_custkey and  c_nationkey = n_nationkey and  l_shipdate = '" +
-      date + "'group by n_nationkey, n_name order by n_nationkey asc").show(50)
+//    val sqlAns = sqlContext.sql("select n_nationkey, n_name, count(*) from lineitem, orders, customer, nation " +
+//      "where  l_orderkey = o_orderkey and  o_custkey = c_custkey and  c_nationkey = n_nationkey and  l_shipdate = '" +
+//      date + "'group by n_nationkey, n_name order by n_nationkey asc").show(50)
 
   }
 }
