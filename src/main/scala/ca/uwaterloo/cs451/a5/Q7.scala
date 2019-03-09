@@ -86,10 +86,6 @@ object Q7 {
           }
         })
 
-      lineItems.foreach(item => {
-        println(">>>>>>>>>>>>>> " + item._2)
-      })
-
       val customers = sc.broadcast(sc.textFile(args.input() + "/customer.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
@@ -102,6 +98,7 @@ object Q7 {
             val l: ListBuffer[((String, String, String, String), Float)] = ListBuffer()
             val key = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
             item._2._1.foreach(sub => {
+              println(">>>>>>>>>>>> " + sub)
               l += ((key, sub))
             })
             l.toList
@@ -166,8 +163,12 @@ object Q7 {
     val sqlContext = new SQLContext(sc)
 
     val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
+    val customer = sqlContext.read.parquet(parquet + "/customer")
+    val order = sqlContext.read.parquet(parquet + "/order")
 
     lineitem.registerTempTable("lineitem")
+    customer.registerTempTable("customer")
+    order.registerTempTable("order")
     println("Given >>>>>>>>>> ")
 
     //TODO:: the ''s need to be there for date
