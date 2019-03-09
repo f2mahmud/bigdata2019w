@@ -105,11 +105,12 @@ object Q7 {
           } else {
             List()
           }
-        }).reduceByKey(_ + _)
-        .sortBy(_._2, false, 1)
-        //.take(10)
-        .foreach(item => {
-        println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
+        }).foreach(println(_))
+//        .reduceByKey(_ + _)
+//        .sortBy(_._2, false, 1)
+//        //.take(10)
+//        .foreach(item => {
+//        println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
       })
 
 
@@ -164,11 +165,11 @@ object Q7 {
 
     val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
     val customer = sqlContext.read.parquet(parquet + "/customer")
-    val order = sqlContext.read.parquet(parquet + "/order")
+    val orders = sqlContext.read.parquet(parquet + "/orders")
 
     lineitem.registerTempTable("lineitem")
     customer.registerTempTable("customer")
-    order.registerTempTable("order")
+    orders.registerTempTable("orders")
     println("Given >>>>>>>>>> ")
 
     //TODO:: the ''s need to be there for date
