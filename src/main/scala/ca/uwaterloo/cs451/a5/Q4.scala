@@ -34,7 +34,7 @@ object Q4 {
     val date = args.date()
 
     if (args.text.apply()) {
-
+      //DONE Text
       log.info("type : text")
 
       val nations = sc.broadcast(sc.textFile(args.input() + "/nation.tbl")
@@ -67,16 +67,13 @@ object Q4 {
         }
         }
 
-      //Possible issue : maybe ther are two items from line item, but orders only consider 1
-
-      val results = lineItems.cogroup(orders)
-        .filter(_._2._1.toList.length > 0)
+      lineItems.cogroup(orders)
+        .filter(_._2._1.toList.nonEmpty)
         .map(item => {
           (customers.value(item._2._2.head), item._2._1.size)
         })
         .reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
-        .take(20)
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
         })
@@ -143,7 +140,7 @@ object Q4 {
     //TODO:: the ''s need to be there for date
     val sqlAns = sqlContext.sql("select n_nationkey, n_name, count(*) from lineitem, orders, customer, nation " +
       "where  l_orderkey = o_orderkey and  o_custkey = c_custkey and  c_nationkey = n_nationkey and  l_shipdate = '" +
-      date + "'group by n_nationkey, n_name order by n_nationkey asc").show()
+      date + "'group by n_nationkey, n_name order by n_nationkey asc").show(50)
 
   }
 }

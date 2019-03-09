@@ -68,7 +68,8 @@ object Q3 {
           } else {
             List()
           }
-        }}
+        }
+        }
         .sortBy({ case (order, part, supplier) => order }, true)
         .take(20)
         .foreach {
@@ -115,13 +116,6 @@ object Q3 {
             List()
           }
         })
-
-      //      lineItems.sortBy(item => item(0)).take(20)
-      //        .foreach(item => {
-      //          val partName = parts(item(1))
-      //          val supplierName = suppliers(item(2))
-      //          println("(" + item(0) + "," + partName + "," + supplierName + ")")
-      //        })
 
     }
 
