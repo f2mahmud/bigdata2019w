@@ -106,12 +106,12 @@ object Q7 {
             List()
           }
         }).foreach(println(_))
-//        .reduceByKey(_ + _)
-//        .sortBy(_._2, false, 1)
-//        //.take(10)
-//        .foreach(item => {
-//        println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
-      })
+      //        .reduceByKey(_ + _)
+      //        .sortBy(_._2, false, 1)
+      //        //.take(10)
+      //        .foreach(item => {
+      //        println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
+      //      })
 
 
     }
