@@ -75,8 +75,7 @@ object Q5 {
         .flatMap(item => {
         var l: ListBuffer[((String, String), Int)] = ListBuffer()
         item._2._1.foreach(date => {
-          val subItem = ((date, item._2._2.head), 1)
-          l += subItem
+          l += (((date, item._2._2.head), 1))
         })
         l.toList
       })
@@ -146,9 +145,9 @@ object Q5 {
     println("Given >>>>>>>>>> ")
 
     //TODO:: the ''s need to be there for date
-//    val sqlAns = sqlContext.sql("select n_nationkey, n_name, count(*) from lineitem, orders, customer, nation " +
-//      "where  l_orderkey = o_orderkey and  o_custkey = c_custkey and  c_nationkey = n_nationkey and  l_shipdate = '" +
-//      date + "'group by n_nationkey, n_name order by n_nationkey asc").show(50)
+    //    val sqlAns = sqlContext.sql("select n_nationkey, n_name, count(*) from lineitem, orders, customer, nation " +
+    //      "where  l_orderkey = o_orderkey and  o_custkey = c_custkey and  c_nationkey = n_nationkey and  l_shipdate = '" +
+    //      date + "'group by n_nationkey, n_name order by n_nationkey asc").show(50)
 
   }
 }

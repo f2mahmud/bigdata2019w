@@ -76,17 +76,6 @@ object Q6 {
         (item._1._1, item._1._2, sub._1, sub._2, sub._3, sub._4, sub._1 / sub._6, sub._2 / sub._6, sub._5 / sub._6, sub._6)
       }).foreach(println(_))
 
-      //      lineItems.cogroup(orders)
-      //        .filter(_._2._1.toList.nonEmpty)
-      //        .map(item => {
-      //          (customers.value(item._2._2.head), item._2._1.size)
-      //        })
-      //        .reduceByKey(_ + _)
-      //        .sortBy(_._1, true, numPartitions = 1)
-      //        .foreach(item => {
-      //          println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
-      //        })
-
 
     } else {
 
