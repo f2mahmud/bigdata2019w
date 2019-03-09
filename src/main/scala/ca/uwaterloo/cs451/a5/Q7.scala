@@ -98,20 +98,19 @@ object Q7 {
             val l: ListBuffer[((String, String, String, String), Float)] = ListBuffer()
             val key = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
             item._2._1.foreach(sub => {
-              println(">>>>>>>>>>>> " + sub)
               l += ((key, sub))
             })
             l.toList
           } else {
             List()
           }
-        }).foreach(println(_))
-      //        .reduceByKey(_ + _)
-      //        .sortBy(_._2, false, 1)
-      //        //.take(10)
-      //        .foreach(item => {
-      //        println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
-      //      })
+        })
+        .reduceByKey(_ + _)
+        .sortBy(_._2, false, 1)
+        .take(10)
+        .foreach(item => {
+          println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
+        })
 
 
     }
