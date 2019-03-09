@@ -69,7 +69,7 @@ object Q5 {
 
 
       val results = lineItems.cogroup(orders) //orderkey, listofdates, nations
-        .filter(_._2._1.toList.nonEmpty) //might be redundant
+        .filter(_._2._2.toList.nonEmpty) //might be redundant
         .flatMap(item => {
         var l: ListBuffer[((String, String), Int)] = ListBuffer()
         item._2._1.foreach(date => {
