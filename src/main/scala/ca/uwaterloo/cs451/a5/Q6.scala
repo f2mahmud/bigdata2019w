@@ -1,7 +1,5 @@
 package ca.uwaterloo.cs451.a5
 
-package ca.uwaterloo.cs451.a5
-
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
