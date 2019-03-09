@@ -60,7 +60,7 @@ object Q6 {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
             var discountPrice = lineArray(5).toFloat * (1f - lineArray(6).toFloat)
-            println("????>>>>>>>>>>>>>>" + (lineArray(8), lineArray(9)))
+
             List(((lineArray(8), lineArray(9)),
               (lineArray(4).toInt, lineArray(5).toFloat, discountPrice,
                 discountPrice * (1f + lineArray(7).toFloat), lineArray(6).toFloat, 1)))
@@ -70,6 +70,7 @@ object Q6 {
           }
         })
         .reduceByKey((accum, item) => {
+          println("????>>>>>>>>>>>>>>" + accum)
           (accum._1 + item._1, accum._2 + item._2, accum._3 + item._3, accum._4 + item._4, accum._5 + item._5, accum._6 + item._6)
         }).map(item => {
           val sub = item._2
