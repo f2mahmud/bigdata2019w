@@ -86,6 +86,10 @@ object Q7 {
           }
         })
 
+      lineItems.foreach(item => {
+        println(">>>>>>>>>>>>>> " + item._2)
+      })
+
       val customers = sc.broadcast(sc.textFile(args.input() + "/customer.tbl")
         .map(line => {
           val lineArray = line.split("\\|")
@@ -108,11 +112,13 @@ object Q7 {
         .sortBy(_._2, false, 1)
         //.take(10)
         .foreach(item => {
-          println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
-        })
+        println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
+      })
 
 
-    } else {
+    }
+
+    else {
 
       log.info("type : parquet")
 
@@ -168,8 +174,9 @@ object Q7 {
     val sqlAns = sqlContext.sql("select  c_name,  l_orderkey,  sum(l_extendedprice*(1-l_discount)) as revenue," +
       " o_orderdate, o_shippriority from customer, orders, lineitem " +
       "where c_custkey = o_custkey and l_orderkey = o_orderkey and o_orderdate < '" + date + "' and " +
-      "l_shipdate > '" + date + "' group by c_name, l_orderkey, o_orderdate, o_shippriority order by revenue desc limit 10;")
+      "l_shipdate > '" + date + "' group by c_name, l_orderkey, o_orderdate, o_shippriority order by revenue desc limit 10")
       .show(200)
 
   }
+
 }
