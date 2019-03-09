@@ -18,6 +18,8 @@ class Q5Conf(args: Seq[String]) extends ScallopConf(args) {
 
 object Q5 {
   //TODO::Should double check how to display raw data
+  //TODO::Verify answer using spark sql
+  //TODO::Plot graph
 
   //3 is canada, 24 is us
 
