@@ -64,13 +64,15 @@ object Q4 {
           } else {
             List()
           }
-        }
-        }
+        }}
 
       lineItems.cogroup(orders)
-        .filter(_._2._1.toList.nonEmpty)
-        .map(item => {
-          (customers.value(item._2._2.head), item._2._1.size)
+        .flatMap(item => {
+          if (item._2._1.nonEmpty) {
+            List((customers.value(item._2._2.head), item._2._1.size))
+          } else {
+            List()
+          }
         })
         .reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
@@ -121,8 +123,8 @@ object Q4 {
 
 
     //TODO:REMOVE
-//    val parquet = "TPC-H-0.1-PARQUET"
-val parquet = "/data/cs451/TPC-H-10-PARQUET"
+    //    val parquet = "TPC-H-0.1-PARQUET"
+    val parquet = "/data/cs451/TPC-H-10-PARQUET"
 
 
     val sqlContext = new SQLContext(sc)

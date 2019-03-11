@@ -71,13 +71,16 @@ object Q5 {
 
 
       val results = lineItems.cogroup(orders) //orderkey, listofdates, nations
-        .filter(_._2._2.toList.nonEmpty) //getting rid of orders in lineitem not related to US/Canada
         .flatMap(item => {
-        var l: ListBuffer[((String, String), Int)] = ListBuffer()
-        item._2._1.foreach(date => {
-          l += (((date, item._2._2.head), 1))
-        })
-        l.toList
+        if (item._2._2.nonEmpty) {
+          var l: ListBuffer[((String, String), Int)] = ListBuffer()
+          item._2._1.foreach(date => {
+            l += (((date, item._2._2.head), 1))
+          })
+          l.toList
+        } else {
+          List()
+        }
       })
         .reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
@@ -128,8 +131,8 @@ object Q5 {
 
 
     //TODO:REMOVE
-//    val parquet = "TPC-H-0.1-PARQUET"
-val parquet = "/data/cs451/TPC-H-10-PARQUET"
+    //    val parquet = "TPC-H-0.1-PARQUET"
+    val parquet = "/data/cs451/TPC-H-10-PARQUET"
 
 
     val sqlContext = new SQLContext(sc)
