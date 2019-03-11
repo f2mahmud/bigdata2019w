@@ -117,7 +117,8 @@ object Q2 {
     }
 
     //TODO:REMOVE
-    val parquet = "TPC-H-0.1-PARQUET"
+    //val parquet = "TPC-H-0.1-PARQUET"
+    val parquet = "/data/cs451/TPC-H-10-PARQUET"
 
 
     val sqlContext = new SQLContext(sc)

@@ -2,7 +2,7 @@ package ca.uwaterloo.cs451.a5
 
 
 import org.apache.log4j.Logger
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
 
@@ -69,6 +69,22 @@ object Q1 {
     }
 
     println("ANSWER=" + count.value)
+
+    //TODO:REMOVE
+    val parquet = "TPC-H-0.1-PARQUET"
+
+
+    val sqlContext = new SQLContext(sc)
+
+    val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
+    val orders = sqlContext.read.parquet(parquet + "/orders")
+
+    lineitem.registerTempTable("lineitem")
+    orders.registerTempTable("orders")
+    println("Given >>>>>>>>>> ")
+
+    //TODO:: the ''s need to be there for date
+    val sqlAns = sqlContext.sql("select count(*) from lineitem where l_shipdate = '" + date + "'").show()
 
   }
 
