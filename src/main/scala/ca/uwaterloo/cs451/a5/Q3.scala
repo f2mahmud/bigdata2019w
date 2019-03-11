@@ -61,16 +61,15 @@ object Q3 {
 
       //Getting top 20 orders on that day
       val lineItems = sc.textFile(args.input() + "/lineitem.tbl")
-        .flatMap { case line => {
+        .flatMap(line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
             List((lineArray(0).toInt, parts.value(lineArray(1)), suppliers.value(lineArray(2)))) //orderkey, partkey, supkey
           } else {
             List()
           }
-        }
-        }
-        .sortBy({ case (order, part, supplier) => order }, true)
+        })
+        .sortBy(_._1, true, numPartitions = 1)
         .take(20)
         .foreach {
           case (order, part, supplier) => println("(" + order + "," + part + "," + supplier + ")")
@@ -89,39 +88,34 @@ object Q3 {
 
       val sparkSession = SparkSession.builder().getOrCreate()
 
-      val lineItemDF = sparkSession.read.parquet(args.input() + "/lineitem")
-      val partsDF = sparkSession.read.parquet(args.input() + "/part")
-      val suppliersDF = sparkSession.read.parquet(args.input() + "/supplier")
+      val lineItemDF = sparkSession.read.parquet(args.input() + "/lineitem").rdd
+      val partsDF = sparkSession.read.parquet(args.input() + "/part").rdd
+      val suppliersDF = sparkSession.read.parquet(args.input() + "/supplier").rdd
 
-      val lineItemsRDD = lineItemDF.rdd
-      val partsRDD = partsDF.rdd
-      val suppliersRDD = suppliersDF.rdd
 
-      val parts = sc.broadcast(
-        partsRDD.map(part => {
-          part(0) -> part(1)
-        }))
+      val parts = sc.broadcast(partsDF.map(line => line.getString(0) -> line.getString(1)).collectAsMap())
 
-      val suppliers = sc.broadcast(
-        suppliersRDD.map(supplier => {
-          supplier(0) -> supplier(1)
-        }))
+      val suppliers = sc.broadcast(suppliersDF.map(line => line.getString(0) -> line.getString(1)).collectAsMap())
 
-      val lineItems = lineItemsRDD
+
+      val lineItems = lineItemDF
         .flatMap(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
+            List((line.getInt(0), parts.value(line.getString(1)), suppliers.value(line.getString(2))))
           } else {
             List()
           }
         })
+        .sortBy(_._1, true, numPartitions = 1)
+        .take(20)
+        .foreach(println(_))      //TODO:: might not print properly
 
     }
 
 
     //TODO:REMOVE
-//    val parquet = "TPC-H-0.1-PARQUET"
+    //    val parquet = "TPC-H-0.1-PARQUET"
     val parquet = "/data/cs451/TPC-H-10-PARQUET"
 
 

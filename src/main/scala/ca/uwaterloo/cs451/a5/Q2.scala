@@ -52,7 +52,7 @@ object Q2 {
         .flatMap(line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            List((lineArray(0).toInt, lineArray(10))) //orderid, date, suppkey
+            List((lineArray(0).toInt, lineArray(10))) //orderid, date
           } else {
             List()
           }
@@ -60,16 +60,16 @@ object Q2 {
         )
 
       val orders: RDD[(Int, String)] = sc.textFile(args.input() + "/orders.tbl")
-        .flatMap(order => {
+        .map(order => {
           val orderArray = order.split("\\|")
-          List((orderArray(0).toInt, "(" + orderArray(6) + "," + orderArray(0) + ")")) //orderid, clerk
+          (orderArray(0).toInt, "(" + orderArray(6) + "," + orderArray(0) + ")") //orderid, clerk
         })
 
       var listBuffer: ListBuffer[String] = ListBuffer[String]()
 
-      val results = lineItems.cogroup(orders)
-        .filter(_._2._1.toList.length > 0)
-        .sortBy(item => item._1, numPartitions = 1)
+      lineItems.cogroup(orders)
+        .filter(_._2._1.nonEmpty)
+        .sortBy(item => item._1, numPartitions = 1)   //TODO::checkifsortbykey works
         .take(20)
         .foreach(item => {
           item._2._1.foreach(sub => {
@@ -93,25 +93,35 @@ object Q2 {
       val ordersDF = sparkSession.read.parquet(args.input() + "/orders")
 
       val lineItemsRDD = lineItemDF.rdd
-      val ordersRDD = ordersDF.rdd
-
-      val filteredLineItems: Array[Int] = lineItemsRDD
         .flatMap(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            List(line.getInt(0))
+            List((line.getInt(0), dateFromRow)) //orderid, date
           } else {
             List()
           }
-        }).sortBy(item => item).take(20)
-
-      val orders = ordersRDD.foreach(line => {
-        filteredLineItems.foreach(lineItem => {
-          if (lineItem.equals(line.getInt(0))) {
-            println("(" + line(6) + "," + line(0) + ")")
-          }
         })
-      })
+
+      val ordersRDD = ordersDF.rdd
+        .map(item => {
+          (item.getInt(0), "(" + item.get(6) + "," + item.get(0) + ")")
+        })
+
+      var listBuffer: ListBuffer[String] = ListBuffer[String]()
+
+      lineItemsRDD.cogroup(ordersRDD)
+        .filter(_._2._1.nonEmpty)
+        .sortBy(item => item._1, numPartitions = 1) //TODO::check if sortByKey worls
+        .take(20)
+        .foreach(item => {
+          item._2._1.foreach(sub => {
+            listBuffer += item._2._2.toList.head
+          })
+        })
+
+      for (i <- 0 to 19) {
+        println(listBuffer(i))
+      }
 
 
     }
