@@ -1,7 +1,6 @@
 package ca.uwaterloo.cs451.a5
 
 import org.apache.log4j.Logger
-import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -70,7 +69,7 @@ object Q5 {
         })
 
 
-      val results = lineItems.cogroup(orders) //orderkey, listofdates, nations
+      lineItems.cogroup(orders) //orderkey, listofdates, nations
         .flatMap(item => {
         if (item._2._2.nonEmpty) {
           var l: ListBuffer[((String, String), Int)] = ListBuffer()
@@ -81,8 +80,7 @@ object Q5 {
         } else {
           List()
         }
-      })
-        .reduceByKey(_ + _)
+      }).reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
@@ -95,36 +93,49 @@ object Q5 {
 
       val sparkSession = SparkSession.builder().getOrCreate()
 
-      val lineItemDF = sparkSession.read.parquet(args.input() + "/lineitem")
-      val partsDF = sparkSession.read.parquet(args.input() + "/part")
-      val suppliersDF = sparkSession.read.parquet(args.input() + "/supplier")
+      val nations = sc.broadcast(sparkSession.read.parquet(args.input() + "/nation").rdd
+        .map(line => {
+          (line.getString(0), line.getString(1))
+        }).collectAsMap())
 
-      val lineItemsRDD = lineItemDF.rdd
-      val partsRDD = partsDF.rdd
-      val suppliersRDD = suppliersDF.rdd
+      val customers = sc.broadcast(sparkSession.read.parquet(args.input() + "/customer").rdd
+        .flatMap(line => {
+          if (line.getInt(3) == 3 || line.getInt(3) == 24) {
+            List(line.getString(0) -> nations.value(line.getString(3)))
+          } else {
+            List()
+          }
+        }).collectAsMap())
 
-      val parts = partsRDD.map(part => {
-        (part(0), part(1))
-      }).collectAsMap()
+      val orders = sparkSession.read.parquet(args.input() + "/orders").rdd
+        .flatMap(order => {
+          if (customers.value.contains(order.getString(1))) {
+            List((order.getString(0), customers.value(order.getString(1))))
+          } else {
+            List()
+          }
+        })
 
-      val suppliers = suppliersRDD.map(supplier => {
-        (supplier(0), supplier(1))
-      }).collectAsMap()
+      val lineItems = sparkSession.read.parquet(args.input() + "/lineitem").rdd
+        .map(item => {
+          (item.getString(0), item.getString(10).substring(0, 7))
+        })
 
-      val lineItems = lineItemsRDD.flatMap(line => {
-        val dateFromRow = line.getString(10)
-        if (dateFromRow.substring(0, 8).equals(8)) {
-          List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
-        } else {
-          List()
-        }
-      })
-
-      lineItems.sortBy(item => item(0), numPartitions = 1).take(20)
+      lineItems.cogroup(orders)
+        .flatMap(item => {
+          if (item._2._2.nonEmpty) {
+            var l: ListBuffer[((String, String), Int)] = ListBuffer()
+            item._2._1.foreach(date => {
+              l += (((date, item._2._2.head), 1))
+            })
+            l.toList
+          } else {
+            List()
+          }
+        }).reduceByKey(_ + _)
+        .sortBy(_._1, true, numPartitions = 1)
         .foreach(item => {
-          val partName = parts(item(1))
-          val supplierName = suppliers(item(2))
-          println("(" + item(0) + "," + partName + "," + supplierName + ")")
+          println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
         })
 
     }

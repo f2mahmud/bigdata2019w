@@ -105,8 +105,7 @@ object Q7 {
           } else {
             List()
           }
-        })
-        .reduceByKey(_ + _)
+        }).reduceByKey(_ + _)
         .sortBy(_._2, false, 1)
         .take(10)
         .foreach(item => {
@@ -158,8 +157,8 @@ object Q7 {
 
 
     //TODO:REMOVE
-//    val parquet = "TPC-H-0.1-PARQUET"
-val parquet = "/data/cs451/TPC-H-10-PARQUET"
+    //    val parquet = "TPC-H-0.1-PARQUET"
+    val parquet = "/data/cs451/TPC-H-10-PARQUET"
 
 
     val sqlContext = new SQLContext(sc)
