@@ -1,7 +1,6 @@
 package ca.uwaterloo.cs451.a5
 
 import org.apache.log4j.Logger
-import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -115,28 +114,6 @@ object Q3 {
 
     }
 
-
-    //TODO:REMOVE
-    //    val parquet = "TPC-H-0.1-PARQUET"
-    val parquet = "/data/cs451/TPC-H-10-PARQUET"
-
-
-    val sqlContext = new SQLContext(sc)
-
-    val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
-    val part = sqlContext.read.parquet(parquet + "/part")
-    val supplier = sqlContext.read.parquet(parquet + "/supplier")
-
-    lineitem.registerTempTable("lineitem")
-    part.registerTempTable("part")
-    supplier.registerTempTable("supplier")
-    println("Given >>>>>>>>>> ")
-
-    //TODO:: the ''s need to be there for date
-    val sqlAns = sqlContext.sql("select l_orderkey, p_name, s_name from lineitem, part," +
-      " supplier where l_partkey = p_partkey and l_suppkey = s_suppkey and " +
-      "l_shipdate = '" +
-      date + "' order by l_orderkey asc limit 20").show()
-
   }
+
 }

@@ -76,6 +76,7 @@ object Q4 {
         })
         .reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
+        .collect()
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
         })
@@ -119,6 +120,7 @@ object Q4 {
         })
         .reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
+        .collect()
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
         })
