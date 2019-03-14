@@ -121,10 +121,10 @@ object Q7 {
 
       val sparkSession = SparkSession.builder().getOrCreate()
 
-      val orders : RDD[(String,(String,String,String))] = sparkSession.read.parquet(args.input() + "/orders").rdd
+      val orders : RDD[(Int,(Int,String,Int))] = sparkSession.read.parquet(args.input() + "/orders").rdd
         .flatMap(order => {
           if(LocalDate.parse(order.getString(4)).isBefore(date)){
-            List( (order.getString(0),(order.getString(1), order.getString(4), order.getString(7))))
+            List( (order.getInt(0),(order.getInt(1), order.getString(4), order.getInt(7))))
           }else{
             List()
           }
@@ -133,7 +133,7 @@ object Q7 {
       val lineItems = sparkSession.read.parquet(args.input() + "/lineitem").rdd
         .flatMap(line => {
           if(LocalDate.parse(line.getString(10)).isAfter(date)){
-            List((line.getString(0), line.getFloat(5) * (1f - line.getFloat(6))))
+            List((line.getInt(0), line.getFloat(5) * (1f - line.getFloat(6))))
           }else{
             List()
           }
@@ -148,8 +148,8 @@ object Q7 {
       lineItems.cogroup(orders)
         .flatMap(item => {
           if (item._2._1.nonEmpty && item._2._2.nonEmpty) {
-            val l: ListBuffer[((String, String, String, String), Float)] = ListBuffer()
-            val key: (String,String,String,String) = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
+            val l: ListBuffer[((String, Int, String, String), Float)] = ListBuffer()
+            val key: (String,Int,String,String) = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
             item._2._1.foreach(sub => {
               l += ((key, sub))
             })
