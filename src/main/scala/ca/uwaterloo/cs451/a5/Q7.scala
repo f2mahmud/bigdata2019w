@@ -81,7 +81,7 @@ object Q7 {
         .flatMap(line => {
           val lineArray = line.split("\\|")
           if (LocalDate.parse(lineArray(10)).isAfter(date)) {
-            List((lineArray(0), lineArray(5).toFloat * (1f - lineArray(6).toFloat)))
+            List((lineArray(0), lineArray(5).toDouble * (1f - lineArray(6).toDouble)))
           } else {
             List()
           }
@@ -96,7 +96,7 @@ object Q7 {
       lineItems.cogroup(orders)
         .flatMap(item => {
           if (item._2._1.nonEmpty && item._2._2.nonEmpty) {
-            val l: ListBuffer[((String, String, String, String), Float)] = ListBuffer()
+            val l: ListBuffer[((String, String, String, String), Double)] = ListBuffer()
             val key = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
             item._2._1.foreach(sub => {
               l += ((key, sub))
@@ -133,7 +133,7 @@ object Q7 {
       val lineItems = sparkSession.read.parquet(args.input() + "/lineitem").rdd
         .flatMap(line => {
           if(LocalDate.parse(line.getString(10)).isAfter(date)){
-            List((line.getInt(0), line.getFloat(5) * (1f - line.getFloat(6))))
+            List((line.getInt(0), line.getDouble(5) * (1f - line.getDouble(6))))
           }else{
             List()
           }
@@ -148,7 +148,7 @@ object Q7 {
       lineItems.cogroup(orders)
         .flatMap(item => {
           if (item._2._1.nonEmpty && item._2._2.nonEmpty) {
-            val l: ListBuffer[((String, Int, String, Int), Float)] = ListBuffer()
+            val l: ListBuffer[((String, Int, String, Int), Double)] = ListBuffer()
             val key: (String,Int,String,Int) = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
             item._2._1.foreach(sub => {
               l += ((key, sub))

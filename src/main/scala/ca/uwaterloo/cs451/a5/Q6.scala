@@ -58,11 +58,11 @@ object Q6 {
         .flatMap(line => {
           val lineArray = line.split("\\|")
           if (lineArray(10).substring(0, date.length).equals(date)) {
-            var discountPrice: Float = lineArray(5).toFloat * (1f - lineArray(6).toFloat)
+            var discountPrice: Double = lineArray(5).toDouble * (1f - lineArray(6).toDouble)
 
             List(((lineArray(8), lineArray(9)),
-              (lineArray(4).toFloat, lineArray(5).toFloat, discountPrice,
-                discountPrice * (1f + lineArray(7).toFloat), lineArray(6).toFloat, 1f)))
+              (lineArray(4).toDouble, lineArray(5).toDouble, discountPrice,
+                discountPrice * (1f + lineArray(7).toDouble), lineArray(6).toDouble, 1f)))
 
           } else {
             List()
@@ -86,10 +86,10 @@ object Q6 {
       sparkSession.read.parquet(args.input() + "/lineitem").rdd
         .flatMap(line => {
           if (line.getString(10).substring(0, date.length).equals(date)) {
-            var discountPrice: Float = line.getFloat(5) * (1f - line.getFloat(6))
+            var discountPrice: Double = line.getDouble(5) * (1f - line.getDouble(6))
             List(((line.getString(8), line.getString(9)),
-              (line.getFloat(4), line.getFloat(5), discountPrice,
-                discountPrice * (1f + line.getFloat(7)), line.getFloat(6), 1f)))
+              (line.getDouble(4), line.getDouble(5), discountPrice,
+                discountPrice * (1f + line.getDouble(7)), line.getDouble(6), 1f)))
           } else {
             List()
           }
