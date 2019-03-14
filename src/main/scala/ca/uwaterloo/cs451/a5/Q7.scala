@@ -121,37 +121,49 @@ object Q7 {
 
       val sparkSession = SparkSession.builder().getOrCreate()
 
-      val lineItemDF = sparkSession.read.parquet(args.input() + "/lineitem")
-      val partsDF = sparkSession.read.parquet(args.input() + "/part")
-      val suppliersDF = sparkSession.read.parquet(args.input() + "/supplier")
+      val orders : RDD[(String,(String,String,String))] = sparkSession.read.parquet(args.input() + "/orders").rdd
+        .flatMap(order => {
+          if(LocalDate.parse(order.getString(4)).isBefore(date)){
+            List( (order.getString(0),(order.getString(1), order.getString(4), order.getString(7))))
+          }else{
+            List()
+          }
+        })
 
-      val lineItemsRDD = lineItemDF.rdd
-      val partsRDD = partsDF.rdd
-      val suppliersRDD = suppliersDF.rdd
+      val lineItems = sparkSession.read.parquet(args.input() + "/lineitem").rdd
+        .flatMap(line => {
+          if(LocalDate.parse(line.getString(10)).isAfter(date)){
+            List((line.getString(0), line.getFloat(5) * (1f - line.getFloat(6))))
+          }else{
+            List()
+          }
+        })
 
-      val parts = partsRDD.map(part => {
-        (part(0), part(1))
-      }).collectAsMap()
+      val customers = sc.broadcast(sparkSession.read.parquet(args.input() + "/customer").rdd
+          .map(customer => {
+            customer.getString(0) -> customer.getString(1)
+          }).collectAsMap()
+      )
 
-      val suppliers = suppliersRDD.map(supplier => {
-        (supplier(0), supplier(1))
-      }).collectAsMap()
+      lineItems.cogroup(orders)
+        .flatMap(item => {
+          if (item._2._1.nonEmpty && item._2._2.nonEmpty) {
+            val l: ListBuffer[((String, String, String, String), Float)] = ListBuffer()
+            val key: (String,String,String,String) = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
+            item._2._1.foreach(sub => {
+              l += ((key, sub))
+            })
+            l.toList
+          } else {
+            List()
+          }
+        }).reduceByKey(_ + _)
+        .sortBy(_._2, false, 1)
+        .take(10)
+        .foreach(item => {
+          println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
+        })
 
-      //      val lineItems = lineItemsRDD.flatMap(line => {
-      //        val dateFromRow = line.getString(10)
-      //        if (dateFromRow.substring(0, date.length).equals(date)) {
-      //          List(List(line.getInt(0), line.getInt(1), line.getInt(2)))
-      //        } else {
-      //          List()
-      //        }
-      //      })
-      //
-      //      lineItems.sortBy(item => item(0), numPartitions = 1).take(20)
-      //        .foreach(item => {
-      //          val partName = parts(item(1))
-      //          val supplierName = suppliers(item(2))
-      //          println("(" + item(0) + "," + partName + "," + supplierName + ")")
-      //        })
 
     }
 

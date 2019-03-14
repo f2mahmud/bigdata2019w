@@ -70,23 +70,6 @@ object Q1 {
 
     println("ANSWER=" + count.value)
 
-    //TODO:REMOVE
-    //    val parquet = "TPC-H-0.1-PARQUET"
-    val parquet = "/data/cs451/TPC-H-10-PARQUET"
-
-
-    val sqlContext = new SQLContext(sc)
-
-    val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
-    val orders = sqlContext.read.parquet(parquet + "/orders")
-
-    lineitem.registerTempTable("lineitem")
-    orders.registerTempTable("orders")
-    println("Given >>>>>>>>>> ")
-
-    //TODO:: the ''s need to be there for date
-    val sqlAns = sqlContext.sql("select count(*) from lineitem where l_shipdate = '" + date + "'").show()
-
   }
 
 
