@@ -95,7 +95,8 @@ object Q6 {
           }
         }).reduceByKey((accum, item) => {
         (accum._1 + item._1, accum._2 + item._2, accum._3 + item._3, accum._4 + item._4, accum._5 + item._5, accum._6 + item._6)
-      }).foreach(item => {
+      }).collect()
+        .foreach(item => {
         val sub = item._2
         println("(" + item._1._1 + "," + item._1._2 + "," + sub._1 + "," + sub._2 + "," +
           sub._3 + "," + sub._4 + "," + sub._1 / sub._6 + "," + sub._2 / sub._6 +
