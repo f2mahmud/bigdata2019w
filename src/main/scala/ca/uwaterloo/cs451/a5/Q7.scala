@@ -164,32 +164,7 @@ object Q7 {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + "," + item._1._3 + "," + item._1._4 + ")")
         })
 
-
     }
-
-
-    //TODO:REMOVE
-    //    val parquet = "TPC-H-0.1-PARQUET"
-    val parquet = "/data/cs451/TPC-H-10-PARQUET"
-
-
-    val sqlContext = new SQLContext(sc)
-
-    val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
-    val customer = sqlContext.read.parquet(parquet + "/customer")
-    val orders = sqlContext.read.parquet(parquet + "/orders")
-
-    lineitem.registerTempTable("lineitem")
-    customer.registerTempTable("customer")
-    orders.registerTempTable("orders")
-    println("Given >>>>>>>>>> ")
-
-    //TODO:: the ''s need to be there for date
-    val sqlAns = sqlContext.sql("select  c_name,  l_orderkey,  sum(l_extendedprice*(1-l_discount)) as revenue," +
-      " o_orderdate, o_shippriority from customer, orders, lineitem " +
-      "where c_custkey = o_custkey and l_orderkey = o_orderkey and o_orderdate < '" + date + "' and " +
-      "l_shipdate > '" + date + "' group by c_name, l_orderkey, o_orderdate, o_shippriority order by revenue desc limit 10")
-      .show(200)
 
   }
 
