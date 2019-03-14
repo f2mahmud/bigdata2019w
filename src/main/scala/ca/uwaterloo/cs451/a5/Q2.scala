@@ -69,7 +69,7 @@ object Q2 {
 
       lineItems.cogroup(orders)
         .filter(_._2._1.nonEmpty)
-        .sortBy(item => item._1, numPartitions = 1)   //TODO::checkifsortbykey works
+        .sortBy(item => item._1, numPartitions = 1)
         .take(20)
         .foreach(item => {
           item._2._1.foreach(sub => {
@@ -126,24 +126,6 @@ object Q2 {
 
     }
 
-    //TODO:REMOVE
-    //val parquet = "TPC-H-0.1-PARQUET"
-    val parquet = "/data/cs451/TPC-H-10-PARQUET"
-
-
-    val sqlContext = new SQLContext(sc)
-
-    val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
-    val orders = sqlContext.read.parquet(parquet + "/orders")
-
-    lineitem.registerTempTable("lineitem")
-    orders.registerTempTable("orders")
-    println("Given >>>>>>>>>> ")
-
-    //TODO:: the ''s need to be there for date
-    val sqlAns = sqlContext.sql("select o_clerk, o_orderkey from lineitem, orders where l_orderkey = o_orderkey and l_shipdate = '" +
-      date + "' order by o_orderkey asc limit 20").show()
-
-
   }
+
 }

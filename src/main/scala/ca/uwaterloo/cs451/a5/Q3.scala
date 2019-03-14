@@ -71,6 +71,7 @@ object Q3 {
         })
         .sortBy(_._1, true, numPartitions = 1)
         .take(20)
+        .toList
         .foreach {
           case (order, part, supplier) => println("(" + order + "," + part + "," + supplier + ")")
         }
@@ -93,22 +94,23 @@ object Q3 {
       val suppliersDF = sparkSession.read.parquet(args.input() + "/supplier").rdd
 
 
-      val parts = sc.broadcast(partsDF.map(line => line.getString(0) -> line.getString(1)).collectAsMap())
+      val parts = sc.broadcast(partsDF.map(line => line.getInt(0) -> line.getString(1)).collectAsMap())
 
-      val suppliers = sc.broadcast(suppliersDF.map(line => line.getString(0) -> line.getString(1)).collectAsMap())
+      val suppliers = sc.broadcast(suppliersDF.map(line => line.getInt(0) -> line.getString(1)).collectAsMap())
 
 
       val lineItems = lineItemDF
         .flatMap(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            List((line.getInt(0), parts.value(line.getString(1)), suppliers.value(line.getString(2))))
+            List((line.getInt(0), parts.value(line.getInt(1)), suppliers.value(line.getInt(2))))
           } else {
             List()
           }
         })
         .sortBy(_._1, true, numPartitions = 1)
         .take(20)
+        .toList
         .foreach(println(_))      //TODO:: might not print properly
 
     }
