@@ -141,15 +141,15 @@ object Q7 {
 
       val customers = sc.broadcast(sparkSession.read.parquet(args.input() + "/customer").rdd
           .map(customer => {
-            customer.getString(0) -> customer.getString(1)
+            customer.getInt(0) -> customer.getString(1)
           }).collectAsMap()
       )
 
       lineItems.cogroup(orders)
         .flatMap(item => {
           if (item._2._1.nonEmpty && item._2._2.nonEmpty) {
-            val l: ListBuffer[((String, Int, String, String), Float)] = ListBuffer()
-            val key: (String,Int,String,String) = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
+            val l: ListBuffer[((Int, Int, String, String), Float)] = ListBuffer()
+            val key: (Int,Int,String,String) = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
             item._2._1.foreach(sub => {
               l += ((key, sub))
             })
