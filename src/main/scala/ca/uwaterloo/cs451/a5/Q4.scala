@@ -90,21 +90,21 @@ object Q4 {
 
       val nations = sc.broadcast(sparkSession
         .read.parquet(args.input() + "/nation").rdd
-        .map(line => (line.getString(0), line.getString(1))).collectAsMap())
+        .map(line => (line.getInt(0), line.getString(1))).collectAsMap())
 
       val customers = sc.broadcast(sparkSession
         .read.parquet(args.input() + "/customer").rdd
-        .map(line => line.getString(0) -> (line.getInt(3), nations.value(line.getString(3))))
+        .map(line => line.getInt(0) -> (line.getInt(3), nations.value(line.getInt(3))))
         .collectAsMap())
 
-      val orders = sparkSession.read.parquet(args.input() + "/orders").rdd
-        .map(item => (item.getString(0), item.getString(1)))
+      val orders : RDD[(Int,Int)] = sparkSession.read.parquet(args.input() + "/orders").rdd
+        .map(item => (item.getInt(0), item.getInt(1)))
 
       val lineItem = sparkSession.read.parquet(args.input() + "/lineitem").rdd
         .flatMap(line => {
           val dateFromRow = line.getString(10)
           if (dateFromRow.substring(0, date.length).equals(date)) {
-            List((line.getString(0), dateFromRow))
+            List((line.getInt(0), dateFromRow))
           } else {
             List()
           }

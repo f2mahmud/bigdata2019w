@@ -73,7 +73,8 @@ object Q6 {
         }).map(item => {
         val sub = item._2
         (item._1._1, item._1._2, sub._1, sub._2, sub._3, sub._4, sub._1 / sub._6, sub._2 / sub._6, sub._5 / sub._6, sub._6)
-      }).foreach(println(_))
+      }).collect()
+        .foreach(println(_))
 
 
     } else {
