@@ -148,8 +148,8 @@ object Q7 {
       lineItems.cogroup(orders)
         .flatMap(item => {
           if (item._2._1.nonEmpty && item._2._2.nonEmpty) {
-            val l: ListBuffer[((Int, Int, String, Int), Float)] = ListBuffer()
-            val key: (Int,Int,String,Int) = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
+            val l: ListBuffer[((String, Int, String, Int), Float)] = ListBuffer()
+            val key: (String,Int,String,Int) = (customers.value(item._2._2.head._1), item._1, item._2._2.head._2, item._2._2.head._3)
             item._2._1.foreach(sub => {
               l += ((key, sub))
             })
