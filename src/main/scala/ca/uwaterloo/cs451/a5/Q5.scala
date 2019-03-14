@@ -82,6 +82,7 @@ object Q5 {
         }
       }).reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
+        .collect()
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
         })
@@ -95,13 +96,13 @@ object Q5 {
 
       val nations = sc.broadcast(sparkSession.read.parquet(args.input() + "/nation").rdd
         .map(line => {
-          (line.getString(0), line.getString(1))
+          (line.getInt(0), line.getString(1))
         }).collectAsMap())
 
       val customers = sc.broadcast(sparkSession.read.parquet(args.input() + "/customer").rdd
         .flatMap(line => {
           if (line.getInt(3) == 3 || line.getInt(3) == 24) {
-            List(line.getString(0) -> nations.value(line.getString(3)))
+            List(line.getInt(0) -> nations.value(line.getInt(3)))
           } else {
             List()
           }
@@ -109,8 +110,8 @@ object Q5 {
 
       val orders = sparkSession.read.parquet(args.input() + "/orders").rdd
         .flatMap(order => {
-          if (customers.value.contains(order.getString(1))) {
-            List((order.getString(0), customers.value(order.getString(1))))
+          if (customers.value.contains(order.getInt(1))) {
+            List((order.getInt(0), customers.value(order.getInt(1))))
           } else {
             List()
           }
@@ -118,7 +119,7 @@ object Q5 {
 
       val lineItems = sparkSession.read.parquet(args.input() + "/lineitem").rdd
         .map(item => {
-          (item.getString(0), item.getString(10).substring(0, 7))
+          (item.getInt(0), item.getString(10).substring(0, 7))
         })
 
       lineItems.cogroup(orders)
@@ -134,6 +135,7 @@ object Q5 {
           }
         }).reduceByKey(_ + _)
         .sortBy(_._1, true, numPartitions = 1)
+        .collect()
         .foreach(item => {
           println("(" + item._1._1 + "," + item._1._2 + "," + item._2 + ")")
         })

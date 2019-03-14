@@ -127,29 +127,6 @@ object Q4 {
 
     }
 
-
-    //TODO:REMOVE
-    //    val parquet = "TPC-H-0.1-PARQUET"
-    val parquet = "/data/cs451/TPC-H-10-PARQUET"
-
-
-    val sqlContext = new SQLContext(sc)
-
-    val lineitem = sqlContext.read.parquet(parquet + "/lineitem")
-    val order = sqlContext.read.parquet(parquet + "/orders")
-    val customer = sqlContext.read.parquet(parquet + "/customer")
-    val nation = sqlContext.read.parquet(parquet + "/nation")
-
-    lineitem.registerTempTable("lineitem")
-    order.registerTempTable("orders")
-    customer.registerTempTable("customer")
-    nation.registerTempTable("nation")
-    println("Given >>>>>>>>>> ")
-
-    //TODO:: the ''s need to be there for date
-    val sqlAns = sqlContext.sql("select n_nationkey, n_name, count(*) from lineitem, orders, customer, nation " +
-      "where  l_orderkey = o_orderkey and  o_custkey = c_custkey and  c_nationkey = n_nationkey and  l_shipdate = '" +
-      date + "'group by n_nationkey, n_name order by n_nationkey asc").show(50)
-
   }
+
 }
