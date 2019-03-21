@@ -30,7 +30,7 @@ object Q1 {
     log.info("input : " + args.input)
     log.info("date : " + args.date)
 
-    val conf = new SparkConf().setAppName("Pairs PMI")
+    val conf = new SparkConf().setAppName("Q1")
     val sc = new SparkContext(conf)
 
     val date = args.date()
