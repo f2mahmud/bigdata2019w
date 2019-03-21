@@ -56,7 +56,11 @@ object TrainSpamClassifier {
       item._2.foreach(subItem => {
         subItem._3.foreach(f => {
           val prob = 1.0 / (1.0 + Math.exp(-spamminess(subItem._3)))
-          w += f -> (subItem._2 - prob) * delta
+          if (w.contains(f)) {
+            w += f -> ((subItem._2 - prob) * delta + w(f))
+          } else {
+            w += f -> (subItem._2 - prob) * delta
+          }
         })
       })
     })
