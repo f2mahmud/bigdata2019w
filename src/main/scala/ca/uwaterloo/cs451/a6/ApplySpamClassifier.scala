@@ -55,6 +55,7 @@ object ApplySpamClassifier {
         }
         (items(0), items(1), spamValue, spamOrHam)
       })
+      .saveAsTextFile(args.output())
 
   }
 
