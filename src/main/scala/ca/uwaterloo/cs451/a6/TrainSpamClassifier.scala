@@ -1,5 +1,6 @@
 package ca.uwaterloo.cs451.a6
 
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -37,6 +38,8 @@ object TrainSpamClassifier {
 
     val conf = new SparkConf().setAppName("Spam Classifier Trainer")
     val sc = new SparkContext(conf)
+
+    FileSystem.get(sc.hadoopConfiguration).delete(new Path(args.model()), true)
 
     log.info("input : " + args.input)
     log.info("model : " + args.model)
