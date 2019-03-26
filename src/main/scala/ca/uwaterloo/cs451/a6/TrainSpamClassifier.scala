@@ -1,10 +1,10 @@
 package ca.uwaterloo.cs451.a6
 
-
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
+
+import scala.collection.mutable.Map
 
 class TrainSpamClassifierConf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, model)
@@ -39,7 +39,7 @@ object TrainSpamClassifier {
     val sc = new SparkContext(conf)
 
     log.info("input : " + args.input)
-    log.info("date : " + args.model)
+    log.info("model : " + args.model)
 
     val fileItems = sc.textFile(args.input())
       .map(line => {
@@ -54,12 +54,12 @@ object TrainSpamClassifier {
 
     val trainedData = fileItems.foreach(item => {
       item._2.foreach(subItem => {
+        val prob = 1.0 / (1.0 + Math.exp(-spamminess(subItem._3)))
         subItem._3.foreach(f => {
-          val prob = 1.0 / (1.0 + Math.exp(-spamminess(subItem._3)))
           if (w.contains(f)) {
-            w += f -> ((subItem._2 - prob) * delta + w(f))
+            w(f) += (subItem._2 - prob) * delta
           } else {
-            w += f -> (subItem._2 - prob) * delta
+            w(f) = (subItem._2 - prob) * delta
           }
         })
       })
