@@ -41,7 +41,7 @@ object ApplySpamClassifier {
     val model = sc.broadcast(sc.textFile(args.model())
       .map(line => {
         val items = line.substring(1,line.length-1).split(",")
-        items(1).toInt -> items(2).toDouble
+        items(0).toInt -> items(1).toDouble
       }).collectAsMap())
 
     var results = sc.textFile(args.input())
