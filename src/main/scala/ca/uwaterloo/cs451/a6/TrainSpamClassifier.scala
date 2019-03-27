@@ -68,7 +68,7 @@ object TrainSpamClassifier {
       })
     })
 
-    val model = sc.parallelize(w.toSeq).saveAsTextFile(args.model())
+    val model = sc.parallelize(w.toSeq).repartition(1).saveAsTextFile(args.model())
 
 
 
