@@ -43,7 +43,7 @@ object ApplyEnsembleSpamClassifier {
     val conf = new SparkConf().setAppName("Spam Classifier")
     val sc = new SparkContext(conf)
 
-    FileSystem.get(sc.hadoopConfiguration).delete(new Path(args.model()), true)
+    FileSystem.get(sc.hadoopConfiguration).delete(new Path(args.output()), true)
 
     log.info("input : " + args.input())
     log.info("output : " + args.output())
