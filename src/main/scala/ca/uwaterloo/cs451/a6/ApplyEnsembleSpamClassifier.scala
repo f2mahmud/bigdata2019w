@@ -57,11 +57,6 @@ object ApplyEnsembleSpamClassifier {
 
   }
 
-  def classify(sc: SparkContext, input: String, model: Array[(Int, (Double, Double, Double))], x: Int): RDD[((String, String), Double)]
-  = {
-
-  }
-
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]) {
