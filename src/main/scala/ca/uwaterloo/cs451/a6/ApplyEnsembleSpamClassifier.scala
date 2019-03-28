@@ -15,7 +15,7 @@ class ApplyEnsembleSpamClassifierConf(args: Seq[String]) extends ScallopConf(arg
   verify()
 }
 
-object ApplyEnsmbleSpamClassifier {
+object ApplyEnsembleSpamClassifier {
 
   def spamminess(w: scala.collection.Map[Int, Double], features: Array[Int]): Double = {
     var score = 0d
