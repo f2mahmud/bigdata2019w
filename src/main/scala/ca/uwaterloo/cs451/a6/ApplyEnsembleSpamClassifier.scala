@@ -61,7 +61,7 @@ object ApplyEnsembleSpamClassifier {
       }).collectAsMap())
 
     log.info("getting first classification")
-    val results = classify(sc, args.input(), model.value)
+    var results: RDD[((String, String), Double)] = classify(sc, args.input(), model.value)
 
     log.info("getting seccond and third")
 
@@ -80,17 +80,49 @@ object ApplyEnsembleSpamClassifier {
 
       log.info("classifying second time")
 
-      results.cogroup(classify(sc, args.input(), model.value))
+      var mergedResults = results.fullOuterJoin(classify(sc, args.input(), model.value))
+
+      if (args.method().equals("average")) {
+
+        log.info("intermediete average")
+
+        results = mergedResults.map(item => {
+          var value = item._2._1.get + item._2._2.get
+          (item._1, value)
+        })
+
+      } else {
+        results = mergedResults.map(item => {
+          var value = 0
+
+          if (item._2._1.get > 1) {
+            value += 1
+          } else {
+            value -= 1
+          }
+
+          if (item._2._2.get > 1) {
+            value += 1
+          } else {
+            value -= 1
+          }
+
+          (item._1, value)
+
+        })
+
+      }
 
     }
 
     model.destroy()
 
+
     if (args.method().equals("average")) {
 
-    log.info("Calculating average")
-      results.reduceByKey(_+_)
-        .map(item => {
+      log.info("Calculating average")
+
+      results.map(item => {
         val spamValue: Double = item._2 / 3.0
         var spamOrHam = "ham"
         if (spamValue > 0) {
@@ -101,28 +133,20 @@ object ApplyEnsembleSpamClassifier {
 
       })
 
-    }else {
+    } else {
 
       log.info("Calculating vote")
-        results.map(item => {
-          var spamOrHam = -1    //ham
-          if (item._2 > 0) {   //if spam
-            spamOrHam = 1
-          }
-          (item._1,spamOrHam)
-        }).reduceByKey(_+_)
-        .map(item => {
-          if(item._2 > 0){
-            (item._1._1, item._1._2, item._2, "spam" )
-          }else{
-            (item._1._1, item._1._2, item._2, "ham" )
-          }
-        })
-
-      }
+      results.map(item => {
+        if (item._2 > 0) {
+          (item._1._1, item._1._2, item._2, "spam")
+        } else {
+          (item._1._1, item._1._2, item._2, "ham")
+        }
+      })
+    }
 
     results.saveAsTextFile(args.output())
 
-    }
+  }
 
 }
