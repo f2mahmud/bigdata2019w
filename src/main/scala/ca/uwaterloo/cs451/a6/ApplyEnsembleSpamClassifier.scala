@@ -61,6 +61,7 @@ object ApplyEnsembleSpamClassifier {
 
 
     while (models.hasNext) {
+      model.destroy()
       model = sc.broadcast(sc.textFile(models.next().getPath.toString)
         .map(line => {
           val items = line.substring(1, line.length - 1).split(",")
