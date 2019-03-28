@@ -66,21 +66,28 @@ object ApplyEnsembleSpamClassifier {
     log.info("getting seccond and third")
 
     while (models.hasNext) {
+
       log.info("destroying")
       model.unpersist(blocking = true)
+
       log.info("getting second one")
+
       model = sc.broadcast(sc.textFile(models.next().getPath.toString)
         .map(line => {
           val items = line.substring(1, line.length - 1).split(",")
           items(0).toInt -> items(1).toDouble
         }).collectAsMap())
+
       log.info("classifying second time")
-      results.union(classify(sc, args.input(), model.value))
+
+      results.cogroup(classify(sc, args.input(), model.value))
+
     }
 
     model.destroy()
 
     if (args.method().equals("average")) {
+
     log.info("Calculating average")
       results.reduceByKey(_+_)
         .map(item => {
