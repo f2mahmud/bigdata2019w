@@ -17,7 +17,7 @@ class ApplyEnsembleSpamClassifierConf(args: Seq[String]) extends ScallopConf(arg
 
 object ApplyEnsembleSpamClassifier {
 
-  def spamminess(model: scala.collection.Map[Int, (Double, Double, Double)], features: Array[Int]): (Double, Double, Double) = {
+  def spamminess(model: scala.collection.Map[Int, (Double, Double, Double)], features: Array[Int], x: Int): (Double) = {
     var score1 = 0d
     var score2 = 0d
     var score3 = 0d
@@ -26,16 +26,37 @@ object ApplyEnsembleSpamClassifier {
       score2 += model(f)._2
       score3 += model(f)._3
     })
-    (score1, score2, score3)
+    if (x == 1) {
+      (score1 + score2 + score3) / 3
+    } else {
+      var finalScore = 0d
+      if (score1 > 1) {
+        finalScore += 1
+      } else {
+        finalScore -= 1
+      }
+      if (score2 > 1) {
+        finalScore += 1
+      } else {
+        finalScore -= 1
+      }
+      if (score3 > 1) {
+        finalScore += 1
+      } else {
+        finalScore -= 1
+      }
+      finalScore
+    }
+
   }
 
-  def classify(sc: SparkContext, input: String, model: scala.collection.Map[Int, (Double, Double, Double)]): RDD[((String, String), (Double, Double, Double))]
+  def classify(sc: SparkContext, input: String, model: scala.collection.Map[Int, (Double, Double, Double)], x: Int): RDD[((String, String), Double)]
   = {
     sc.textFile(input)
       .map(line => {
         val items = line.split(" ")
         val features = items.slice(2, items.size - 1).map(_.toInt)
-        val spamValue = spamminess(model, features)
+        val spamValue = spamminess(model, features, x)
         ((items(0), items(1)), spamValue)
       })
   }
@@ -78,6 +99,7 @@ object ApplyEnsembleSpamClassifier {
         items(0).toInt -> items(1).toDouble
       })
 
+
     val broadcastedModel = sc.broadcast(model1.cogroup(model2)
       .map(item => {
         var score1 = 0d
@@ -106,53 +128,36 @@ object ApplyEnsembleSpamClassifier {
 
     log.info("classification")
 
-    var results: RDD[((String, String), (Double, Double, Double))] = classify(sc, args.input(), broadcastedModel.value)
 
     if (args.method().equals("average")) {
 
       log.info("Calculating average")
 
-      results.map(item => {
-        val spamValue: Double = (item._2._1 + item._2._2 + item._2._3) / 3.0
+      classify(sc, args.input(), broadcastedModel.value, 1).map(item => {
         var spamOrHam = "ham"
-        if (spamValue > 0) {
+        if (item._2 > 0) {
           spamOrHam = "spam"
         }
+        (item._1, item._2, item._2, spamOrHam)
 
-        (item._1, item._2, spamValue, spamOrHam)
-
-      })
+      }).saveAsTextFile(args.output())
 
     } else {
 
       log.info("Calculating vote")
 
-      results.map(item => {
-        var score1 = -1
-        var score2 = -1
-        var score3 = -1
-        if (item._2._1 > 0) {
-          score1 = 1
-        }
-        if (item._2._2 > 0) {
-          score2 = 1
-        }
-        if (item._2._3 > 0) {
-          score3 = 1
-        }
-        val spamValue = score1 + score2 + score3
-        var spamOrHam = "ham"
-        if (spamValue > 0) {
-          spamOrHam = "spam"
-        }
+      classify(sc, args.input(), broadcastedModel.value, 2)
+        .map(item => {
+          var spamOrHam = "ham"
+          if (item._2 > 0) {
+            spamOrHam = "spam"
+          }
 
-        (item._1, item._2, spamValue, spamOrHam)
+          (item._1, item._2, item._2, spamOrHam)
 
-      })
+        }).saveAsTextFile(args.output())
 
     }
-
-    results.saveAsTextFile(args.output())
 
   }
 
