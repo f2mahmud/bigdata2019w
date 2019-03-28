@@ -92,16 +92,20 @@ object ApplyEnsembleSpamClassifier {
       })
       .cogroup(model3)
       .map(item => {
+        var accumScore = (0d, 0d)
         var score3 = 0d
-        if(item._2._2.nonEmpty){
+        if (item._2._2.nonEmpty) {
           score3 = item._2._2.head
         }
-        item._1 -> (item._2._1.head._1, item._2._1.head._2, score3)
+        if (item._2._1.nonEmpty) {
+          accumScore = item._2._1.head
+        }
+        item._1 -> (accumScore._1, accumScore._2, score3)
       })
       .collectAsMap())
 
     log.info("classification")
-    
+
     var results: RDD[((String, String), (Double, Double, Double))] = classify(sc, args.input(), broadcastedModel.value)
 
     if (args.method().equals("average")) {
