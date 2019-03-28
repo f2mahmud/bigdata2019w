@@ -2,6 +2,7 @@ package ca.uwaterloo.cs451.a6
 
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.log4j.Logger
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -14,6 +15,8 @@ class ApplyEnsembleSpamClassifierConf(args: Seq[String]) extends ScallopConf(arg
   val method: ScallopOption[String] = opt[String](descr = "method of merging results", required = true)
   verify()
 }
+
+
 
 object ApplyEnsembleSpamClassifier {
 
@@ -104,29 +107,22 @@ object ApplyEnsembleSpamClassifier {
       })
 
 
-    val broadcastedModel = sc.broadcast(model1.cogroup(model2)
+    val broadcastedModel : Broadcast[Array[(Int, (Double, Double, Double))]] = sc.broadcast(model1.cogroup(model2,model3)
       .map(item => {
-        var score1: Double = 0d
         var score2: Double = 0d
+        var score3: Double = 0d
+        var score1: Double = 0d
+
         if (item._2._1.nonEmpty) {
           score1 = item._2._1.head
         }
         if (item._2._2.nonEmpty) {
           score2 = item._2._2.head
         }
-        (item._1, (score1, score2))
-      })
-      .cogroup(model3)
-      .map(item => {
-        var accumScore: (Double, Double) = (0d, 0d)
-        var score3: Double = 0d
-        if (item._2._2.nonEmpty) {
-          score3 = item._2._2.head
+        if (item._2._3.nonEmpty) {
+          score3 = item._2._3.head
         }
-        if (item._2._1.nonEmpty) {
-          accumScore = item._2._1.head
-        }
-        (item._1, (accumScore._1, accumScore._2, score3))
+        (item._1, (score1, score2, score3))
       }).collect())
 
     log.info("classification")
