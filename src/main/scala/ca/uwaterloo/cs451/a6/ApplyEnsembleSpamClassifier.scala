@@ -106,8 +106,8 @@ object ApplyEnsembleSpamClassifier {
 
     val broadcastedModel = sc.broadcast(model1.cogroup(model2)
       .map(item => {
-        var score1 = 0d
-        var score2 = 0d
+        var score1 : Double = 0d
+        var score2 : Double = 0d
         if (item._2._1.nonEmpty) {
           score1 = item._2._1.head
         }
@@ -118,8 +118,8 @@ object ApplyEnsembleSpamClassifier {
       })
       .cogroup(model3)
       .map(item => {
-        var accumScore = (0d, 0d)
-        var score3 = 0d
+        var accumScore : (Double, Double) = (0d, 0d)
+        var score3: Double = 0d
         if (item._2._2.nonEmpty) {
           score3 = item._2._2.head
         }
