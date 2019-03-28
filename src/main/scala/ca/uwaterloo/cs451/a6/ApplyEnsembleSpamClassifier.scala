@@ -62,7 +62,7 @@ object ApplyEnsembleSpamClassifier {
 
 
     while (models.hasNext) {
-      model.unpersist()
+      model.destroy()
       model = sc.broadcast(sc.textFile(models.next().getPath.toString)
         .map(line => {
           val items = line.substring(1, line.length - 1).split(",")
@@ -75,7 +75,7 @@ object ApplyEnsembleSpamClassifier {
     if (args.method().equals("average")) {
 
       model.destroy()
-      
+
       results.reduceByKey(_+_)
         .map(item => {
         val spamValue: Double = item._2 / 3.0
@@ -106,7 +106,6 @@ object ApplyEnsembleSpamClassifier {
       }
 
     results.saveAsTextFile(args.output())
-
 
     }
 
