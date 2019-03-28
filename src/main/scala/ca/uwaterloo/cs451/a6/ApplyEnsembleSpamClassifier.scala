@@ -19,37 +19,32 @@ object ApplyEnsembleSpamClassifier {
 
   def spamminess(model: RDD[(Int, (Double, Double, Double))], features: RDD[(Int, Int)], x: Int): (Double) = {
 
-    var score1 = 0
-    var score2 = 0
-    var score3 = 0
-    model.cogroup(features)
+    val result = model.cogroup(features)
       .flatMap(item => {
-        if(item._2._2.nonEmpty){
+        if (item._2._2.nonEmpty) {
           List((item._1, (item._2._1.head._1, item._2._1.head._2, item._2._1.head._3)))
-        }else{
+        } else {
           List()
         }
-      }).foreach(item => {
-      score1 += item._2._1
-      score2 += item._2._2
-      score3 += item._2._3
+      }).reduce((accum, item) => {
+      (accum._1, (accum._2._1 + item._2._1, accum._2._2 + item._2._2, accum._2._3 + item._2._3))
     })
-    
+
     if (x == 1) {
-      (score1 + score2 + score3) / 3
+      (result._2._1 + result._2._2 + result._2._3) / 3
     } else {
       var finalScore = 0d
-      if (score1 > 1) {
+      if (result._2._1 > 1) {
         finalScore += 1
       } else {
         finalScore -= 1
       }
-      if (score2 > 1) {
+      if (result._2._2 > 1) {
         finalScore += 1
       } else {
         finalScore -= 1
       }
-      if (score3 > 1) {
+      if (result._2._3 > 1) {
         finalScore += 1
       } else {
         finalScore -= 1
