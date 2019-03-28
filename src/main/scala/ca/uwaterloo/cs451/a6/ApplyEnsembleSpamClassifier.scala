@@ -54,13 +54,13 @@ object ApplyEnsembleSpamClassifier {
 
   }
 
-  def classify(sc: SparkContext, input: String, model: RDD[(Int, (Double, Double, Double))], x: Int): RDD[((String, String), Double)]
+  def classify(sc: SparkContext, input: String, model: Array[(Int, (Double, Double, Double))], x: Int): RDD[((String, String), Double)]
   = {
     sc.textFile(input)
       .map(line => {
         val items = line.split(" ")
         val features = items.slice(2, items.size - 1).map(item => (item.toInt, 1))
-        val spamValue = spamminess(model, sc.makeRDD(features), x)
+        val spamValue = spamminess(sc.makeRDD(model), sc.makeRDD(features), x)
         ((items(0), items(1)), spamValue)
       })
   }
@@ -106,8 +106,8 @@ object ApplyEnsembleSpamClassifier {
 
     val broadcastedModel = sc.broadcast(model1.cogroup(model2)
       .map(item => {
-        var score1 : Double = 0d
-        var score2 : Double = 0d
+        var score1: Double = 0d
+        var score2: Double = 0d
         if (item._2._1.nonEmpty) {
           score1 = item._2._1.head
         }
@@ -118,7 +118,7 @@ object ApplyEnsembleSpamClassifier {
       })
       .cogroup(model3)
       .map(item => {
-        var accumScore : (Double, Double) = (0d, 0d)
+        var accumScore: (Double, Double) = (0d, 0d)
         var score3: Double = 0d
         if (item._2._2.nonEmpty) {
           score3 = item._2._2.head
