@@ -127,7 +127,7 @@ object ApplyEnsembleSpamClassifier {
           accumScore = item._2._1.head
         }
         (item._1, (accumScore._1, accumScore._2, score3))
-      }))
+      }).collect())
 
     log.info("classification")
 
