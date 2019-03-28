@@ -59,13 +59,7 @@ object ApplyEnsembleSpamClassifier {
 
   def classify(sc: SparkContext, input: String, model: Array[(Int, (Double, Double, Double))], x: Int): RDD[((String, String), Double)]
   = {
-    sc.textFile(input)
-      .map(line => {
-        val items = line.split(" ")
-        val features = items.slice(2, items.size - 1).map(item => (item.toInt, 1))
-        val spamValue = spamminess(sc.parallelize(model), sc.parallelize(features), x)
-        ((items(0), items(1)), spamValue)
-      })
+
   }
 
   val log = Logger.getLogger(getClass().getName())
@@ -132,7 +126,14 @@ object ApplyEnsembleSpamClassifier {
 
       log.info("Calculating average")
 
-      classify(sc, args.input(), broadcastedModel.value, 1).map(item => {
+      sc.textFile(args.input())
+        .map(line => {
+          val items = line.split(" ")
+          val features = items.slice(2, items.size - 1).map(item => (item.toInt, 1))
+          val spamValue = spamminess(sc.parallelize(broadcastedModel.value), sc.parallelize(features), 1)
+          ((items(0), items(1)), spamValue)
+        })
+        .map(item => {
         var spamOrHam = "ham"
         if (item._2 > 0) {
           spamOrHam = "spam"
@@ -145,8 +146,13 @@ object ApplyEnsembleSpamClassifier {
 
       log.info("Calculating vote")
 
-      classify(sc, args.input(), broadcastedModel.value, 2)
-        .map(item => {
+      sc.textFile(args.input())
+        .map(line => {
+          val items = line.split(" ")
+          val features = items.slice(2, items.size - 1).map(item => (item.toInt, 1))
+          val spamValue = spamminess(sc.parallelize(broadcastedModel.value), sc.parallelize(features), 2)
+          ((items(0), items(1)), spamValue)
+        }).map(item => {
           var spamOrHam = "ham"
           if (item._2 > 0) {
             spamOrHam = "spam"
