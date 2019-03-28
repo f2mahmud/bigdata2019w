@@ -31,23 +31,23 @@ object ApplyEnsembleSpamClassifier {
     })
 
     if (x == 1) {
-      (result._2._1 + result._2._2 + result._2._3) / 3
+      (result._2._1 + result._2._2 + result._2._3) / 3d
     } else {
       var finalScore = 0d
-      if (result._2._1 > 1) {
-        finalScore += 1
+      if (result._2._1 > 1d) {
+        finalScore += 1d
       } else {
-        finalScore -= 1
+        finalScore -= 1d
       }
-      if (result._2._2 > 1) {
-        finalScore += 1
+      if (result._2._2 > 1d) {
+        finalScore += 1d
       } else {
-        finalScore -= 1
+        finalScore -= 1d
       }
-      if (result._2._3 > 1) {
-        finalScore += 1
+      if (result._2._3 > 1d) {
+        finalScore += 1d
       } else {
-        finalScore -= 1
+        finalScore -= 1d
       }
       finalScore
     }
