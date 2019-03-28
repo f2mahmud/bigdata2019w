@@ -23,14 +23,14 @@ object ApplyEnsembleSpamClassifier {
     score
   }
 
-  def classify(sc: SparkContext, input: String, model: scala.collection.Map[Int, Double]): RDD[((String, String), (Double, Double))]
+  def classify(sc: SparkContext, input: String, model: scala.collection.Map[Int, Double]): RDD[((String, String), Double)]
   = {
     sc.textFile(input)
       .map(line => {
         val items = line.split(" ")
         val features = items.slice(2, items.size - 1).map(_.toInt)
         val spamValue = spamminess(model, features)
-        ((items(0), items(1)), (spamValue, 1.0))
+        ((items(0), items(1)), spamValue)
       })
   }
 
@@ -74,10 +74,9 @@ object ApplyEnsembleSpamClassifier {
 
     if (args.method().equals("average")) {
 
-      results.reduceByKey((accum, value) => {
-        (accum._1 + value._1, accum._2 + value._2)
-      }).map(item => {
-        val spamValue: Double = item._2._1 / item._2._2
+      results.reduceByKey(_+_)
+        .map(item => {
+        val spamValue: Double = item._2 / 3.0
         var spamOrHam = "ham"
         if (spamValue > 0) {
           spamOrHam = "spam"
@@ -89,7 +88,7 @@ object ApplyEnsembleSpamClassifier {
 
         results.map(item => {
           var spamOrHam = -1    //ham
-          if (item._2._1 > 0) {   //if spam
+          if (item._2 > 0) {   //if spam
             spamOrHam = 1
           }
           (item._1,spamOrHam)
