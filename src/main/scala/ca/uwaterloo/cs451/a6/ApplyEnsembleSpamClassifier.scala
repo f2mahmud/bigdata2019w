@@ -63,7 +63,7 @@ object ApplyEnsembleSpamClassifier {
       .map(line => {
         val items = line.split(" ")
         val features = items.slice(2, items.size - 1).map(item => (item.toInt, 1))
-        val spamValue = spamminess(sc.makeRDD(model), sc.makeRDD(features), x)
+        val spamValue = spamminess(sc.parallelize(model), sc.parallelize(features), x)
         ((items(0), items(1)), spamValue)
       })
   }
