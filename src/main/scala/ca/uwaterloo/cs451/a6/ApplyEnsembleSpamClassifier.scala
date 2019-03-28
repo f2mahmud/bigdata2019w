@@ -52,30 +52,34 @@ object ApplyEnsembleSpamClassifier {
 
     val models = FileSystem.get(sc.hadoopConfiguration).listFiles(new Path(args.model()), false)
 
+    log.info("getting first model")
+
     var model = sc.broadcast(sc.textFile(models.next().getPath.toString)
       .map(line => {
         val items = line.substring(1, line.length - 1).split(",")
         items(0).toInt -> items(1).toDouble
       }).collectAsMap())
 
+    log.info("getting first classification")
     val results = classify(sc, args.input(), model.value)
 
+    log.info("getting seccond and third")
 
     while (models.hasNext) {
-      model.destroy()
+      log.info("destroying")
+      model.unpersist(blocking = true)
+      log.info("getting second one")
       model = sc.broadcast(sc.textFile(models.next().getPath.toString)
         .map(line => {
           val items = line.substring(1, line.length - 1).split(",")
           items(0).toInt -> items(1).toDouble
         }).collectAsMap())
-
+      log.info("classifying second time")
       results.union(classify(sc, args.input(), model.value))
     }
 
     if (args.method().equals("average")) {
-
-      model.unpersist(blocking = true)
-
+    log.info("Calculating average")
       results.reduceByKey(_+_)
         .map(item => {
         val spamValue: Double = item._2 / 3.0
@@ -87,7 +91,7 @@ object ApplyEnsembleSpamClassifier {
         (item._1, item._2, spamValue, spamOrHam)
 
       })}else {
-
+      log.info("Calculating vote")
         results.map(item => {
           var spamOrHam = -1    //ham
           if (item._2 > 0) {   //if spam
