@@ -17,15 +17,24 @@ class ApplyEnsembleSpamClassifierConf(args: Seq[String]) extends ScallopConf(arg
 
 object ApplyEnsembleSpamClassifier {
 
-  def spamminess(model: scala.collection.Map[Int, (Double, Double, Double)], features: Array[Int], x: Int): (Double) = {
-    var score1 = 0d
-    var score2 = 0d
-    var score3 = 0d
-    features.foreach(f => if (model.contains(f)) {
-      score1 += model(f)._1
-      score2 += model(f)._2
-      score3 += model(f)._3
+  def spamminess(model: RDD[(Int, (Double, Double, Double))], features: RDD[(Int, Int)], x: Int): (Double) = {
+
+    var score1 = 0
+    var score2 = 0
+    var score3 = 0
+    model.cogroup(features)
+      .flatMap(item => {
+        if(item._2._2.nonEmpty){
+          List((item._1, (item._2._1.head._1, item._2._1.head._2, item._2._1.head._3)))
+        }else{
+          List()
+        }
+      }).foreach(item => {
+      score1 += item._2._1
+      score2 += item._2._2
+      score3 += item._2._3
     })
+    
     if (x == 1) {
       (score1 + score2 + score3) / 3
     } else {
@@ -50,13 +59,13 @@ object ApplyEnsembleSpamClassifier {
 
   }
 
-  def classify(sc: SparkContext, input: String, model: scala.collection.Map[Int, (Double, Double, Double)], x: Int): RDD[((String, String), Double)]
+  def classify(sc: SparkContext, input: String, model: RDD[(Int, (Double, Double, Double))], x: Int): RDD[((String, String), Double)]
   = {
     sc.textFile(input)
       .map(line => {
         val items = line.split(" ")
-        val features = items.slice(2, items.size - 1).map(_.toInt)
-        val spamValue = spamminess(model, features, x)
+        val features = items.slice(2, items.size - 1).map(item => (item.toInt, 1))
+        val spamValue = spamminess(model, sc.makeRDD(features), x)
         ((items(0), items(1)), spamValue)
       })
   }
@@ -122,9 +131,8 @@ object ApplyEnsembleSpamClassifier {
         if (item._2._1.nonEmpty) {
           accumScore = item._2._1.head
         }
-        item._1 -> (accumScore._1, accumScore._2, score3)
-      })
-      .collectAsMap())
+        (item._1, (accumScore._1, accumScore._2, score3))
+      }))
 
     log.info("classification")
 
