@@ -74,7 +74,7 @@ object ApplyEnsembleSpamClassifier {
 
     if (args.method().equals("average")) {
 
-      model.destroy()
+      model.unpersist(blocking = true)
 
       results.reduceByKey(_+_)
         .map(item => {
