@@ -74,6 +74,8 @@ object ApplyEnsembleSpamClassifier {
 
     if (args.method().equals("average")) {
 
+      model.destroy()
+      
       results.reduceByKey(_+_)
         .map(item => {
         val spamValue: Double = item._2 / 3.0
