@@ -78,6 +78,8 @@ object ApplyEnsembleSpamClassifier {
       results.union(classify(sc, args.input(), model.value))
     }
 
+    model.destroy()
+
     if (args.method().equals("average")) {
     log.info("Calculating average")
       results.reduceByKey(_+_)
@@ -90,7 +92,10 @@ object ApplyEnsembleSpamClassifier {
 
         (item._1, item._2, spamValue, spamOrHam)
 
-      })}else {
+      })
+
+    }else {
+
       log.info("Calculating vote")
         results.map(item => {
           var spamOrHam = -1    //ham
