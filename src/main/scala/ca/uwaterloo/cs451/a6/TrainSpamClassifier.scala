@@ -11,7 +11,7 @@ class TrainSpamClassifierConf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, model)
   val input: ScallopOption[String] = opt[String](descr = "input path", required = true)
   val model: ScallopOption[String] = opt[String](descr = "output path", required = true)
-  val shuffle: ScallopOption[Boolean] = toggle("text", default = Some(false))
+  val shuffle: ScallopOption[Boolean] = toggle("shuffle", default = Some(false))
   verify()
 }
 
