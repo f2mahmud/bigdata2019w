@@ -79,12 +79,29 @@ object ApplyEnsembleSpamClassifier {
       })
 
     val broadcastedModel = sc.broadcast(model1.cogroup(model2)
-      .map(item => (item._1, (item._2._1.head, item._2._2.head)))
+      .map(item => {
+        var score1 = 0d
+        var score2 = 0d
+        if (item._2._1.nonEmpty) {
+          score1 = item._2._1.head
+        }
+        if (item._2._2.nonEmpty) {
+          score2 = item._2._2.head
+        }
+        (item._1, (score1, score2))
+      })
       .cogroup(model3)
-      .map(item => item._1 -> (item._2._1.head._1, item._2._1.head._2, item._2._2.head))
+      .map(item => {
+        var score3 = 0d
+        if(item._2._2.nonEmpty){
+          score3 = item._2._2.head
+        }
+        item._1 -> (item._2._1.head._1, item._2._1.head._2, score3)
+      })
       .collectAsMap())
 
     log.info("classification")
+    
     var results: RDD[((String, String), (Double, Double, Double))] = classify(sc, args.input(), broadcastedModel.value)
 
     if (args.method().equals("average")) {
