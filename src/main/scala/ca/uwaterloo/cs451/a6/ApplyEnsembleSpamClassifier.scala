@@ -51,7 +51,7 @@ object ApplyEnsembleSpamClassifier {
 
     val models = FileSystem.get(sc.hadoopConfiguration).listFiles(new Path(args.model()), false)
 
-    var model = sc.broadcast(sc.textFile(models.next().getPath.getName)
+    var model = sc.broadcast(sc.textFile(models.next().getPath.toString)
       .map(line => {
         val items = line.substring(1, line.length - 1).split(",")
         items(0).toInt -> items(1).toDouble
