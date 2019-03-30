@@ -26,7 +26,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StreamingContext}
 import org.apache.spark.streaming.scheduler.{StreamingListener, StreamingListenerBatchCompleted}
-import org.apache.spark.util.LongAccumulator
 import org.rogach.scallop._
 
 import scala.collection.mutable
@@ -90,7 +89,7 @@ object RegionEventCount {
         }
       )
       .reduceByKeyAndWindow(
-        (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
+        (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(60), Minutes(60))
       .persist()
 
     wc.saveAsTextFiles(args.output())
