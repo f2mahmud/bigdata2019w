@@ -39,7 +39,7 @@ class RegionEventCountConf(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object TrendingArrivals {
+object RegionEventCount {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]): Unit = {

@@ -42,7 +42,8 @@ object TrendingArrivals {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]): Unit = {
-    val args = new RegionEventCountConf(argv)
+
+    val args = new TrendingArrivalsConf(argv)
 
     log.info("Input: " + args.input())
 
