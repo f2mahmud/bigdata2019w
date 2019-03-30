@@ -26,12 +26,11 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StreamingContext}
 import org.apache.spark.streaming.scheduler.{StreamingListener, StreamingListenerBatchCompleted}
-import org.apache.spark.util.LongAccumulator
 import org.rogach.scallop._
 
 import scala.collection.mutable
 
-class RegionEventCountConf(args: Seq[String]) extends ScallopConf(args) {
+class TrendingArrivalsConf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, checkpoint, output)
   val input = opt[String](descr = "input path", required = true)
   val checkpoint = opt[String](descr = "checkpoint path", required = true)
@@ -39,7 +38,7 @@ class RegionEventCountConf(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object RegionEventCount {
+object TrendingArrivals {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]): Unit = {
