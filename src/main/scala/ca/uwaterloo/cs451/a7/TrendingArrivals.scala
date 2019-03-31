@@ -24,7 +24,7 @@ import org.apache.log4j._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StreamingContext}
+import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StateSpec, StreamingContext, State}
 import org.apache.spark.streaming.scheduler.{StreamingListener, StreamingListenerBatchCompleted}
 import org.rogach.scallop._
 
@@ -39,7 +39,9 @@ class TrendingArrivalsConf(args: Seq[String]) extends ScallopConf(args) {
 }
 
 object TrendingArrivals {
+
   val log = Logger.getLogger(getClass().getName())
+
 
   def main(argv: Array[String]): Unit = {
 
@@ -64,33 +66,47 @@ object TrendingArrivals {
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
+    def stateUpdateFunction(name: String, newData: Option[Int], state: State[Int]) = {
+
+      val currentSession = state.get() // Get current session data
+      println(">>>>>>>> name: " + name)
+      println(">>>>>>>> newDate : " + newData.getOrElse(-44444))
+      println(">>>>>>>> state : " + state.get())
+
+      val updatedSession = newData.getOrElse(0) // Compute updated session using newData
+
+      state.update(updatedSession) // Update session data
+      None
+
+    }
+
+
     //TODO:: Values for lat and long needs to be looked at. negative values not considdered. IMPORTANT!
     val wc = stream.map(_.split(","))
-      .flatMap( line =>
-        if(line(0).equals("yellow")){
+      .flatMap(line =>
+        if (line(0).equals("yellow")) {
           if (line(10).toDouble < -74.0141012 && line(10).toDouble > -74.0141027 &&
-            line(11).toDouble > 40.7140753 && line(11).toDouble < 40.7152191 ) {   //check for goldman
+            line(11).toDouble > 40.7140753 && line(11).toDouble < 40.7152191) { //check for goldman
             List(("goldman", 1))
           } else if (line(10).toDouble < -74.010140 && line(10).toDouble > -74.011869 &&
-            line(11).toDouble > 40.720267 && line(11).toDouble < 40.721493 ) {
+            line(11).toDouble > 40.720267 && line(11).toDouble < 40.721493) {
             List(("citigroup", 1))
           } else {
             List()
           }
-        }else {
+        } else {
           if (line(8).toDouble < -74.0141012 && line(8).toDouble > -74.0141027 &&
-            line(9).toDouble > 40.7140753 && line(9).toDouble < 40.7152191 ) {   //check for goldman
+            line(9).toDouble > 40.7140753 && line(9).toDouble < 40.7152191) { //check for goldman
             List(("goldman", 1))
           } else if (line(8).toDouble < -74.010140 && line(8).toDouble > -74.011869 &&
-            line(9).toDouble > 40.720267 && line(9).toDouble < 40.721493 ) {
+            line(9).toDouble > 40.720267 && line(9).toDouble < 40.721493) {
             List(("citigroup", 1))
           } else {
             List()
           }
         }
-      )
-      .reduceByKeyAndWindow(
-        (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
+      ).reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
+      .mapWithState(StateSpec.function(stateUpdateFunction _))
       .persist()
 
     wc.saveAsTextFiles(args.output())

@@ -53,7 +53,7 @@ object RegionEventCount {
       .getOrCreate()
 
     val numCompletedRDDs = spark.sparkContext.longAccumulator("number of completed RDDs")
-
+    
     val batchDuration = Minutes(1)
     val ssc = new StreamingContext(spark.sparkContext, batchDuration)
     val batchListener = new StreamingContextBatchCompletionListener(ssc, 24)
