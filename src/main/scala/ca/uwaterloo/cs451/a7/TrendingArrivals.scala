@@ -68,10 +68,13 @@ object TrendingArrivals {
 
     def stateUpdateFunction(name: String, newData: Option[Int], state: State[Int]) = {
 
+
       val currentSession = state.get() // Get current session data
       println(">>>>>>>> name: " + name)
       println(">>>>>>>> newDate : " + newData.getOrElse(-44444))
-      println(">>>>>>>> state : " + state.get())
+      if (state.exists()) {
+        println(">>>>>>>> state : " + state.get())
+      }
 
       val updatedSession = newData.getOrElse(0) // Compute updated session using newData
 
