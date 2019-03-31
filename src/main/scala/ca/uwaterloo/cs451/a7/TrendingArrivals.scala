@@ -80,8 +80,6 @@ object TrendingArrivals {
 
     }
 
-
-    //TODO:: Values for lat and long needs to be looked at. negative values not considdered. IMPORTANT!
     val wc = stream.map(_.split(","))
       .flatMap(line =>
         if (line(0).equals("yellow")) {
