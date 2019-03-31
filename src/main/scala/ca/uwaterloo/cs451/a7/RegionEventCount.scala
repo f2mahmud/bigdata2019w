@@ -53,7 +53,7 @@ object RegionEventCount {
       .getOrCreate()
 
     val numCompletedRDDs = spark.sparkContext.longAccumulator("number of completed RDDs")
-    
+
     val batchDuration = Minutes(1)
     val ssc = new StreamingContext(spark.sparkContext, batchDuration)
     val batchListener = new StreamingContextBatchCompletionListener(ssc, 24)
@@ -67,27 +67,26 @@ object RegionEventCount {
     val wc = stream.map(_.split(","))
       .flatMap(line =>
         if (line(0).equals("yellow")) {
-          if (line(10).toDouble < -74.0141012 && line(10).toDouble > -74.0141027 &&
-            line(11).toDouble > 40.7140753 && line(11).toDouble < 40.7152191) { //check for goldman
+          if (line(10).toDouble < -74.013777 && line(10).toDouble > -74.0144185 &&
+            line(11).toDouble > 40.7138745 && line(11).toDouble < 40.7152275) { //check for goldman
             List(("goldman", 1))
-          } else if (line(10).toDouble < -74.010140 && line(10).toDouble > -74.011869 &&
-            line(11).toDouble > 40.720267 && line(11).toDouble < 40.721493) {
+          } else if (line(10).toDouble < -74.009867 && line(10).toDouble > -74.012083 &&
+            line(11).toDouble > 40.720053 && line(11).toDouble < 40.7217236) {
             List(("citigroup", 1))
           } else {
             List()
           }
         } else {
-          if (line(8).toDouble < -74.0141012 && line(8).toDouble > -74.0141027 &&
-            line(9).toDouble > 40.7140753 && line(9).toDouble < 40.7152191) { //check for goldman
+          if (line(8).toDouble < -74.013777 && line(8).toDouble > -74.0144185 &&
+            line(9).toDouble > 40.7138745 && line(9).toDouble < 40.7152275) { //check for goldman
             List(("goldman", 1))
-          } else if (line(8).toDouble < -74.010140 && line(8).toDouble > -74.011869 &&
-            line(9).toDouble > 40.720267 && line(9).toDouble < 40.721493) {
+          } else if (line(8).toDouble < -74.009867 && line(8).toDouble > -74.012083 &&
+            line(9).toDouble > 40.720053 && line(9).toDouble < 40.7217236) {
             List(("citigroup", 1))
           } else {
             List()
           }
-        }
-      )
+        })
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(60), Minutes(60))
       .persist()
