@@ -68,10 +68,8 @@ object TrendingArrivals {
 
     def stateUpdateFunction(name: String, newData: Option[Int], state: State[Int]) = {
 
-
-
       println(">>>>>>>> name: " + name)
-      println(">>>>>>>> newDate : " + newData.getOrElse(-44444))
+      println(">>>>>>>> newData : " + newData.getOrElse(-44444))
       if (state.exists()) {
         val currentSession = state.get() // Get current session data
         println(">>>>>>>> state : " + state.get())
@@ -106,7 +104,8 @@ object TrendingArrivals {
           } else {
             List()
           }
-        })//.reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
+        })
+      .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .persist()
 
