@@ -78,8 +78,11 @@ object TrendingArrivals {
 //      val updatedSession = newData.getOrElse(-3000) // Compute updated session using newData
 //
 //      state.update(updatedSession) // Update session data
-
-      (name, state.get(), newData.getOrElse(-4444))
+      if(state.exists()) {
+        (name, state.get(), newData.getOrElse(-4444))
+      }else{
+        (name, newData.getOrElse(-4444))
+      }
 
     }
 
