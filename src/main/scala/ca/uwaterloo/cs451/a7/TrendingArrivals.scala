@@ -79,9 +79,10 @@ object TrendingArrivals {
 //
 //      state.update(updatedSession) // Update session data
       if(state.exists()) {
-        (name, state.get(), newData.getOrElse(-4444))
+        println(">>>>>" + (name, state.get(), newData.getOrElse(-4444)))
       }else{
-        (name, newData.getOrElse(-4444))
+        state.update(-45)
+        println(">>>>>" + (name, newData.getOrElse(-4444)))
       }
 
     }
@@ -109,7 +110,7 @@ object TrendingArrivals {
             List()
           }
         })
-      //.reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
+      .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .print()
       //.persist()
