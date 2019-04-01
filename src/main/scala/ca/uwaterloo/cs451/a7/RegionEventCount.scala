@@ -87,7 +87,7 @@ object RegionEventCount {
           }
         })
       .reduceByKeyAndWindow(
-        (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(60), Minutes(60))
+        (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))     //TODO::change it back to 60
       .persist()
 
     wc.saveAsTextFiles(args.output())
