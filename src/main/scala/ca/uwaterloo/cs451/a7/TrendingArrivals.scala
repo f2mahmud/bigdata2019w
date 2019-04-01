@@ -106,12 +106,7 @@ object TrendingArrivals {
           }
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-
-      
-      wc.foreachRDD( item => item.foreach(item => println(">>>!! rdd: " + item )))
-
-
-      wc.mapWithState(StateSpec.function(stateUpdateFunction _))
+      .mapWithState(StateSpec.function(stateUpdateFunction _))
       .persist()
 
     wc.saveAsTextFiles(args.output())
