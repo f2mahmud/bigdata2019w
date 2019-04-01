@@ -75,10 +75,11 @@ object TrendingArrivals {
         println(">>>>>>>> state : " + state.get())
       }
 
-      val updatedSession = newData.getOrElse(0) // Compute updated session using newData
+      val updatedSession = newData.getOrElse(-3000) // Compute updated session using newData
 
       state.update(updatedSession) // Update session data
-      None
+
+      (name, state.get())
 
     }
 
@@ -107,6 +108,7 @@ object TrendingArrivals {
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
+      //.print()
       .persist()
 
     wc.saveAsTextFiles(args.output())
