@@ -57,7 +57,7 @@ object TrendingArrivals {
 
     val numCompletedRDDs = spark.sparkContext.longAccumulator("number of completed RDDs")
 
-    val batchDuration = Minutes(1)
+    val batchDuration = Minutes(10)
     val ssc = new StreamingContext(spark.sparkContext, batchDuration)
     val batchListener = new StreamingContextBatchCompletionListener(ssc, 24)
     ssc.addStreamingListener(batchListener)
@@ -106,7 +106,7 @@ object TrendingArrivals {
             List()
           }
         })
-      .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
+      //.reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .print()
       //.persist()
