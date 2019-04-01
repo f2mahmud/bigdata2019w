@@ -66,7 +66,7 @@ object TrendingArrivals {
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
-    def stateUpdateFunction(name: String, newData: Option[Int], state: State[Int]) = {
+    def stateUpdateFunction(name: Any, newData: Option[Any], state: State[Any]) = {
 
       println(">>>>>>>> name: " + name)
       println(">>>>>>>> newData : " + newData.getOrElse(-44444))
