@@ -116,10 +116,7 @@ object TrendingArrivals {
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .persist()
 
-      wc.print()
-
-      wc.flatMap(List(_))
-      .print()
+    wc.print()
 
     //wc.saveAsTextFiles(args.output() + "part-%08d".format())      //TODO::Need to get time stamp
 
