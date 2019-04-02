@@ -30,7 +30,7 @@ import org.rogach.scallop._
 
 import scala.collection.mutable
 
-class TrendingArrivalsConf(args: Seq[String]) extends ScallopConf(args) {
+class RegionEventCountConf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, checkpoint, output)
   val input = opt[String](descr = "input path", required = true)
   val checkpoint = opt[String](descr = "checkpoint path", required = true)
@@ -38,14 +38,11 @@ class TrendingArrivalsConf(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object TrendingArrivals {
-
+object RegionEventCount {
   val log = Logger.getLogger(getClass().getName())
 
-
   def main(argv: Array[String]): Unit = {
-
-    val args = new TrendingArrivalsConf(argv)
+    val args = new RegionEventCountConf(argv)
 
     log.info("Input: " + args.input())
 
@@ -61,10 +58,6 @@ object TrendingArrivals {
     val ssc = new StreamingContext(spark.sparkContext, batchDuration)
     val batchListener = new StreamingContextBatchCompletionListener(ssc, 24)
     ssc.addStreamingListener(batchListener)
-
-    val rdds = buildMockStream(ssc.sparkContext, args.input())
-    val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
-    val stream = ssc.queueStream(inputData)
 
     def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
 
@@ -86,6 +79,10 @@ object TrendingArrivals {
 
       Some((key, (newData.getOrElse(0), time.milliseconds, s)))
     }
+
+    val rdds = buildMockStream(ssc.sparkContext, args.input())
+    val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
+    val stream = ssc.queueStream(inputData)
 
     val wc = stream.map(_.split(","))
       .flatMap(line =>
@@ -110,16 +107,16 @@ object TrendingArrivals {
             List()
           }
         })
-      .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-      //.mapWithState(StateSpec.function(stateUpdateFunction _))
-      //.print()
-      .persist()
+      .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(60), Minutes(60))
+      .mapWithState(StateSpec.function(stateUpdateFunction _))
+      .print()
+    //.persist()
 
-    wc.saveAsTextFiles(args.output())
-    //
-    //    wc.foreachRDD(rdd => {
-    //      numCompletedRDDs.add(1L)
-    //    })
+//    wc.saveAsTextFiles(args.output())
+//
+//    wc.foreachRDD(rdd => {
+//      numCompletedRDDs.add(1L)
+//    })
     ssc.checkpoint(args.checkpoint())
     ssc.start()
 
@@ -163,3 +160,4 @@ object TrendingArrivals {
     }
   }
 }
+
