@@ -66,8 +66,6 @@ object TrendingArrivals {
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
-    //TODO::What if it goes from 0 to 10 or more
-    //TODO::Better idea to save time and value in state so that i can accumulate in the method below?
     def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
 
       var s = 0
@@ -113,15 +111,13 @@ object TrendingArrivals {
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .print()
-      //.persist()
+    //.persist()
 
-
-    //wc.saveAsTextFiles(args.output() + "part-%07d".format())      //TODO::Need to get time stamp
-
-//    wc.foreachRDD(rdd => {
-//      numCompletedRDDs.add(1L)
-//    })
-
+    //    wc.saveAsTextFiles(args.output())
+    //
+    //    wc.foreachRDD(rdd => {
+    //      numCompletedRDDs.add(1L)
+    //    })
     ssc.checkpoint(args.checkpoint())
     ssc.start()
 
