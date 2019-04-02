@@ -60,11 +60,12 @@ object TrendingArrivals {
     ssc.addStreamingListener(batchListener)
 
     def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
-      
+
       var s = 0
+      var data = newData.getOrElse(0)
       if (state.exists()) {
         s = state.get()
-        if (newData.getOrElse(0) > 10 && s != 0 && Math.floor(newData.get / state.get()) >= 2) {
+        if (data > 10 && s != 0 && Math.floor(data / s) >= 2) {
           var name = "Goldman Sachs"
           if (key.equals("citigroup")) {
             name = "Citigroup"
@@ -73,9 +74,10 @@ object TrendingArrivals {
         }
       }
 
+
       state.update(newData.getOrElse(0))
 
-      Some((key, (newData.getOrElse(0), time.milliseconds, s)))
+      Some((key, (data, time.milliseconds, s)))
     }
 
     val rdds = buildMockStream(ssc.sparkContext, args.input())
