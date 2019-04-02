@@ -66,14 +66,17 @@ object TrendingArrivals {
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
-    def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
+    def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]) : Option[(String,(Int, Long, Int))] = {
+
+      println(">>>>>> " + (time.milliseconds, key, newData.getOrElse(-4)))
 
       var s = 0
-      if (state.exists()) {
+      if(state.exists()) {
         s = state.get()
-        if (newData.getOrElse(0) > 10 && s != 0 && Math.floor(newData.get / state.get()) >= 2) {
+        println(">>>>>>> s: " + s )
+        if(newData.getOrElse(0) > 10 && s != 0 && Math.floor(newData.get / state.get()) >= 2){
           var name = "Goldman Sachs"
-          if (key.equals("citigroup")) {
+          if(key.equals("citigroup")){
             name = "Citigroup"
           }
           println(s"Number of arrivals to $name has doubled from ${state.get()} to ${newData.get} at ${time.milliseconds}!")
@@ -82,7 +85,7 @@ object TrendingArrivals {
 
       state.update(newData.getOrElse(0))
 
-      Some((key, (newData.getOrElse(0), time.milliseconds, s)))
+      Some((key, (newData.getOrElse(0) , time.milliseconds, s)))
     }
 
     val wc = stream.map(_.split(","))
@@ -161,4 +164,3 @@ object TrendingArrivals {
     }
   }
 }
-
