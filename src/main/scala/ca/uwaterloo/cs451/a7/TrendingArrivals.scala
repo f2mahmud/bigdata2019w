@@ -62,7 +62,7 @@ object TrendingArrivals {
     def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
 
       var s = 0
-      var data = newData.getOrElse(0)
+      val data = newData.getOrElse(0)
       if (state.exists()) {
         s = state.get()
         if (data > 10 && s != 0 && Math.floor(data / s) >= 2) {
@@ -72,6 +72,12 @@ object TrendingArrivals {
           }
           println(s"Number of arrivals to $name has doubled from ${state.get()} to ${newData.get} at ${time.milliseconds}!")
         }
+      }else if(data > 10){      //TODO::Confirm if this is acceptable
+        var name = "Goldman Sachs"
+        if (key.equals("citigroup")) {
+          name = "Citigroup"
+        }
+        println(s"Number of arrivals to $name has doubled from 0 to ${newData.get} at ${time.milliseconds}!")
       }
 
 
