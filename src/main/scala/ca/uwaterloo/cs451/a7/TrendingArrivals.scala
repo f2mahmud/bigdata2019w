@@ -70,7 +70,7 @@ object TrendingArrivals {
     //TODO::Better idea to save time and value in state so that i can accumulate in the method below?
     def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
 
-      println(">>>>>> " + (time.milliseconds, key, newData.getOrElse(-4)))      //TODO::remove
+      println(">>>>>> " + (time.milliseconds, key, newData.getOrElse(-4))) //TODO::remove
 
       var s = 0
       if (state.exists()) {
@@ -114,12 +114,14 @@ object TrendingArrivals {
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
+        //.flatMap(List(_))   //TODO::Try this
       .persist()
 
-    wc.saveAsTextFiles(args.output())
+    //wc.saveAsTextFiles(args.output() + "part-%08d".format())      //TODO::Need to get time stamp
 
     wc.foreachRDD(rdd => {
       numCompletedRDDs.add(1L)
+      rdd.saveAsTextFile(args.output() + "/part-%08d".format(rdd.collect()(0)._2._2))
     })
     ssc.checkpoint(args.checkpoint())
     ssc.start()
