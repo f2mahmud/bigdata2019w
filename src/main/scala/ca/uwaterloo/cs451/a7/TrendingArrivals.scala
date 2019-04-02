@@ -114,15 +114,19 @@ object TrendingArrivals {
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
-        //.flatMap(List(_))   //TODO::Try this
       .persist()
+
+      wc.print()
+
+      wc.flatMap(List(_))
+      .print()
 
     //wc.saveAsTextFiles(args.output() + "part-%08d".format())      //TODO::Need to get time stamp
 
     wc.foreachRDD(rdd => {
       numCompletedRDDs.add(1L)
-      rdd.saveAsTextFile(args.output() + "/part-%08d".format(rdd.collect()(0)._2._2))
     })
+
     ssc.checkpoint(args.checkpoint())
     ssc.start()
 
