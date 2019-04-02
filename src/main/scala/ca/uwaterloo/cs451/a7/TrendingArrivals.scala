@@ -66,16 +66,16 @@ object TrendingArrivals {
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
-    def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]) : Option[(String,(Int, Long, Int))] = {
+    def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
 
       println(">>>>>> " + (time.milliseconds, key, newData.getOrElse(-4)))
 
       var s = 0
-      if(state.exists()) {
+      if (state.exists()) {
         s = state.get()
-        if(newData.getOrElse(0) > 10 && s != 0 && Math.floor(newData.get / state.get()) >= 2){
+        if (newData.getOrElse(0) > 10 && s != 0 && Math.floor(newData.get / state.get()) >= 2) {
           var name = "Goldman Sachs"
-          if(key.equals("citigroup")){
+          if (key.equals("citigroup")) {
             name = "Citigroup"
           }
           println(s"Number of arrivals to $name has doubled from ${state.get()} to ${newData.get} at ${time.milliseconds}!")
@@ -84,7 +84,7 @@ object TrendingArrivals {
 
       state.update(newData.getOrElse(0))
 
-      Some((key, (newData.getOrElse(0) , time.milliseconds, s)))
+      Some((key, (newData.getOrElse(0), time.milliseconds, s)))
     }
 
     val wc = stream.map(_.split(","))
@@ -111,11 +111,11 @@ object TrendingArrivals {
           }
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-      .mapWithState(StateSpec.function(stateUpdateFunction _))
+      //.mapWithState(StateSpec.function(stateUpdateFunction _))
       .print()
-    //.persist()
+      .persist()
 
-    //    wc.saveAsTextFiles(args.output())
+    wc.saveAsTextFiles(args.output())
     //
     //    wc.foreachRDD(rdd => {
     //      numCompletedRDDs.add(1L)
