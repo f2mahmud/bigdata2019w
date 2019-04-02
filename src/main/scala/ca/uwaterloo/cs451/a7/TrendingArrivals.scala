@@ -30,7 +30,7 @@ import org.rogach.scallop._
 
 import scala.collection.mutable
 
-class RegionEventCountConf(args: Seq[String]) extends ScallopConf(args) {
+class TrendingArrivalsConf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, checkpoint, output)
   val input = opt[String](descr = "input path", required = true)
   val checkpoint = opt[String](descr = "checkpoint path", required = true)
@@ -38,11 +38,11 @@ class RegionEventCountConf(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object RegionEventCount {
+object TrendingArrivals {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]): Unit = {
-    val args = new RegionEventCountConf(argv)
+    val args = new TrendingArrivalsConf(argv)
 
     log.info("Input: " + args.input())
 
@@ -112,11 +112,11 @@ object RegionEventCount {
       .print()
     //.persist()
 
-//    wc.saveAsTextFiles(args.output())
-//
-//    wc.foreachRDD(rdd => {
-//      numCompletedRDDs.add(1L)
-//    })
+    //    wc.saveAsTextFiles(args.output())
+    //
+    //    wc.foreachRDD(rdd => {
+    //      numCompletedRDDs.add(1L)
+    //    })
     ssc.checkpoint(args.checkpoint())
     ssc.start()
 
