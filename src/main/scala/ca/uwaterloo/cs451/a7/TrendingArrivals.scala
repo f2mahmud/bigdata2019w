@@ -24,7 +24,7 @@ import org.apache.log4j._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StateSpec, StreamingContext, State}
+import org.apache.spark.streaming._
 import org.apache.spark.streaming.scheduler.{StreamingListener, StreamingListenerBatchCompleted}
 import org.rogach.scallop._
 
@@ -66,25 +66,26 @@ object TrendingArrivals {
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
-    def stateUpdateFunction(name: Any, newData: Option[Any], state: State[Any]) = {
+    def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]) : Option[(String,(Int, Long, Int))] = {
 
-//      println(">>>>>>>> name: " + name)
-//      println(">>>>>>>> newData : " + newData.getOrElse(-44444))
-//      if (state.exists()) {
-//        val currentSession = state.get() // Get current session data
-//        println(">>>>>>>> state : " + state.get())
-//      }
-//
-//      val updatedSession = newData.getOrElse(-3000) // Compute updated session using newData
-//
-//      state.update(updatedSession) // Update session data
+      println(">>>>>> " + (time.milliseconds, key, newData.getOrElse(-4)))
+
+      var s = 0
       if(state.exists()) {
-        println(">>>>>" + (name, state.get(), newData.getOrElse(-4444)))
-      }else{
-        state.update(-45)
-        println(">>>>>" + (name, newData.getOrElse(-4444)))
+        s = state.get()
+        println(">>>>>>> s: " + s )
+        if(newData.getOrElse(0) > 10 && s != 0 && Math.floor(newData.get / state.get()) >= 2){
+          var name = "Goldman Sachs"
+          if(key.equals("citigroup")){
+            name = "Citigroup"
+          }
+          println(s"Number of arrivals to $name has doubled from ${state.get()} to ${newData.get} at ${time.milliseconds}!")
+        }
       }
 
+      state.update(newData.getOrElse(0))
+
+      Some((key, (newData.getOrElse(0) , time.milliseconds, s)))
     }
 
     val wc = stream.map(_.split(","))
