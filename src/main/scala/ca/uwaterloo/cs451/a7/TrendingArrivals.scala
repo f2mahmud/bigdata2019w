@@ -60,9 +60,7 @@ object TrendingArrivals {
     ssc.addStreamingListener(batchListener)
 
     def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
-
-      println(">>>>>> " + (time.milliseconds, key, newData.getOrElse(-4)))
-
+      
       var s = 0
       if (state.exists()) {
         s = state.get()
