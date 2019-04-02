@@ -73,7 +73,6 @@ object TrendingArrivals {
       var s = 0
       if(state.exists()) {
         s = state.get()
-        println(">>>>>>> s: " + s )
         if(newData.getOrElse(0) > 10 && s != 0 && Math.floor(newData.get / state.get()) >= 2){
           var name = "Goldman Sachs"
           if(key.equals("citigroup")){
