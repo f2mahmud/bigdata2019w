@@ -56,7 +56,7 @@ object TrendingArrivals {
 
     val batchDuration = Minutes(1)
     val ssc = new StreamingContext(spark.sparkContext, batchDuration)
-    val batchListener = new StreamingContextBatchCompletionListener(ssc, 24)
+    val batchListener = new StreamingContextBatchCompletionListener(ssc, 24*6)
     ssc.addStreamingListener(batchListener)
 
     def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
