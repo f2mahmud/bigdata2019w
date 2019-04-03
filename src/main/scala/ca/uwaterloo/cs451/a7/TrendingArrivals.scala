@@ -120,7 +120,7 @@ object TrendingArrivals {
       wc.foreachRDD((item, time) => {
         numCompletedRDDs.add(1L)
         item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds))
-        None
+        item
       })
 
     ssc.checkpoint(args.checkpoint())
