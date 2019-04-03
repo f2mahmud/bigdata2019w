@@ -56,10 +56,10 @@ object TrendingArrivals {
 
     val batchDuration = Minutes(1)
     val ssc = new StreamingContext(spark.sparkContext, batchDuration)
-    val batchListener = new StreamingContextBatchCompletionListener(ssc, 24*6)
+    val batchListener = new StreamingContextBatchCompletionListener(ssc, 24 * 6)
     ssc.addStreamingListener(batchListener)
 
-    def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
+    def stateUpdateFunction(time: Time, key: String, newData: Option[Int], state: State[Int]): Option[(String, (Int, String, Int))] = {
 
       var s = 0
       val data = newData.getOrElse(0)
@@ -72,7 +72,7 @@ object TrendingArrivals {
           }
           println(s"Number of arrivals to $name has doubled from ${state.get()} to ${newData.get} at ${time.milliseconds}!")
         }
-      }else if(data > 10){
+      } else if (data > 10) {
         var name = "Goldman Sachs"
         if (key.equals("citigroup")) {
           name = "Citigroup"
@@ -83,7 +83,7 @@ object TrendingArrivals {
 
       state.update(newData.getOrElse(0))
 
-      Some((key, (data, time.milliseconds, s)))
+      Some((key, (data, "%08d".format(time.milliseconds), s)))
     }
 
     val rdds = buildMockStream(ssc.sparkContext, args.input())
@@ -115,16 +115,14 @@ object TrendingArrivals {
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
-      .foreachRDD((item, time) => item.saveAsTextFile(args.output()+ "/part-%08d".format(time.milliseconds)))
-      //.print()
-    //.persist()
+      .persist()
 
-    //    wc.saveAsTextFiles(args.output())
-    //
-    //    wc.foreachRDD(rdd => {
-    //      numCompletedRDDs.add(1L)
-    //    })
-    //ssc.checkpoint(args.checkpoint())
+    wc.foreachRDD((item, time) => item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds)))
+
+    wc.foreachRDD(rdd => {
+      numCompletedRDDs.add(1L)
+    })
+    ssc.checkpoint(args.checkpoint())
     ssc.start()
 
     for (rdd <- rdds) {
