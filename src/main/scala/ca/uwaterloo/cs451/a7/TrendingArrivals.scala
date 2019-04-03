@@ -49,7 +49,7 @@ object TrendingArrivals {
     val spark = SparkSession
       .builder()
       .config("spark.streaming.clock", "org.apache.spark.util.ManualClock")
-      .appName("EventCount")
+      .appName("Trending Arrivals")
       .getOrCreate()
 
     val numCompletedRDDs = spark.sparkContext.longAccumulator("number of completed RDDs")
@@ -72,7 +72,7 @@ object TrendingArrivals {
           }
           println(s"Number of arrivals to $name has doubled from ${state.get()} to ${newData.get} at ${time.milliseconds}!")
         }
-      }else if(data > 10){      
+      }else if(data > 10){
         var name = "Goldman Sachs"
         if (key.equals("citigroup")) {
           name = "Citigroup"
@@ -124,7 +124,7 @@ object TrendingArrivals {
     //    wc.foreachRDD(rdd => {
     //      numCompletedRDDs.add(1L)
     //    })
-    ssc.checkpoint(args.checkpoint())
+    //ssc.checkpoint(args.checkpoint())
     ssc.start()
 
     for (rdd <- rdds) {
