@@ -117,8 +117,9 @@ object TrendingArrivals {
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .persist()
 
-    wc.foreachRDD((item, time) => item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds)))
-
+    //wc.foreachRDD((item, time) => item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds)))
+    wc.print()
+    
     wc.foreachRDD(rdd => {
       numCompletedRDDs.add(1L)
     })
