@@ -115,11 +115,13 @@ object TrendingArrivals {
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
-      .foreachRDD((item, time) => {
+      .persist()
+
+      wc.foreachRDD((item, time) => {
         numCompletedRDDs.add(1L)
         item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds))
       })
-    
+
     ssc.checkpoint(args.checkpoint())
     ssc.start()
 
