@@ -39,23 +39,25 @@ class TrendingArrivalsConf(args: Seq[String]) extends ScallopConf(args) {
 }
 
 object TrendingArrivals {
+
   val log = Logger.getLogger(getClass().getName())
+
+  val spark = SparkSession
+    .builder()
+    .config("spark.streaming.clock", "org.apache.spark.util.ManualClock")
+    .appName("Trending Arrivals")
+    .getOrCreate()
+
+  val batchDuration = Minutes(1)
+  val ssc = new StreamingContext(spark.sparkContext, batchDuration)
 
   def main(argv: Array[String]): Unit = {
     val args = new TrendingArrivalsConf(argv)
 
     log.info("Input: " + args.input())
 
-    val spark = SparkSession
-      .builder()
-      .config("spark.streaming.clock", "org.apache.spark.util.ManualClock")
-      .appName("Trending Arrivals")
-      .getOrCreate()
-
     val numCompletedRDDs = spark.sparkContext.longAccumulator("number of completed RDDs")
 
-    val batchDuration = Minutes(1)
-    val ssc = new StreamingContext(spark.sparkContext, batchDuration)
     val batchListener = new StreamingContextBatchCompletionListener(ssc, 24 * 6)
     ssc.addStreamingListener(batchListener)
 
@@ -117,7 +119,7 @@ object TrendingArrivals {
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .foreachRDD((item, time) => {
         numCompletedRDDs.add(1L)
-        //item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds))
+        item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds))
         //item
       })
 
