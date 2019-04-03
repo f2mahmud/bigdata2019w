@@ -65,14 +65,14 @@ object TrendingArrivals {
       val data = newData.getOrElse(0)
       if (state.exists() && state.get() != 0) {
         s = state.get()
-        if (data > 10 && s != 0 && Math.floor(data / s) >= 2) {
+        if (data >= 10 && s != 0 && Math.floor(data / s) >= 2) {
           var name = "Goldman Sachs"
           if (key.equals("citigroup")) {
             name = "Citigroup"
           }
           println(s"Number of arrivals to $name has doubled from ${state.get()} to ${newData.get} at ${time.milliseconds}!")
         }
-      } else if (data > 10) {
+      } else if (data >= 10) {
         var name = "Goldman Sachs"
         if (key.equals("citigroup")) {
           name = "Citigroup"
@@ -115,14 +115,11 @@ object TrendingArrivals {
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
-      .persist()
-
-    //wc.foreachRDD((item, time) => item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds)))
-    wc.print()
+      .foreachRDD((item, time) => {
+        numCompletedRDDs.add(1L)
+        item.saveAsTextFile(args.output() + "/part-%08d".format(time.milliseconds))
+      })
     
-    wc.foreachRDD(rdd => {
-      numCompletedRDDs.add(1L)
-    })
     ssc.checkpoint(args.checkpoint())
     ssc.start()
 
