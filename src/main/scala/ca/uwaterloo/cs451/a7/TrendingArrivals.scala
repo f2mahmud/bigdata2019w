@@ -63,7 +63,7 @@ object TrendingArrivals {
 
       var s = 0
       val data = newData.getOrElse(0)
-      if (state.exists()) {
+      if (state.exists() && state.get() != 0) {
         s = state.get()
         if (data > 10 && s != 0 && Math.floor(data / s) >= 2) {
           var name = "Goldman Sachs"
@@ -72,7 +72,7 @@ object TrendingArrivals {
           }
           println(s"Number of arrivals to $name has doubled from ${state.get()} to ${newData.get} at ${time.milliseconds}!")
         }
-      }else if(data > 10){      //TODO::Confirm if this is acceptable
+      }else if(data > 10){      
         var name = "Goldman Sachs"
         if (key.equals("citigroup")) {
           name = "Citigroup"
@@ -115,7 +115,8 @@ object TrendingArrivals {
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
-      .print()
+      .foreachRDD((item, time) => item.saveAsTextFile(args.output()+ "/part-%08d".format(time.milliseconds)))
+      //.print()
     //.persist()
 
     //    wc.saveAsTextFiles(args.output())
