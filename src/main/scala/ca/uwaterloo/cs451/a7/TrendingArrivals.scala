@@ -80,7 +80,6 @@ object TrendingArrivals {
         println(s"Number of arrivals to $name has doubled from 0 to ${newData.get} at ${time.milliseconds}!")
       }
 
-
       state.update(newData.getOrElse(0))
 
       Some((key, (data, "%08d".format(time.milliseconds), s)))
@@ -115,7 +114,7 @@ object TrendingArrivals {
         })
       .reduceByKeyAndWindow((x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       .mapWithState(StateSpec.function(stateUpdateFunction _))
-      .persist()
+      
 
     wc.print()
 
