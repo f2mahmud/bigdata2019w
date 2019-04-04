@@ -88,6 +88,7 @@ object TrendingArrivals {
     val rdds = buildMockStream(ssc.sparkContext, args.input())
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
+    val broadcastTime = spark.sparkContext.broadcast()
 
     val wc = stream.map(_.split(","))
       .flatMap(line =>
@@ -116,6 +117,7 @@ object TrendingArrivals {
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .foreachRDD((rdd,time) => {
         numCompletedRDDs.add(1L)
+        rdd.saveAsTextFile(time.milliseconds.toString)
       })
 
     ssc.checkpoint(args.checkpoint())
