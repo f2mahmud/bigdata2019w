@@ -117,7 +117,7 @@ object TrendingArrivals {
       .mapWithState(StateSpec.function(stateUpdateFunction _))
       .foreachRDD((rdd,time) => {
         numCompletedRDDs.add(1L)
-        rdd.saveAsTextFile(broadcastTime.value + "/" + "%08d".format(time.milliseconds))
+        rdd.saveAsTextFile(broadcastTime.value + "/" + "part-%08d".format(time.milliseconds))
       })
 
     ssc.checkpoint(args.checkpoint())
